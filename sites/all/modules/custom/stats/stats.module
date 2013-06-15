@@ -1,0 +1,244 @@
+<?php
+/**
+  @file
+  @brief The Stats module defines the Stat and Stat
+    Value entity types. These entity types are used
+    to represent statistics about other entities.
+*/
+
+/// Defines the Stat entity class.
+class Stat extends Entity {
+  protected function defaultUri () {
+    return array ('path' => 'stat/' . $this->identifier ());
+  }
+}
+
+/// Defines the Stat entity controller class.
+class StatController extends EntityAPIController {
+  public function create (array $values = array ()) {
+    global $user;
+    return parent::create (
+      array_merge ($values,
+        array (
+          'subject'  => 0,
+          'name'     => '',
+          'uid'      => $user->uid
+    )));
+  }
+}
+
+/// Defines the Stat Value entity class.
+class StatValue extends Entity {
+  protected function defaultUri () {
+    return array ('path' => 'stat_value/' . $this->identifier ());
+  }
+}
+
+/// Defines the Stat Value entity controller class.
+class StatValueController extends EntityAPIController {
+  public function create (array $values = array ()) {
+    global $user;
+    return parent::create (
+      array_merge ($values,
+        array (
+          'stat'  => 0,
+          'value' => '',
+          'uid'   => $user->uid
+    )));
+  }
+}
+
+/// Implements hook_permission ().
+function stat_permission () {
+  return array (
+    'administer stat entities' => array (
+      'title'           => t ('Administer stats'),
+      'description'     => t ('Allows users to administer (create/view/edit) stats.')
+    ),
+    'create stat entities' => array (
+      'title'           => t ('Create stats'),
+      'description'     => t ('Allows users to create stats.')
+    ),
+    'view stat entities' => array (
+      'title'           => t ('View stats'),
+      'description'     => t ('Allows users to view stats.')
+    ),
+    'edit any stat entities' => array (
+      'title'           => t ('Edit any stats'),
+      'description'     => t ('Allows users to edit any stats.')
+    ),
+    'edit own stat entities' => array (
+      'title'           => t ('Edit own stats'),
+      'description'     => t ('Allows users to edit their own stats.')
+    )
+  );
+}
+
+/// Stat entity access callback ().
+function stat_access ($op, $entity, $account, $entity_type) {
+  global $user;
+  if (!isset ($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access ('administer stat entities', $account) ||
+             user_access ('create stat entities', $account);
+    case 'view':
+      return user_access ('administer stat entities', $account) ||
+             user_access ('view stat entities', $account);
+    case 'edit':
+      return user_access ('administer stat entities', $account) ||
+             user_access ('edit any stat entities', $account) ||
+             (user_access ('edit own stat entities', $account) &&
+              $entity->uid == $account->uid);
+  }
+}
+
+/**
+  @brief Implements hook_entity_info ().
+  @details Defines the Stat and Stat Value entity types.
+*/
+stats_entity_info () {
+  return array (
+    'stat' => array (
+      'label'            => t ('Stat'),
+      'entity class'     => 'Stat',
+      'controller class' => 'StatController',
+      'base table'       => 'stat',
+      'load hook'        => 'stat_load',
+      'uri callback'     => 'entity_class_uri',
+      'access callback'  => 'stat_access',
+      'fieldable'        => true,
+      'entity keys'      => array (
+        'id'     => 'id',
+        'label'  => 'name'
+      ),
+      'view modes'       => array (
+        'web' => array (
+          'label'           => t ('Web'),
+          'custom settings' => false
+        ),
+        'rss' => array (
+          'label'           => t ('RSS'),
+          'custom settings' => false
+        ),
+        'xml' => array (
+          'label'           => t ('XML'),
+          'custom settings' => false
+    ))),
+    'stat value' => array (
+      'label'            => t ('Stat Value'),
+      'entity class'     => 'StatValue',
+      'controller class' => 'StatValueController',
+      'base table'       => 'stat_values',
+      'load hook'        => 'stat_value_load',
+      'uri callback'     => 'entity_class_uri',
+      'access callback'  => 'stat_value_access',
+      'fieldable'        => true,
+      'entity keys'      => array (
+        'id'     => 'id',
+        'bundle' => 'type'
+      ),
+      'view modes'       => array (
+        'web' => array (
+          'label'           => t ('Web'),
+          'custom settings' => false
+        ),
+        'rss' => array (
+          'label'           => t ('RSS'),
+          'custom settings' => false
+        ),
+        'xml' => array (
+          'label'           => t ('XML'),
+          'custom settings' => false
+  ))));
+}
+
+/// Loads the referenced stats.
+function stat_load_multiple ($ids, $reset = false) {
+  return entity_load ('stat', $ids, array (), $reset);
+}
+
+/// Loads the referenced stat.
+function stat_load ($id, $reset = false) {
+  $stats = stat_load_multiple (array ($id), $reset);
+}
+
+/// Saves the given stat.
+function stat_save ($stat) {
+  entity_save ('stat', $stat);
+}
+
+/// Deletes the given stat.
+function stat_delete ($stat) {
+  entity_delete ('stat', entity_id ('stat', $stat));
+}
+
+/// Deletes the referenced stats. 
+function stat_delete_multiple ($ids) {
+  entity_delete_multiple ('stat', $ids);
+}
+
+/// Defines the stat subject field.
+function _stat_subject_field_create ($info) {
+}
+
+
+/// Defines the stat value stat field.
+function _stat_value_stat_field_create ($info) {
+}
+
+/// Stat Value entity access callback.
+function stat_value_access ($op, $entity, $account, $entity_type) {
+  return stat_access ($op, $entity, $account, $entity_type);
+}
+
+/**
+  @brief Implements hook_form ().
+  @details Defines the Add Stat form.
+*/
+function stat_add_form ($form, &$form_state, $stat) {
+  $form = array (
+    'name' => array (
+      '#type'     => 'textfield',
+      '#title'    => t ('Name'),
+      '#required' => true
+    )
+  );
+
+  // Attach entity fields.
+  $langcode = entity_language ('stat', $stat);
+  field_attach_form ('stat', $stat, $form, $form_state, $langcode);
+
+  return $form;
+}
+
+/**
+  @brief Implements hook_form_submit ().
+  @details Creates a new Stat from the given form values.
+*/
+function stat_add_form_submit () {
+  entity_form_submit_build_entity ('stat', 
+}
+
+function stat_value_add_form () {
+}
+
+function stat_value_add_form_submit () {
+}
+
+/// Implements hook_menu ().
+function stat_menu () {
+  return array (
+    'stat/add' => array (
+      'title' => 'Create Stat',
+      'description' => 'Displays the Create Stat form.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array ('stat_add_form'),
+      'access callback' => 'entity_access',
+      'access arguments' => array ('create', 'stat', 'stat')
+    )
+  );
+}
+

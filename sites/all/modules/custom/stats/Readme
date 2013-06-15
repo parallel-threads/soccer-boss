@@ -1,0 +1,7 @@
+Stats Module
+------------
+
+The Stats module defines the Stat entity type. Stat entities are used
+to represent statistics about other entities. Each stat consists of a
+name, a subject reference, and a set of values, where each value has a
+value, a date, and a source reference.

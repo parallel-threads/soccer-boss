@@ -1,0 +1,58 @@
+<?php
+/**
+  @brief Implements hook_schema ().
+  @details Defines the stats and stat_values
+    tables. These tables provide storage for the
+    Stat and Stat Value entity types.
+*/
+function stats_schema () {
+  return array (
+    'stats' => array (
+      'description' => 'Stores Stat entities.',
+      'fields' => array (
+        'id' => array (
+          'description' => 'The stat (entity) id.',
+          'type'        => 'serial',
+          'unsigned'    => true,
+          'not null'    => true
+        ),
+        'name' => array (
+          'description' => 'The stat\'s name.',
+          'type'        => 'text',
+          'not null'    => true
+        ),
+        'uid' => array (
+          'description' => 'The author's user id.',
+          'type'        => 'int',
+          'unsigned'    => true,
+          'not null'    => true
+        )
+      ),
+      'primary key' => array ('id')
+    ),
+    'stat_values' => array (
+      'description' => 'Stores Stat Value entities.',
+      'fields' => array (
+        'id' => array (
+          'description' => 'The stat value (entity) id.',
+          'type'        => 'serial',
+          'unsigned'    => true,
+          'not null'    => true
+        ),
+        'value' => array (
+          'description' => 'The stat value.',
+          'type'        => 'text',
+          'not null'    => true,
+          'default'     => ''
+        ),
+        'uid' => array (
+          'description' => 'The author's user id.',
+          'type'        => 'int',
+          'unsigned'    => true,
+          'not null'    => true
+        )
+      ),
+      'primary key' => array ('id')
+  ));
+}
+

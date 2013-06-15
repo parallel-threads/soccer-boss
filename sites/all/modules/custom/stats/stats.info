@@ -1,0 +1,8 @@
+name = Stats
+description = "Defines the Stat entity type."
+package = Stats
+core = 7.x
+dependencies[] = entity
+dependencies[] = entityreference
+files[] = stats.install
+files[] = stats.module
