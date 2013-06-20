@@ -16,16 +16,16 @@ function stats_schema () {
           'unsigned'    => true,
           'not null'    => true
         ),
-        'name' => array (
-          'description' => 'The stat\'s name.',
-          'type'        => 'text',
-          'not null'    => true
+        'subject' => array (
+          'description'  => 'The entity id of the subject entity.',
+          'type'         => 'int',
+          'unsigned'     => true,
+          'not null'     => true
         ),
-        'uid' => array (
-          'description' => 'The author's user id.',
-          'type'        => 'int',
-          'unsigned'    => true,
-          'not null'    => true
+        'name' => array (
+           'description' => 'The stat name.',
+           'type'        => 'text',
+           'not null'    => true
         )
       ),
       'primary key' => array ('id')
@@ -39,16 +39,20 @@ function stats_schema () {
           'unsigned'    => true,
           'not null'    => true
         ),
-        'value' => array (
-          'description' => 'The stat value.',
-          'type'        => 'text',
-          'not null'    => true,
-          'default'     => ''
-        ),
-        'uid' => array (
-          'description' => 'The author's user id.',
+        'stat' => array (
+          'description' => 'The stat id.',
           'type'        => 'int',
           'unsigned'    => true,
+          'not null'    => true
+        ),
+        'content' => array (
+          'description' => 'The stat value.',
+          'type'        => 'text',
+          'not null'    => true
+        ),
+        'date' => array (
+          'description' => 'The on which the value was measured or reported.',
+          'type'        => 'int',
           'not null'    => true
         )
       ),
@@ -56,3 +60,49 @@ function stats_schema () {
   ));
 }
 
+/**
+  @brief Implements hook_install ().
+  @details Creates the Stat and Stat Value fields.
+*/
+function stats_install () {
+  module_load_include ('inc', 'stats', 'stats.field');
+
+  // I. Create the Stat entity fields.
+  stats_create_name_field ();
+  stats_create_subject_field ();
+
+  // II. Create the Stat Value entity fields.
+  stats_create_stat_field ();
+  stats_create_value_field ();
+  stats_create_date_field ();
+
+  drupal_set_message ('Created the Stat and Stat Value entity types.');
+}
+
+/**
+  @brief Implements hook_disable ().
+  @details Deletes the Stat and Stat Value entities and fields.
+  @note The Stat entity type is deleted during
+    disable. Entities need to be deleted prior to
+    uninstall.
+*/
+function stats_disable () {
+  module_load_include ('inc', 'stats');
+
+  // I. Delete the Stat Value entities. 
+  stats_value_delete_multiple (stats_value_load_multiple ());
+
+  // II. Delete the Stat entities.
+  stats_delete_multiple (stats_load_multiple ());
+
+  // III. Delete the Stat entity fields.
+  field_delete_field ('stats_name');
+  field_delete_field ('stats_subject');
+
+  // IV. Delete the Stat Value entity fields.
+  field_delete_field ('stats_value_stat');
+  field_delete_field ('stats_value_content');
+  field_delete_field ('stats_value_date');
+
+  drupal_set_message ('Deleted the Stat and Stat Value entity types.');
+}
