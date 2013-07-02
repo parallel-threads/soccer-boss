@@ -45,13 +45,13 @@ function stats_delete_page ($statId) {
 /**
   @brief Returns the View Stat Value page.
   @param $statId (integer) the stat id.
-  @param $statValueId (integer) the stat value id.
+  @param $stat_value_id (integer) the stat value id.
   @return (array) the page render array.
 */
-function stats_value_page ($statValueId = null) {
+function stats_value_page ($stat_value_id = null) {
   module_load_include ('inc', 'stats');
   drupal_set_title ('View Stat Value');
-  $stat_value = stats_value_load ($statValueId);
+  $stat_value = stats_value_load ($stat_value_id);
   return stats_value_view (
     $stat_value ? array ($stat_value) : stats_value_load_multiple (),
     'web', null, true
@@ -60,23 +60,23 @@ function stats_value_page ($statValueId = null) {
 
 /**
   @brief Returns the Edit Stat Value page.
-  @param $statValueId (integer) the stat id.
+  @param $stat_value_id (integer) the stat id.
   @return (array) the render array.
 */
-function stats_value_edit_page ($statValueId) {
+function stats_value_edit_page ($stat_value_id) {
   drupal_set_title ('Edit Stat Value');
-  return drupal_get_form ('stats_value_edit_form', $statValueId);
+  return drupal_get_form ('stats_value_edit_form', $stat_value_id);
 }
 
 /**
   @brief Deletes the referenced stat value and
     redirects to the associated stat page.
-  @param $statValueId (integer) the stat value id.
+  @param $stat_value_id (integer) the stat value id.
 */
-function stats_value_delete_page ($statValueId) {
+function stats_value_delete_page ($stat_value_id) {
   module_load_include ('inc', 'stats');
-  $statValue = stats_value_load ($statValueId);
-  stats_value_delete ($statValueId);
+  $stat_value = stats_value_load ($stat_value_id);
+  stats_value_delete ($stat_value_id);
   drupal_set_message ('Deleted stat value.');
-  drupal_goto ('stat/' . $statValue->stat);
+  drupal_goto ('stat/' . $stat_value->stat);
 }

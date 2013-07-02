@@ -90,13 +90,13 @@ function stats_value_load ($id, $reset = false) {
 }
 
 /// Saves the given stat value.
-function stats_value_save ($statValue) {
-  return entity_save ('stat_value', $statValue);
+function stats_value_save ($stat_value) {
+  return entity_save ('stat_value', $stat_value);
 }
 
 /// Deletes the referenced stat value.
-function stats_value_delete ($statValueId) {
-  return entity_delete ('stat_value', $statValueId);
+function stats_value_delete ($stat_value_id) {
+  return entity_delete ('stat_value', $stat_value_id);
 }
 
 /// Deletes the referenced stat values.
@@ -114,9 +114,9 @@ function stats_value_delete_multiple ($ids) {
 */
 function stats_value_view ($stat_values, $view_mode = 'web', $langcode = null, $page = null) {
   $content = array ();
-  foreach ($stat_values as $statValue) {
+  foreach ($stat_values as $stat_value) {
 
-    $stat = stats_load ($statValue->stat);
+    $stat = stats_load ($stat_value->stat);
     $node = node_load ($stat->subject);
 
     $content += array (
@@ -124,7 +124,8 @@ function stats_value_view ($stat_values, $view_mode = 'web', $langcode = null, $
         '#type'   => 'markup',
         '#markup' => '<h2>Stat:</h2><p>' . l ($stat->name, "stat/$stat->id/view") . '</p>' .
                      '<h2>Subject:</h2><p>' . l ("$node->title ($stat->subject)", "node/$node->nid") . '</p>' .
-                     '<h2>Value:</h2><p>' . l ("$statValue->content", "stat/value/$statValue->id/edit") . '</p>'
+                     '<h2>Value:</h2><p>' . l ("$stat_value->content", "stat/value/$stat_value->id/edit") . '</p>' .
+                     '<h2>Date:</h2><p>'  . l (date ('F j, Y, g:i a', $stat_value->date), "stat/value/$stat_value->id/edit") . '</p>' 
     ));
   }
 

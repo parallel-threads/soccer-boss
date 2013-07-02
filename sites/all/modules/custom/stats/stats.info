@@ -8,3 +8,4 @@ files[] = stats.inc
 files[] = stats.install
 files[] = stats.module
 files[] = stats.page.inc
+files[] = stats.views_default.inc
