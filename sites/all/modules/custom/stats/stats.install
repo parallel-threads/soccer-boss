@@ -67,15 +67,6 @@ function stats_schema () {
 function stats_install () {
   module_load_include ('inc', 'stats', 'stats.field');
 
-  // I. Create the Stat entity fields.
-  stats_create_name_field ();
-  stats_create_subject_field ();
-
-  // II. Create the Stat Value entity fields.
-  stats_create_stat_field ();
-  stats_create_value_field ();
-  stats_create_date_field ();
-
   drupal_set_message ('Created the Stat and Stat Value entity types.');
 }
 
@@ -94,15 +85,6 @@ function stats_disable () {
 
   // II. Delete the Stat entities.
   stats_delete_multiple (stats_load_multiple ());
-
-  // III. Delete the Stat entity fields.
-  field_delete_field ('stats_name');
-  field_delete_field ('stats_subject');
-
-  // IV. Delete the Stat Value entity fields.
-  field_delete_field ('stats_value_stat');
-  field_delete_field ('stats_value_content');
-  field_delete_field ('stats_value_date');
 
   drupal_set_message ('Deleted the Stat and Stat Value entity types.');
 }

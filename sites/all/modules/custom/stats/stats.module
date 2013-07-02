@@ -4,10 +4,6 @@
   @brief The Stats module defines the Stat and Stat
     Value entity types. These entity types are used
     to represent statistics about other entities.
-
-
-  @TODO
-    add an entity reference field to stat_value to allow relationships in views. (or add property info to stat prop.)
 */
 
 /// Implements hook_permission ().
@@ -36,6 +32,71 @@ function stat_permission () {
 }
 
 /**
+  @brief Implements callback_entity_info_uri ().
+  @returns the URI for the given Stat.
+*/
+function stat_uri ($entity) {
+  return array ('path' => 'stat/' . $entity->id);
+}
+
+/**
+  @brief Implements callback_entity_info_uri ().
+  @returns the URI for the given Stat Value.
+*/
+function stat_value_uri ($entity) {
+  return array ('path' => 'stat/value/' . $entity->id);
+}
+
+/// Extends the EntityDefaultViewsController to assign different views handlers to fields.
+class StatViewsController extends EntityDefaultViewsController {
+
+  public function views_data () {
+    $data = parent::views_data ();
+
+    // creates the subject relationship.
+    $data ['stats']['stats_related_node'] = array (
+      'group' => t ('Stats'),
+      'title' => t ('Stats to Node'),
+      'help'  => t ('The node referenced by the stat.'),
+      'relationship' => array (
+        'handler'            => 'views_handler_relationship',
+        'label'              => t ('The node referenced by the stat.'),
+        'base'               => 'node',
+        'base field'         => 'nid',
+        'relationship field' => 'subject'
+    ));
+
+    return $data;
+  }
+}
+
+/// Extends the EntityDefaultViewsController to assign different views handlers to fields.
+class StatValueViewsController extends EntityDefaultViewsController {
+
+  public function views_data () {
+    $data = parent::views_data ();
+
+    // assigns the date field handler to the Stats: Date field.
+    $data ['stat_values']['date']['field']['handler'] = 'views_handler_field_date';
+
+    // creates the stat id relationship.
+    $data ['stat_values']['stat_values_related_stat'] = array (
+      'group' => t ('Stat Values'),
+      'title' => t ('Stat Values to Stat'),
+      'help'  => t ('The stat referenced by the stat value.'),
+      'relationship' => array (
+        'handler'            => 'views_handler_relationship',
+        'label'              => t ('The stat referenced by the stat value.'),
+        'base'               => 'stats',
+        'base field'         => 'id',
+        'relationship field' => 'stat'
+    ));
+
+    return $data;
+  }
+}
+
+/**
   @brief Implements hook_entity_info ().
   @details Defines the Stat and Stat Value entity types.
 */
@@ -47,6 +108,8 @@ function stats_entity_info () {
       'controller class'       => 'EntityAPIController',
       'base table'             => 'stats',
       'fieldable'              => true,
+      'uri callback'           => 'stat_uri',
+      'module'                 => 'stats',
       'entity keys'            => array (
         'id'    => 'id',
         'label' => 'name'
@@ -60,7 +123,7 @@ function stats_entity_info () {
           'label'           => t ('RSS'),
           'custom settings' => false
       )),
-      'views controller class' => 'EntityDefaultViewsController'
+      'views controller class' => 'StatViewsController'
     ),
     'stat_value' => array (
       'label'                  => t ('Stat Value'),
@@ -68,6 +131,8 @@ function stats_entity_info () {
       'controller class'       => 'EntityAPIController',
       'base table'             => 'stat_values',
       'fieldable'              => true,
+      'uri callback'           => 'stat_value_uri',
+      'module'                 => 'stats',
       'entity keys'            => array (
         'id'     => 'id'
       ),
@@ -80,7 +145,7 @@ function stats_entity_info () {
           'label'           => t ('RSS'),
           'custom settings' => false
       )),
-      'views controller class' => 'EntityDefaultViewsController'
+      'views controller class' => 'StatValueViewsController'
   ));
 }
 
@@ -93,16 +158,13 @@ function stats_value_label ($entity, $entity_type) {
 /// Implements hook_menu ().
 function stats_menu () {
   return array (
-    'stat' => array (
-      'title'            => t ('View Stat'),
-      'description'      => t ('Displays information about a given stat.'),
-      'page callback'    => 'stats_page',
-      'page arguments'   => array (1),
-      'access callback'  => true,
-      'access arguments' => array ('view stat entities'),
-      'type'             => MENU_NORMAL_ITEM,
-      'file'             => 'stats.page.inc'
-    ),
+    'stat/subject/autocomplete' => array (
+      'description'     => 'An autocomplete callback for the Stats subject field',
+      'page callback'   => '_stats_subject_autocomplete',
+      'access callback' => true,
+      'type'            => MENU_CALLBACK,
+      'file'            => 'stats.module'
+    ), 
     'stat/add' => array (
       'title'            => t ('Create Stat'),
       'description'      => t ('Creates a stat.'),
@@ -112,22 +174,80 @@ function stats_menu () {
       'access arguments' => array ('create stat entities'),
       'type'             => MENU_NORMAL_ITEM,
     ),
-    'stat/%/edit' => array (
-      'title'            => t ('Edit Stat'),
-      'description'      => t ('Edits a stat.'),
-      'page callback'    => 'drupal_get_form',
-      'page arguments'   => array ('stats_edit_form', 1),
-      'access callback'  => 'user_access',
-      'access arguments' => array ('edit any stat entities'),
-      'type'             => MENU_NORMAL_ITEM,
-    ),
-    'stat/value' => array (
+    'stat/value/%' => array (
       'title'            => t ('View Stat Value'),
       'description'      => t ('Displays a given stat value.'),
       'page callback'    => 'stats_value_page',
-      'access callback'  => true,
+      'page arguments'   => array (1),
+      'access callback'  => 'user_access',
       'access arguments' => array ('view stat entities'),
-      'type'             => MENU_NORMAL_ITEM,
+      'type'             => MENU_CALLBACK,
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/value/%/view' => array (
+      'title'            => t ('View Stat Value'),
+      'description'      => t ('Displays a given stat value.'),
+      'page callback'    => 'stats_value_page',
+      'page arguments'   => array (2),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('view stat entities'),
+      'type'             => MENU_LOCAL_TASK,
+      'tab_parent'       => 'stat/value',
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/value/%/edit' => array (
+      'title'            => t ('Edit Stat Value'),
+      'description'      => t ('Updates a stat value.'),
+      'page callback'    => 'stats_value_edit_page',
+      'page arguments'   => array (2),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('edit any stat entities'),
+      'tab_parent'       => 'stat/value',
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/value/%/delete' => array (
+      'title'            => t ('Delete Stat Value'),
+      'description'      => t ('Deletes a stat value.'),
+      'page callback'    => 'stats_value_delete_page',
+      'page arguments'   => array (2),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('edit any stat entities'),
+      'tab_parent'       => 'stat/value',
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/%/view' => array (
+      'title'            => t ('View Stat'),
+      'description'      => t ('Displays information about a given stat.'),
+      'page callback'    => 'stats_page',
+      'page arguments'   => array (1),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('view stat entities'),
+      'type'             => MENU_LOCAL_TASK,
+      'tab_parent'       => 'stat/%',
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/%/edit' => array (
+      'title'            => t ('Edit Stat'),
+      'description'      => t ('Updates a stat.'),
+      'page callback'    => 'stats_edit_page',
+      'page arguments'   => array (1),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('edit any stat entities'),
+      'tab_parent'       => 'stat/%',
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'stats.page.inc'
+    ),
+    'stat/%/delete' => array (
+      'title'            => t ('Delete Stat'),
+      'description'      => t ('Deletes a stat.'),
+      'page callback'    => 'stats_delete_page',
+      'page arguments'   => array (1),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('edit any stat entities'),
+      'type'             => MENU_LOCAL_TASK,
+      'tab_parent'       => 'stat/%',
       'file'             => 'stats.page.inc'
     ),
     'stat/%/value/add' => array (
@@ -137,14 +257,82 @@ function stats_menu () {
       'page arguments'   => array ('stats_value_add_form', 1),
       'access callback'  => 'user_access',
       'access arguments' => array ('create stat entities'),
-      'type'             => MENU_NORMAL_ITEM
+      'type'             => MENU_LOCAL_TASK
     ),
+    'stat/%' => array (
+      'title'            => t ('View Stat'),
+      'description'      => t ('Displays information about a given stat.'),
+      'page callback'    => 'stats_page',
+      'page arguments'   => array (1),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('view stat entities'),
+      'type'             => MENU_CALLBACK,
+      'file'             => 'stats.page.inc'
+    )
   );
 }
 
+/**
+  @brief Implements hook_entity_delete ().
+  @details Deletes every stat and stat value that
+    is associated with the entity being deleted.
+*/
+function stats_entity_delete ($entity, $type) {
+  module_load_include ('inc', 'stats');
+
+  watchdog (
+    'stats',
+    '[stats_entity_delete] entity: <pre>@entity</pre> type: @type',
+    array (
+      '@entity' => print_r ($entity, true),
+      '@type'   => $type
+  ));
+
+  $statIds = stats_get_stats (entity_id ($type, $entity));
+  foreach ($statIds as $statId) {
+    $statValueIds = stats_get_stat_values ($statId);
+    stats_value_delete_multiple ($statValueIds);
+    stats_delete ($statId);
+  }
+}
+
+/// The autocomplete callback for stats/subject/autocomplete.
+function _stats_subject_autocomplete ($input = '') {
+
+  // I. Retrieve the node records whose titles match the input.
+  $records = db_select   ('{node}', 'tbl')
+             ->fields    ('tbl', array ('nid', 'title'))
+             ->condition ('title', "%$input%", 'LIKE')
+             ->execute   ();
+
+  // II. Create the set of completions.
+  $completions = array ();
+  foreach ($records as $record) {
+    $value = $record->title . ' (' . $record->nid . ')';
+    $completions [$value] = $value;
+  } 
+
+  // III. Returns the completions in a JSON array.
+  drupal_json_output ($completions);
+} 
+
 /// Returns the Create Stat form.
 function stats_add_form ($form, &$form_state) {
-  $form = array ();
+  $form = array (
+    'subject' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Subject'),
+      '#description'       => t ('The node that this Stat applies to.'),
+      '#required'          => true,
+      '#autocomplete_path' => 'stat/subject/autocomplete'
+    ),
+    'name' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Name'),
+      '#description'       => t ('The stat name.'),
+      '#required'          => true
+  ));
+
   $stat = new stdClass ();
   field_attach_form ('stat', $stat, $form, $form_state, 
     entity_language ('stat', $stat));
@@ -157,6 +345,35 @@ function stats_add_form ($form, &$form_state) {
 }
 
 /**
+  @brief Accepts the value of the Stat: Subject
+    field and returns the referenced entity id.
+  @param $value (string) the field value.
+  @return (integer) the entity id.
+*/
+function _stats_get_subject_field_value ($value) {
+  if (preg_match("/.+\((\d+)\)/", $value, $matches)) {
+    watchdog (
+      'stats',
+      '[_stats_get_subject_field_value] matches: <pre>@matches</pre>',
+      array (
+        '@matches' => print_r ($matches, true)
+    ));
+    return $matches[1];
+  }
+  return null;
+}
+
+/**
+  @brief Accepts a node and returns the value that
+    should be diplayed in the Stat: Subject field.
+  @param $node (object) the subject node.
+  @return (string) the field value.
+*/
+function _stats_create_subject_field_value ($node) {
+  return "$node->title ($node->nid)";
+}
+
+/**
   @brief Processes the Create Stat form.
   @details Creates a Stat entity from the given
     form values.
@@ -164,12 +381,17 @@ function stats_add_form ($form, &$form_state) {
 function stats_add_form_submit ($form, &$form_state) {
   module_load_include ('inc', 'stats');
 
+  watchdog (
+    'stats',
+    '[stats_add_form_submit] form values: <pre>@form_state</pre>',
+    array (
+      '@form_state' => print_r ($form_state ['values'], true)
+  ));
+
   $stat = entity_create ('stat', array ('type' => 'stat'));
-
-  $stat->name    = $form_state ['values']['stats_name']['und'][0]['value'];
-  $stat->subject = $form_state ['values']['stats_subject']['und'][0]['target_id'];
-
   entity_form_submit_build_entity ('stat', $stat, $form, $form_state);
+
+  $stat->subject = _stats_get_subject_field_value ($form_state ['values']['subject']);
 
   if (!stats_save ($stat)) {
     watchdog (
@@ -179,6 +401,8 @@ function stats_add_form_submit ($form, &$form_state) {
         '@stat' => print_r ($stat, true)
     ));
   }
+
+  drupal_goto ("stat/$stat->id/view");
 }
 
 /// Returns the Edit Stat form.
@@ -186,11 +410,27 @@ function stats_edit_form ($form, &$form_state, $statId) {
   module_load_include ('inc', 'stats');
 
   $stat = stats_load ($statId);
+  $node = node_load ($stat->subject);
 
   $form = array (
-    'stat' => array (
+    'id' => array (
       '#type'  => 'hidden',
       '#value' => $statId
+    ),
+    'subject' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Subject'),
+      '#description'       => t ('The node that this Stat applies to.'),
+      '#default_value'     => _stats_create_subject_field_value ($node),
+      '#required'          => true,
+      '#autocomplete_path' => 'stats/subject/autocomplete'
+    ),
+    'name' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Name'),
+      '#description'       => t ('The stat name.'),
+      '#default_value'     => $stat->name,
+      '#required'          => true
   ));
 
   field_attach_form ('stat', $stat, $form, $form_state, 
@@ -198,7 +438,7 @@ function stats_edit_form ($form, &$form_state, $statId) {
 
   $form ['submit'] = array (
     '#type'  => 'submit',
-    '#value' => 'Create'
+    '#value' => 'Update'
   );
   return $form;
 }
@@ -211,20 +451,28 @@ function stats_edit_form ($form, &$form_state, $statId) {
 function stats_edit_form_submit ($form, &$form_state) {
   module_load_include ('inc', 'stats');
 
-  $stat          = stats_load ($form_state ['values']['stat']);
-  $stat->name    = $form_state ['values']['stats_name']['und'][0]['value'];
-  $stat->subject = $form_state ['values']['stats_subject']['und'][0]['target_id'];
+  watchdog (
+    'stats',
+    '[stats_edit_form_submit] form values: <pre>@form_state</pre>',
+    array (
+      '@form_state' => print_r ($form_state ['values'], true)
+  ));
 
+  $stat = stats_load ($form_state ['values']['id']);
   entity_form_submit_build_entity ('stat', $stat, $form, $form_state);
+
+  $stat->subject = _stats_get_subject_field_value ($form_state ['values']['subject']);
 
   if (!stats_save ($stat)) {
     watchdog (
       'stats',
-      '[stats_add_form_submit] Error: an error occured while trying to save a stat. stat: <pre>@stat</pre>',
+      '[stats_edit_form_submit] Error: an error occured while trying to save a stat. stat: <pre>@stat</pre>',
       array (
         '@stat' => print_r ($stat, true)
     ));
   }
+
+  drupal_goto ("stat/$stat->id/view");
 }
 
 /**
@@ -237,21 +485,34 @@ function stats_edit_form_submit ($form, &$form_state) {
 function stats_value_add_form ($form, &$form_state, $statId) {
   module_load_include ('inc', 'stats');
 
-  $form = array ();
+  $form = array (
+    'stat' => array (
+      '#type'  => 'hidden',
+      '#value' => $statId
+    ),
+    'content' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Value'),
+      '#description'       => t ('The stat value.'),
+      '#required'          => true
+    ),
+    'date' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Date'),
+      '#description'       => t ('The date on which this stat value was measured or reported.'),
+      '#default_value'     => date ('F j, Y, g:i a'),
+      '#required'          => true
+  ));
+
   $statValue = new stdClass ();
   field_attach_form ('stat_value', $statValue, $form, $form_state,
     entity_language ('stat_value', $statValue));
   
-  $stat = is_null ($statId) ? null : stats_load ($statId);
-  if (!is_null ($stat)) {
-    $form ['stats_value_stat']['#type'] = 'hidden';    
-    $form ['stats_value_stat']['und'][0]['target_id']['#default_value'] = $stat->name . ' (' . $statId . ')';
-  }
-
   $form ['submit'] = array (
     '#type'  => 'submit',
     '#value' => 'Create'
   );
+
   return $form;
 }
 
@@ -263,19 +524,97 @@ function stats_value_add_form ($form, &$form_state, $statId) {
 function stats_value_add_form_submit ($form, &$form_state) {
   module_load_include ('inc', 'stats');
 
-  $statValue = entity_create ('stat_value', array ('type' => 'stat_value'));
-  $statValue->stat    = $form_state ['values']['stats_value_stat']['und'][0]['target_id'];
-  $statValue->content = $form_state ['values']['stats_value_content']['und'][0]['value'];
-  $statValue->date    = $form_state ['values']['stats_value_date']['und'][0]['value'];
+  watchdog (
+    'stats',
+    '[stats_value_add_form_submit] form values: <pre>@form_state</pre>',
+    array (
+      '@form_state' => print_r ($form_state ['values'], true)
+  ));
 
+  $statValue = entity_create ('stat_value', array ('type' => 'stat_value'));
   entity_form_submit_build_entity ('stat_value', $statValue, $form, $form_state);
 
-   if (!stats_value_save ($statValue)) {
-     watchdog (
-       'stats',
-       '[stats_value_add_form_submit] Error: an error occured while trying to save a stat value. <pre>@statValue</pre>',
-       array (
-         '@statValue' => print_r ($statValue, true)
-     ));
-   }
+  $statValue->date = strtotime ($form_state ['values']['date']);
+
+  if (!stats_value_save ($statValue)) {
+    watchdog (
+      'stats',
+      '[stats_value_add_form_submit] Error: an error occured while trying to save a stat value. <pre>@statValue</pre>',
+      array (
+        '@statValue' => print_r ($statValue, true)
+    ));
+  }
+
+  drupal_goto ("stat/value/$statValue->id/view");
+}
+
+/**
+  @brief Returns the Edit Stat Value form.
+  @param $form (array) the form array.
+  @param $form_state (array) the form state array.
+  @param $statId (integer) the stat id.
+  @return (array) the form array.
+*/
+function stats_value_edit_form ($form, &$form_state, $statValueId) {
+  module_load_include ('inc', 'stats');
+
+  $statValue = stats_value_load ($statValueId);
+
+  $form = array (
+    'id' => array (
+      '#type'  => 'hidden',
+      '#value' => $statValueId
+    ),
+    'stat' => array (
+      '#type'  => 'hidden',
+      '#value' => $statValue->stat
+    ),
+    'content' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Content'),
+      '#description'       => t ('The stat value.'),
+      '#default_value'     => $statValue->content,
+      '#required'          => true
+    ),
+    'date' => array (
+      '#type'              => 'textfield',
+      '#title'             => t ('Date'),
+      '#description'       => t ('The date on which this stat value was measured or reported.'),
+      '#default_value'     => date ('F j, Y, g:i a', $statValue->date),
+      '#required'          => true
+  ));
+
+  field_attach_form ('stat_value', $statValue, $form, $form_state,
+    entity_language ('stat_value', $statValue));
+
+  $form ['submit'] = array (
+    '#type'  => 'submit',
+    '#value' => 'Update'
+  );
+  return $form;
+}
+
+/**
+  @brief Processes the Edit Stat Value form.
+  @details Updates a Stat Value entity using the
+    given form values.
+*/
+function stats_value_edit_form_submit ($form, &$form_state) {
+  module_load_include ('inc', 'stats');
+
+  $statValue          = stats_load ($form_state ['values']['id']);
+  entity_form_submit_build_entity ('stat_value', $statValue, $form, $form_state);
+
+  $statValue->date    = strtotime ($form_state ['values']['date']);
+
+  if (!stats_value_save ($statValue)) {
+    watchdog (
+      'stats',
+      '[stats_value_add_form_submit] Error: an error occured while trying to save a stat value. <pre>@statValue</pre>',
+      array (
+        '@statValue' => print_r ($statValue, true)
+    ));
+  }
+
+  drupal_goto ("stat/value/$statValue->id/view");
 }

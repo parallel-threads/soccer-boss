@@ -1,5 +1,5 @@
 name = Stats
-description = "Defines the Stat entity type."
+description = "Defines the Stat and Stat Value entity types."
 package = Stats
 core = 7.x
 dependencies[] = entity

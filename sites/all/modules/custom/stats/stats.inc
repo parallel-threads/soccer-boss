@@ -16,14 +16,27 @@ function stats_load ($id, $reset = false) {
   return entity_load_single ('stat', $id, $reset);
 }
 
+/**
+  @brief Returns the stats that reference the given
+    entity in their subject fields.
+  @param $id (integer) the subject entity id.
+  @return (array) the stat ids.
+*/
+function stats_get_stats ($id) {
+  $records = db_select   ('{stats}', 'tbl')
+             ->fields    ('tbl', array ('id'))
+             ->condition ('subject', $id)
+             ->execute   ();
+
+  $ids = array ();
+  foreach ($records as $record) {
+    $ids [] = $record->id;
+  }
+  return $ids;
+} 
+
 /// Saves the given stat.
 function stats_save ($stat) {
-  watchdog (
-    'stats',
-    '[stats_save] stat: <pre>@stat</pre>',
-    array (
-      '@stat' => print_r ($stat, true)
-  ));
   return entity_save ('stat', $stat);
 }
 
@@ -36,12 +49,24 @@ function stats_save ($stat) {
     should be rendered without its title.
 */
 function stats_view ($stats, $view_mode = 'web', $langcode = null, $page = null) {
-  return entity_view ('stat', $stats, $view_mode, $langcode, $page);
+  $content = entity_view ('stat', $stats, $view_mode, $langcode, $page);
+
+  foreach ($stats as $stat) {
+    $node = node_load ($stat->subject);
+    $content += array (
+      'content' => array (
+        '#type'   => 'markup',
+        '#markup' => '<h2>Name:</h2><p>' . $stat->name . '</p>' .
+                     '<h2>Subject:</h2><p>' . l ("$node->title ($stat->subject)", "node/$node->nid") . '</p>'
+    ));
+  }
+
+  return $content;
 }
 
 /// Deletes the given stat.
-function stats_delete ($stat) {
-  return entity_delete ('stat', entity_id ('stat', $stat));
+function stats_delete ($id) {
+  return entity_delete ('stat', $id);
 }
 
 /**
@@ -66,18 +91,12 @@ function stats_value_load ($id, $reset = false) {
 
 /// Saves the given stat value.
 function stats_value_save ($statValue) {
-  watchdog (
-    'stats',
-    '[stats_value_save] stat_value: <pre>@statValue</pre>',
-    array (
-      '@statValue' => print_r ($statValue)
-  ));
   return entity_save ('stat_value', $statValue);
 }
 
 /// Deletes the referenced stat value.
-function stats_value_delete ($statValue) {
-  return entity_delete ('stat_value', entity_id ('stat_value', $statValue));
+function stats_value_delete ($statValueId) {
+  return entity_delete ('stat_value', $statValueId);
 }
 
 /// Deletes the referenced stat values.
@@ -94,5 +113,40 @@ function stats_value_delete_multiple ($ids) {
     should be rendered without its title.
 */
 function stats_value_view ($stat_values, $view_mode = 'web', $langcode = null, $page = null) {
-  return entity_view ('stat_value', $stat_values, $view_mode, $langcode, $page);
+  $content = array ();
+  foreach ($stat_values as $statValue) {
+
+    $stat = stats_load ($statValue->stat);
+    $node = node_load ($stat->subject);
+
+    $content += array (
+      'content' => array (
+        '#type'   => 'markup',
+        '#markup' => '<h2>Stat:</h2><p>' . l ($stat->name, "stat/$stat->id/view") . '</p>' .
+                     '<h2>Subject:</h2><p>' . l ("$node->title ($stat->subject)", "node/$node->nid") . '</p>' .
+                     '<h2>Value:</h2><p>' . l ("$statValue->content", "stat/value/$statValue->id/edit") . '</p>'
+    ));
+  }
+
+  return $content;
+}
+
+/**
+  @brief Returns the stat values associated with
+    the given stat sorted by date.
+  @param $statId (integer) the stat id.
+  @return (array) the stat value ids.
+*/
+function stats_get_stat_values ($statId) {
+  $records = db_select   ('{stat_value}', 'tbl')
+             ->fields    ('tbl', array ('id'))
+             ->condition ('stat', $statId)
+             ->orderBy   ('date', 'DESC')
+             ->execute   (); 
+
+  $ids = array (); 
+  foreach ($records as $record) {
+    $ids [] = $record->id;
+  }
+  return $ids;
 }
