@@ -4,6 +4,7 @@ package = Stats
 core = 7.x
 dependencies[] = entity
 dependencies[] = entityreference
+dependencies[] = views
 files[] = stats.inc
 files[] = stats.install
 files[] = stats.module
