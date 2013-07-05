@@ -139,7 +139,7 @@ function stats_value_view ($stat_values, $view_mode = 'web', $langcode = null, $
   @return (array) the stat value ids.
 */
 function stats_get_stat_values ($statId) {
-  $records = db_select   ('{stat_value}', 'tbl')
+  $records = db_select   ('{stat_values}', 'tbl')
              ->fields    ('tbl', array ('id'))
              ->condition ('stat', $statId)
              ->orderBy   ('date', 'DESC')
