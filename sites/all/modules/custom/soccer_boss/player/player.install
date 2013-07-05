@@ -1,0 +1,44 @@
+<?php
+
+/**
+  @brief Implements hook_install ().
+  @details Creates the Player content type and
+    vocabularies.
+*/
+function player_install () {
+  module_load_include ('inc', 'player');
+
+  // I. Create the Player vocabularies.
+  player_create_vocabularies ();
+  drupal_set_message ('Created the Player vocabularies.');
+
+  // II. Create the Player content type.
+  player_create_player_content_type ();
+  drupal_set_message ('Created/Updated the Player content type.');
+}
+
+/**
+  @brief Implements hook_uninstall ().
+  @details Deletes the Player content type and
+    vocabularies.
+*/
+function player_uninstall () {
+  module_load_include ('inc', 'player');
+
+  // I. Deletes the Player content type.
+  player_delete_player_nodes ();
+  node_type_delete (player_PLAYER_TYPE);
+
+  field_delete_field ('player_player_photo');
+  field_delete_field ('player_player_first_name');
+  field_delete_field ('player_player_last_name');
+  field_delete_field ('player_player_height');
+  field_delete_field ('player_player_weight');
+  field_delete_field ('player_player_birth_date');
+
+  drupal_set_message ('Deleted the Player content type and nodes.');
+
+  // II. Delete the Player vocabularies.
+  player_delete_vocabularies ();
+  drupal_set_message ('Deleted the Player vocabularies.');
+}

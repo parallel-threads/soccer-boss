@@ -1,0 +1,17 @@
+Soccer Boss: Player Module Readme
+---------------------------------
+
+The Player module defines the Player content type for the Soccer Boss
+site. The Player Content type represents amateur soccer players and
+includes links to important stats. The module also defines the Player
+user role and its associated privileges. This role is granted to users
+who want to track their personal development on the site.
+
+Specifically, the Player module defines the following components:
+
+  Content Types:
+    1. Player
+       Represents amateur soccer players.
+  User Roles:
+    1. Player
+       Users who want to track their personal progress using the site.

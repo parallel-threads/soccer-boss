@@ -1,0 +1,7 @@
+<?php
+/**
+  @file
+  @brief The Player module defines the Player
+    content type and user role. This file contains
+    the necessary hook definitions.
+*/
