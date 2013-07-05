@@ -2,6 +2,7 @@ name = Player
 description = "Defines the Player content type and user role."
 package = SoccerBoss
 core = 7.x
+dependencies[] = date
 dependencies[] = entityreference
 dependencies[] = stats
 dependencies[] = taxonomy_csv
