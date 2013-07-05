@@ -24,8 +24,13 @@ function player_install () {
 */
 function player_uninstall () {
   module_load_include ('inc', 'player');
+  module_load_include ('inc', 'player', 'player.views_default');
 
-  // I. Deletes the Player content type.
+  // I. Deletes the Player views.
+  player_delete_views ();
+  drupal_set_message ('Delete the Player views.');
+
+  // II. Deletes the Player content type.
   player_delete_player_nodes ();
   node_type_delete (player_PLAYER_TYPE);
 
@@ -38,7 +43,7 @@ function player_uninstall () {
 
   drupal_set_message ('Deleted the Player content type and nodes.');
 
-  // II. Delete the Player vocabularies.
+  // III. Delete the Player vocabularies.
   player_delete_vocabularies ();
   drupal_set_message ('Deleted the Player vocabularies.');
 }

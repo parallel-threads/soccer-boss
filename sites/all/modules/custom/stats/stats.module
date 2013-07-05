@@ -19,14 +19,6 @@ function stats_views_api () {
     View Stat page.
 */
 function stats_block_info_alter (&$blocks, $theme, $code_blocks) {
-
-  watchdog (
-    'stats',
-    '[stats_block_info_alter] blocks: <pre>@blocks</pre>',
-    array (
-      '@blocks' => print_r ($blocks, true)
-  ));
-
   if (empty ($blocks ['views']['stat_values-block']['pages'])) {
     $blocks ['views']['stat_values-block']['status']     = 1;
     $blocks ['views']['stat_values-block']['region']     = 'content';

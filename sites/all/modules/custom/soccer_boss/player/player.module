@@ -5,3 +5,36 @@
     content type and user role. This file contains
     the necessary hook definitions.
 */
+
+/// Implements hook_views_api (). 
+function player_views_api () {
+  return array ('api' => 3.0);
+}
+
+/**
+  @brief Implements hook_block_info_alter ().
+  @details
+    Restricts the player_stats and player_vitals to
+    the Player page.
+*/
+function player_block_info_alter (&$blocks, $theme, $code_blocks) {
+  watchdog (
+    'player',
+    '[player_block_info_alter] blocks: <pre>@blocks</pre>',
+    array (
+      '@blocks' => print_r ($blocks, true)
+  ));
+
+  if (empty ($blocks ['views']['player_stats-block']['pages'])) {
+    $blocks ['views']['player_stats-block']['status']     = 1;
+    $blocks ['views']['player_stats-block']['region']     = 'content';
+    $blocks ['views']['player_stats-block']['visibility'] = 1;
+    $blocks ['views']['player_stats-block']['pages']      = 'node/*';
+  }
+  if (empty ($blocks ['views']['player_vitals-block']['pages'])) {
+    $blocks ['views']['player_vitals-block']['status']     = 1;
+    $blocks ['views']['player_vitals-block']['region']     = 'content';
+    $blocks ['views']['player_vitals-block']['visibility'] = 1;
+    $blocks ['views']['player_vitals-block']['pages']      = 'node/*';
+  }
+}
