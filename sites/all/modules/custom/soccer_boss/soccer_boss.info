@@ -1,0 +1,11 @@
+name = Soccer Boss
+description = "Defines the core content types, views, user roles, etc for the Soccer Boss site."
+package = SoccerBoss
+core = 7.x
+dependencies[] = date
+dependencies[] = entityreference
+dependencies[] = taxonomy_csv
+files[] = soccer_boss.field.inc
+files[] = soccer_boss.inc
+files[] = soccer_boss.install
+files[] = soccer_boss.module

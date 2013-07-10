@@ -1,0 +1,30 @@
+<?php
+/**
+  @file
+*/
+
+/// Implements hook_view_api ().
+function soccer_boss_views_api () {
+  return array ('api' => 3.0);
+}
+
+/**
+  @brief Implements hook_block_info_alter ().
+  @details
+    Restricts the player_stats and player_vitals to
+    the Player page.
+*/
+function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
+  if (empty ($blocks ['views']['soccer_boss_player_stats-block']['pages'])) {
+    $blocks ['views']['player_stats-block']['status']     = 1;
+    $blocks ['views']['player_stats-block']['region']     = 'content';
+    $blocks ['views']['player_stats-block']['visibility'] = 1;
+    $blocks ['views']['player_stats-block']['pages']      = 'node/*';
+  }
+  if (empty ($blocks ['views']['soccer_boss_player_vitals-block']['pages'])) {
+    $blocks ['views']['player_vitals-block']['status']     = 1;
+    $blocks ['views']['player_vitals-block']['region']     = 'content';
+    $blocks ['views']['player_vitals-block']['visibility'] = 1;
+    $blocks ['views']['player_vitals-block']['pages']      = 'node/*';
+  }
+}
