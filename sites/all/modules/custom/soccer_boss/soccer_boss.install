@@ -23,6 +23,7 @@ function soccer_boss_install () {
 
   // III. Creates the default user roles.
   soccer_boss_create_roles ();
+  drupal_set_message ('Created the Coach and Player user roles.');
 }
 
 /**
@@ -42,4 +43,5 @@ function soccer_boss_uninstall () {
 
   // III. Deletes the default user roles.
   soccer_boss_delete_roles ();
+  drupal_set_message ('Deleted the Coach and Player user roles.');
 }
