@@ -8,6 +8,7 @@
 function soccer_boss_views_default_views () {
   $views = array ();
   foreach (array (
+    soccer_boss_player_game_stats_view (),
     soccer_boss_player_stats_view (),
     soccer_boss_player_vitals_view ()
   ) as $view) {
@@ -24,6 +25,99 @@ function soccer_boss_delete_views () {
 }
 
 // ----- The following section contains the exported views bundled into functions -----
+
+/// Returns the Player Game Stats view.
+function soccer_boss_player_game_stats_view () {
+  $view = new view();
+  $view->name = 'player_game_stats';
+  $view->description = 'Lists a player\'s game stats.';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'Player Game Stats';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Player Game Stats';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '20';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['soccer_boss_game_stats_game_target_id']['id'] = 'soccer_boss_game_stats_game_target_id';
+  $handler->display->display_options['relationships']['soccer_boss_game_stats_game_target_id']['table'] = 'field_data_soccer_boss_game_stats_game';
+  $handler->display->display_options['relationships']['soccer_boss_game_stats_game_target_id']['field'] = 'soccer_boss_game_stats_game_target_id';
+  $handler->display->display_options['relationships']['soccer_boss_game_stats_game_target_id']['required'] = TRUE;
+  /* Field: Content revision: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node_revision';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'soccer_boss_game_stats_game_target_id';
+  $handler->display->display_options['fields']['title']['label'] = 'Match';
+  /* Field: Content: Date */
+  $handler->display->display_options['fields']['soccer_boss_game_date']['id'] = 'soccer_boss_game_date';
+  $handler->display->display_options['fields']['soccer_boss_game_date']['table'] = 'field_data_soccer_boss_game_date';
+  $handler->display->display_options['fields']['soccer_boss_game_date']['field'] = 'soccer_boss_game_date';
+  $handler->display->display_options['fields']['soccer_boss_game_date']['relationship'] = 'soccer_boss_game_stats_game_target_id';
+  $handler->display->display_options['fields']['soccer_boss_game_date']['label'] = 'Match Date';
+  $handler->display->display_options['fields']['soccer_boss_game_date']['settings'] = array(
+    'format_type' => 'date_only',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+  );
+  /* Field: Content: Assists */
+  $handler->display->display_options['fields']['soccer_boss_game_stats_assists']['id'] = 'soccer_boss_game_stats_assists';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_assists']['table'] = 'field_data_soccer_boss_game_stats_assists';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_assists']['field'] = 'soccer_boss_game_stats_assists';
+  /* Field: Content: Goals */
+  $handler->display->display_options['fields']['soccer_boss_game_stats_goals']['id'] = 'soccer_boss_game_stats_goals';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_goals']['table'] = 'field_data_soccer_boss_game_stats_goals';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_goals']['field'] = 'soccer_boss_game_stats_goals';
+  /* Field: Content: Minutes */
+  $handler->display->display_options['fields']['soccer_boss_game_stats_minutes']['id'] = 'soccer_boss_game_stats_minutes';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_minutes']['table'] = 'field_data_soccer_boss_game_stats_minutes';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_minutes']['field'] = 'soccer_boss_game_stats_minutes';
+  /* Field: Content: Shots */
+  $handler->display->display_options['fields']['soccer_boss_game_stats_shots']['id'] = 'soccer_boss_game_stats_shots';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_shots']['table'] = 'field_data_soccer_boss_game_stats_shots';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_shots']['field'] = 'soccer_boss_game_stats_shots';
+  /* Field: Content: Shots On Goal */
+  $handler->display->display_options['fields']['soccer_boss_game_stats_sog']['id'] = 'soccer_boss_game_stats_sog';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_sog']['table'] = 'field_data_soccer_boss_game_stats_sog';
+  $handler->display->display_options['fields']['soccer_boss_game_stats_sog']['field'] = 'soccer_boss_game_stats_sog';
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'soccer_boss_player_game_stats' => 'soccer_boss_player_game_stats',
+  );
+
+  /* Display: Block */
+  $handler = $view->new_display('block', 'Block', 'block');
+
+  return $view;
+}
 
 /// Returns the Player Stats view.
 function soccer_boss_player_stats_view () {

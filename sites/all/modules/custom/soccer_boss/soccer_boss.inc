@@ -185,7 +185,7 @@ function soccer_boss_player_game_stats_content_type () {
       'name'        => $t ('Player Game Stats'),
       'description' => $t ('Represents player game stats.'),
       'help'        => $t ('Represents player game stats.'),
-      'has_title'   => true,
+      'has_title'   => false,
       'base'        => 'node_content',
       'custom'      => false,
       'modified'    => true,
@@ -244,10 +244,23 @@ function soccer_boss_content_types () {
         'soccer_boss_player_weight'     => 'soccer_boss_create_player_weight_field',
         'soccer_boss_player_birth_date' => 'soccer_boss_create_player_birth_date_field'
     )),
+    soccer_boss_PLAYER_GAME_STATS_TYPE => array (
+      'type'       => soccer_boss_player_game_stats_content_type (),
+      'body_label' => 'Commentary',
+      'fields'     => array (
+        'soccer_boss_game_stats_player'  => 'soccer_boss_create_player_game_stats_player_field',
+        'soccer_boss_game_stats_game'    => 'soccer_boss_create_player_game_stats_game_field',
+        'soccer_boss_game_stats_minutes' => 'soccer_boss_create_player_game_stats_minutes_field',
+        'soccer_boss_game_stats_goals'   => 'soccer_boss_create_player_game_stats_goals_field',
+        'soccer_boss_game_stats_assists' => 'soccer_boss_create_player_game_stats_assists_field',
+        'soccer_boss_game_stats_shots'   => 'soccer_boss_create_player_game_stats_shots_field',
+        'soccer_boss_game_stats_sog'     => 'soccer_boss_create_player_game_stats_sog_field'
+    )),
     soccer_boss_TEAM_TYPE => array (
       'type'       => soccer_boss_team_content_type (),
       'body_label' => 'Description',
       'fields'     => array (
+        'soccer_boss_team_logo'    => 'soccer_boss_create_team_logo_field',
         'soccer_boss_team_coach'   => 'soccer_boss_create_team_coach_field'
     ))
   );
@@ -268,7 +281,7 @@ function soccer_boss_create_content_types () {
     }
 
     // III. disable commenting.
-    variable_set ('soccer_boss_' . $name, '1');
+    variable_set ($name, '0');
   }
 }
 

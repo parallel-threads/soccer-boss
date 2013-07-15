@@ -5,6 +5,8 @@
     fields associated with the core content types.
 */
 
+// ----- I. Defines generic field creation functions. -----
+
 /**
   @brief Creats a photo field that has the given properties.
   @param $description (array) a field description.
@@ -26,7 +28,7 @@ function soccer_boss_create_photo_field ($description) {
     'label'             => $description ['label'],
     'description'       => $description ['description'],
     'instance_settings' => array (
-      'file_extensions' => 'jpg jpeg',
+      'file_extensions' => 'jpg jpeg png',
       'alt_field'       => 1,
       'title_field'     => 1
   )));
@@ -147,7 +149,7 @@ function soccer_boss_create_date_field ($description) {
 }
 
 
-// ----- I. Defines the Coach fields. -----
+// ----- II. Defines the Coach fields. -----
 
 /// Creates the Photo field for the Coach content type.
 function soccer_boss_create_coach_photo_field () {
@@ -188,7 +190,7 @@ function soccer_boss_create_coach_last_name_field () {
   ));
 }
 
-// ----- II. Defines the Game fields. -----
+// ----- III. Defines the Game fields. -----
 
 /// Creates the Teams field for the Game content type.
 function soccer_boss_create_game_teams_field () {
@@ -200,7 +202,7 @@ function soccer_boss_create_game_teams_field () {
       'label'          => t ('Teams'),
       'description'    => t ('The Teams involved in the match.'),
       'cardinality'    => 2,
-      'target_bundles' => soccer_boss_TEAM_TYPE
+      'target_bundles' => array (soccer_boss_TEAM_TYPE)
   ));
 }
 
@@ -230,7 +232,7 @@ function soccer_boss_create_game_score_field () {
   ));
 }
 
-// ----- III. Defines the Player fields. -----
+// ----- IV. Defines the Player fields. -----
 
 /// Creates the Photo field for Player content type.
 function soccer_boss_create_player_photo_field () {
@@ -281,7 +283,7 @@ function soccer_boss_create_player_team_field () {
       'label'          => t ('Team'),
       'description'    => t ('The player\'s team.'),
       'cardinality'    => 1,
-      'target_bundles' => array (team_TEAM_TYPE)
+      'target_bundles' => array (soccer_boss_TEAM_TYPE)
   ));
 }
 
@@ -338,7 +340,115 @@ function soccer_boss_create_player_birth_date_field () {
   ));
 }
 
-// ----- IV. Defines the Team fields. -----
+// ----- V. Defines the Player Game Stats fields. -----
+
+/// Creates the Player field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_player_field () {
+  soccer_boss_create_entity_reference_field (
+    array (
+      'name'           => 'soccer_boss_game_stats_player',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'          => t ('Player'),
+      'description'    => t ('The player.'),
+      'cardinality'    => 1,
+      'target_bundles' => array (soccer_boss_PLAYER_TYPE)
+  ));
+}
+
+/// Creates the Game field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_game_field () {
+  soccer_boss_create_entity_reference_field (
+    array (
+      'name'           => 'soccer_boss_game_stats_game',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'          => t ('Game'),
+      'description'    => t ('The match.'),
+      'cardinality'    => 1,
+      'target_bundles' => array (soccer_boss_GAME_TYPE)
+  ));
+}
+
+/// Creates the Minutes field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_minutes_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_game_stats_minutes',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'       => t ('Minutes'),
+      'description' => t ('The number of minutes that the player participated in the match.'),
+      'cardinality' => 1
+  ));
+}
+
+/// Creates the Goals field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_goals_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_game_stats_goals',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'       => t ('Goals'),
+      'description' => t ('The number of goals scored by the player during the match.'),
+      'cardinality' => 1
+  ));
+}
+
+/// Creates the Assists field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_assists_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_game_stats_assists',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'       => t ('Assists'),
+      'description' => t ('The number of assists made by the player during the match.'),
+      'cardinality' => 1
+  ));
+}
+
+/// Creates the Shots field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_shots_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_game_stats_shots',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'       => t ('Shots'),
+      'description' => t ('The number of shots made by the player during the match.'),
+      'cardinality' => 1
+  ));
+}
+
+/// Creates the Shots on Goal (SOG) field for the Player Game Stats content type.
+function soccer_boss_create_player_game_stats_sog_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_game_stats_sog',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PLAYER_GAME_STATS_TYPE,
+      'label'       => t ('Shots On Goal'),
+      'description' => t ('The number of shots on the goal made by the player during the match.'),
+      'cardinality' => 1
+  ));
+}
+
+// ----- VI. Defines the Team fields. -----
+
+/// Creates the Logo field for the Team content type.
+function soccer_boss_create_team_logo_field () {
+  soccer_boss_create_photo_field (
+    array (
+      'name'        => 'soccer_boss_team_logo',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_TEAM_TYPE,
+      'label'       => t ('Logo'),
+      'description' => t ('The Team\'s logo.'),
+      'cardinality' => 1
+  ));
+}
 
 /// Creates the Coach field for the Team content type.
 function soccer_boss_create_team_coach_field () {
