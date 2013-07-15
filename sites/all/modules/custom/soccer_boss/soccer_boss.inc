@@ -22,6 +22,7 @@ define ('soccer_boss_PLAYER_GAME_STATS_TYPE', 'soccer_boss_player_game_stats');
 
 /// Defines the team content type's name.
 define ('soccer_boss_TEAM_TYPE', 'soccer_boss_team');
+ 
 
 // ----- II. Defines the vocabularies -----
 
@@ -328,5 +329,101 @@ function soccer_boss_get_nodes ($type) {
 function soccer_boss_delete_nodes ($type) {
   foreach (soccer_boss_get_nodes ($type) as $nid) {
     node_delete ($nid);
+  }
+}
+
+// ----- V. Defines the core user roles. -----
+
+define ('soccer_boss_PLAYER_ROLE', 'soccer_boss_player');
+define ('soccer_boss_COACH_ROLE', 'soccer_boss_coach');
+
+/**
+  @brief Creates the given user role.
+  @param $name (string) the role name.
+  @return (boolean) returns true iff the role was 
+    created successfully.
+  @note This function will display and log an error
+    message on failure.
+*/
+function soccer_boss_create_role ($name) {
+  if (!user_role_load_by_name ($name)) {
+    if (!user_role_save ((object) array ('name' => $name))) {
+      $msg = "Error: an error occured while trying to create the $name role.";
+      drupal_set_message ($msg, 'error');
+      watchdog (
+        'soccer_boss',
+        '[soccer_boss_create_role] ' . $msg,
+        array (), 
+        WATCHDOG_ERROR
+      );
+    }
+  }
+}
+
+/**
+  @brief Assigns the given permissions to the role
+    that has the given name.
+  @param $name (string) the role name.
+  @param $permissions (array) the permission names.
+*/
+function soccer_boss_grant_permissions ($name, $permissions) {
+  $role = user_role_load_by_name ($name);
+  user_role_grant_permissions ($role->rid, $permissions);
+}
+
+/**
+  @brief Returns a list of the core user roles and
+    their permissions.
+  @return (array) the core user roles.
+*/
+function soccer_boss_roles () {
+  return array (
+    soccer_boss_PLAYER_ROLE => array (
+      'create '     . soccer_boss_PLAYER_TYPE            . ' content', 
+      'edit own '   . soccer_boss_PLAYER_TYPE            . ' content', 
+      'delete own ' . soccer_boss_PLAYER_TYPE            . ' content',
+      'create '     . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+      'edit own '   . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+      'delete own ' . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+    ),
+    soccer_boss_COACH_ROLE => array (
+      'create '     . soccer_boss_PLAYER_TYPE            . ' content', 
+      'edit any '   . soccer_boss_PLAYER_TYPE            . ' content', 
+      'delete any ' . soccer_boss_PLAYER_TYPE            . ' content', 
+      'create '     . soccer_boss_COACH_TYPE             . ' content',
+      'edit own '   . soccer_boss_COACH_TYPE             . ' content',
+      'delete own ' . soccer_boss_COACH_TYPE             . ' content',
+      'create '     . soccer_boss_GAME_TYPE              . ' content',
+      'edit any '   . soccer_boss_GAME_TYPE              . ' content',
+      'delete any ' . soccer_boss_GAME_TYPE              . ' content',
+      'create '     . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+      'edit any '   . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+      'delete any ' . soccer_boss_PLAYER_GAME_STATS_TYPE . ' content',
+      'create '     . soccer_boss_TEAM_TYPE              . ' content',
+      'edit own '   . soccer_boss_TEAM_TYPE              . ' content',
+      'delete own ' . soccer_boss_TEAM_TYPE              . ' content',
+  ));
+}
+
+
+/**
+  @brief Creates the core user roles and assigns
+    them their default permissions.
+*/
+function soccer_boss_create_roles () {
+  foreach (soccer_boss_roles () as $name => $permissions) {
+    // I. create the user role.
+    soccer_boss_create_role ($name);
+
+    // II. assign the default permissions.
+    soccer_boss_grant_permissions ($permissions);
+  }
+}
+
+/// Deletes the core user roles.
+function soccer_boss_delete_roles () {
+  foreach (array_keys (soccer_boss_roles ()) as $name) {
+    // I. delete the user role.
+    user_role_delete ($name);
   }
 }

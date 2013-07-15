@@ -20,6 +20,9 @@ function soccer_boss_install () {
   // II. Creates the content types.
   soccer_boss_create_content_types ();
   drupal_set_message ('Created/Updated the Coach, Game, Player, and Team content types.');
+
+  // III. Creates the default user roles.
+  soccer_boss_create_roles ();
 }
 
 /**
@@ -36,4 +39,7 @@ function soccer_boss_uninstall () {
   // II. Deletes the content types and their nodes.
   soccer_boss_delete_content_types ();
   drupal_set_message ('Deleted the Coach, Game, Player, and Team content types.');
+
+  // III. Deletes the default user roles.
+  soccer_boss_delete_roles ();
 }
