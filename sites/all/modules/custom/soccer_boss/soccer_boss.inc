@@ -416,7 +416,7 @@ function soccer_boss_create_roles () {
     soccer_boss_create_role ($name);
 
     // II. assign the default permissions.
-    soccer_boss_grant_permissions ($permissions);
+    soccer_boss_grant_permissions ($name, $permissions);
   }
 }
 
