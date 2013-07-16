@@ -427,3 +427,76 @@ function soccer_boss_delete_roles () {
     user_role_delete ($name);
   }
 }
+
+// ----- VI. Block visibility functions -----
+
+/**
+  @brief Restricts the given block to the given content types.
+  @param $delta (string) the block delta.
+  @param $type (string) the content type.
+  @param $module (string) the module that defined the block.
+*/
+function soccer_boss_set_block_visibility ($delta, $type, $module) {
+  db_insert ('block_node_type')
+    ->fields (array ('type', 'module', 'delta'))
+    ->values (array (
+        'type'   => $type,
+        'module' => $module,
+        'delta'  => $delta
+      ))
+    ->execute ();
+}
+
+/**
+  @brief Returns an array listing those blocks
+    whose visibility settings are overriden by this
+    module.
+  @return (array) the settings array.
+*/
+function soccer_boss_block_settings () {
+  return array (
+    'player_stats-block'  => array (
+      'type'   => soccer_boss_PLAYER_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
+    'player_vitals-block' => array (
+      'type'   => soccer_boss_PLAYER_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
+    'team_games-block' => array (
+      'type'   => soccer_boss_TEAM_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
+    'team_roster-block' => array (
+      'type'   => soccer_boss_TEAM_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+  ));
+}
+
+/**
+  @brief Sets the default visibilities for the core blocks.
+  @see soccer_boss_block_info_alter ().
+*/
+function soccer_boss_set_block_visibilities () {
+  foreach (soccer_boss_block_settings () as $delta => $settings) {
+    soccer_boss_set_block_visibility (
+      $delta,
+      $settings ['type'],
+      $settings ['module']
+    );
+  }
+}
+
+/// Unsets the visibility settings for the core blocks.
+function soccer_boss_clear_block_visibilities () {
+  foreach (soccer_boss_block_settings () as $delta => $settings) {
+    db_delete ('block_node_type')
+      ->condition ('delta', $delta) 
+      ->condition ('module', $settings ['module'])
+      ->execute   ();
+  }
+}
