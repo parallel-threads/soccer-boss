@@ -180,7 +180,7 @@ function stats_value_label ($entity, $entity_type) {
 function stats_menu () {
   return array (
     'stat/subject/autocomplete' => array (
-      'description'     => 'An autocomplete callback for the Stats subject field',
+      'description'     => t ('An autocomplete callback for the Stats subject field'),
       'page callback'   => '_stats_subject_autocomplete',
       'access callback' => true,
       'type'            => MENU_CALLBACK,
