@@ -228,9 +228,9 @@ function soccer_boss_content_types () {
       'type'       => soccer_boss_game_content_type (),
       'body_label' => 'Commentary',
       'fields'     => array (
-        'soccer_boss_game_teams'   => 'soccer_boss_create_game_teams_field',
-        'soccer_boss_game_date'    => 'soccer_boss_create_game_date_field',
-        'soccer_boss_game_minutes' => 'soccer_boss_create_game_score_field',
+        'soccer_boss_game_teams' => 'soccer_boss_create_game_teams_field',
+        'soccer_boss_game_date'  => 'soccer_boss_create_game_date_field',
+        'soccer_boss_game_score' => 'soccer_boss_create_game_score_field',
     )),
     soccer_boss_PLAYER_TYPE => array (
       'type'       => soccer_boss_player_content_type (),

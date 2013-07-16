@@ -28,3 +28,84 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
     $blocks ['views']['player_vitals-block']['pages']      = 'node/*';
   }
 }
+
+/// Implements hook_menu ().
+function soccer_boss_menu () {
+  return array (
+    // I. Defines the Team menu tabs.
+    'node/%node/coach' => array (
+      'title'            => t ('Coach'),
+      'description'      => t ('Displays information about the team\'s coach.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'soccer_boss_team_coach_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'weight'           => 1
+    ),
+    'node/%node/roster' => array (
+      'title'            => t ('Roster'),
+      'description'      => t ('Lists the team\'s players.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'soccer_boss_team_roster_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'weight'           => 2
+    ),
+    'node/%node/games' => array (
+      'title'            => t ('Matches'),
+      'description'      => t ('Lists the team\'s past and upcoming matches.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'soccer_boss_team_games_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'weight'           => 3
+    ),
+  );
+}
+
+/**
+  @brief Defines a menu access callback that
+    returns true iff the given node has the given
+    type.
+  @param $node (object) the referenced node.
+  @param $type (string) the required node type.
+  @return (boolean).
+*/
+function _soccer_boss_check_type ($node, $type) {
+  return $node->type == $type;
+}
+
+/**
+  @brief Redirects the user to profile of the head
+    coach associated with the given team.
+  @param $node (object) the team node.
+*/
+function soccer_boss_team_coach_page ($node) {
+  if (empty ($node->soccer_boss_team_coach ['und'])) {
+    drupal_set_message ('This team does not have a Head Coach.');
+    $uri = node_uri ($node);
+  } else {
+    $uri = node_uri (node_load ($node->soccer_boss_team_coach ['und'][0]['target_id']));
+  }
+
+  drupal_goto ($uri ['path']);
+}
+
+/**
+  @brief Redirects the user to the Team Roster page.
+  @param $node (object) the current team node.
+*/
+function soccer_boss_team_roster_page ($node) {
+  drupal_goto ('team-roster/' . $node->nid);
+}
+
+/**
+  @brief Redirects the user to the Team Games page.
+  @param $node (object) the current team node.
+*/
+function soccer_boss_team_games_page ($node) {
+  drupal_goto ('team-games/' . $node->nid);
+}
