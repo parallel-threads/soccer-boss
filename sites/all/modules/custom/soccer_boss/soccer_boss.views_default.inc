@@ -288,10 +288,10 @@ function soccer_boss_player_vitals_view () {
   $handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
   /* Field: Content: Birth Date */
-  $handler->display->display_options['fields']['player_player_birth_date']['id'] = 'player_player_birth_date';
-  $handler->display->display_options['fields']['player_player_birth_date']['table'] = 'field_data_player_player_birth_date';
-  $handler->display->display_options['fields']['player_player_birth_date']['field'] = 'player_player_birth_date';
-  $handler->display->display_options['fields']['player_player_birth_date']['settings'] = array(
+  $handler->display->display_options['fields']['soccer_boss_player_birth_date']['id'] = 'soccer_boss_player_birth_date';
+  $handler->display->display_options['fields']['soccer_boss_player_birth_date']['table'] = 'field_data_soccer_boss_player_birth_date';
+  $handler->display->display_options['fields']['soccer_boss_player_birth_date']['field'] = 'soccer_boss_player_birth_date';
+  $handler->display->display_options['fields']['soccer_boss_player_birth_date']['settings'] = array(
     'format_type' => 'long',
     'fromto' => 'both',
     'multiple_number' => '',
@@ -299,17 +299,17 @@ function soccer_boss_player_vitals_view () {
     'multiple_to' => '',
   );
   /* Field: Content: Height */
-  $handler->display->display_options['fields']['player_player_height']['id'] = 'player_player_height';
-  $handler->display->display_options['fields']['player_player_height']['table'] = 'field_data_player_player_height';
-  $handler->display->display_options['fields']['player_player_height']['field'] = 'player_player_height';
+  $handler->display->display_options['fields']['soccer_boss_player_height']['id'] = 'soccer_boss_player_height';
+  $handler->display->display_options['fields']['soccer_boss_player_height']['table'] = 'field_data_soccer_boss_player_height';
+  $handler->display->display_options['fields']['soccer_boss_player_height']['field'] = 'soccer_boss_player_height';
   /* Field: Content: Weight */
-  $handler->display->display_options['fields']['player_player_weight']['id'] = 'player_player_weight';
-  $handler->display->display_options['fields']['player_player_weight']['table'] = 'field_data_player_player_weight';
-  $handler->display->display_options['fields']['player_player_weight']['field'] = 'player_player_weight';
+  $handler->display->display_options['fields']['soccer_boss_player_weight']['id'] = 'soccer_boss_player_weight';
+  $handler->display->display_options['fields']['soccer_boss_player_weight']['table'] = 'field_data_soccer_boss_player_weight';
+  $handler->display->display_options['fields']['soccer_boss_player_weight']['field'] = 'soccer_boss_player_weight';
   /* Field: Content: Position */
-  $handler->display->display_options['fields']['player_player_position']['id'] = 'player_player_position';
-  $handler->display->display_options['fields']['player_player_position']['table'] = 'field_data_player_player_position';
-  $handler->display->display_options['fields']['player_player_position']['field'] = 'player_player_position';
+  $handler->display->display_options['fields']['soccer_boss_player_position']['id'] = 'soccer_boss_player_position';
+  $handler->display->display_options['fields']['soccer_boss_player_position']['table'] = 'field_data_soccer_boss_player_position';
+  $handler->display->display_options['fields']['soccer_boss_player_position']['field'] = 'soccer_boss_player_position';
   /* Sort criterion: Content: Title */
   $handler->display->display_options['sorts']['title']['id'] = 'title';
   $handler->display->display_options['sorts']['title']['table'] = 'node';
@@ -336,7 +336,7 @@ function soccer_boss_player_vitals_view () {
   $handler->display->display_options['filters']['type']['table'] = 'node';
   $handler->display->display_options['filters']['type']['field'] = 'type';
   $handler->display->display_options['filters']['type']['value'] = array(
-    'player_player' => 'player_player',
+    'soccer_boss_player' => 'soccer_boss_player',
   );
 
   /* Display: Block */
