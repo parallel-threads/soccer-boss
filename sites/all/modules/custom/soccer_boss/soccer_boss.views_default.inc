@@ -466,17 +466,18 @@ function soccer_boss_team_roster_view () {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '10';
   $handler->display->display_options['style_plugin'] = 'table';
-  /* Field: Content: Photo */
+  /* Relationship: Broken/missing handler */
+  $handler->display->display_options['relationships']['soccer_boss_player_team_target_id']['id'] = 'soccer_boss_player_team_target_id';
+  $handler->display->display_options['relationships']['soccer_boss_player_team_target_id']['table'] = 'field_data_soccer_boss_player_team';
+  $handler->display->display_options['relationships']['soccer_boss_player_team_target_id']['field'] = 'soccer_boss_player_team_target_id';
+  $handler->display->display_options['relationships']['soccer_boss_player_team_target_id']['label'] = 'Content entity referenced from soccer_boss_player_team';
+  $handler->display->display_options['relationships']['soccer_boss_player_team_target_id']['required'] = TRUE;
+  /* Field: Broken/missing handler */
   $handler->display->display_options['fields']['soccer_boss_player_photo']['id'] = 'soccer_boss_player_photo';
   $handler->display->display_options['fields']['soccer_boss_player_photo']['table'] = 'field_data_soccer_boss_player_photo';
   $handler->display->display_options['fields']['soccer_boss_player_photo']['field'] = 'soccer_boss_player_photo';
   $handler->display->display_options['fields']['soccer_boss_player_photo']['label'] = '';
   $handler->display->display_options['fields']['soccer_boss_player_photo']['element_label_colon'] = FALSE;
-  $handler->display->display_options['fields']['soccer_boss_player_photo']['click_sort_column'] = 'fid';
-  $handler->display->display_options['fields']['soccer_boss_player_photo']['settings'] = array(
-    'image_style' => 'thumbnail',
-    'image_link' => 'content',
-  );
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -484,7 +485,7 @@ function soccer_boss_team_roster_view () {
   $handler->display->display_options['fields']['title']['label'] = 'Name';
   $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-  /* Field: Content: Position */
+  /* Field: Broken/missing handler */
   $handler->display->display_options['fields']['soccer_boss_player_position']['id'] = 'soccer_boss_player_position';
   $handler->display->display_options['fields']['soccer_boss_player_position']['table'] = 'field_data_soccer_boss_player_position';
   $handler->display->display_options['fields']['soccer_boss_player_position']['field'] = 'soccer_boss_player_position';
@@ -493,6 +494,16 @@ function soccer_boss_team_roster_view () {
   $handler->display->display_options['sorts']['title']['table'] = 'node';
   $handler->display->display_options['sorts']['title']['field'] = 'title';
   $handler->display->display_options['sorts']['title']['order'] = 'DESC';
+  /* Contextual filter: Content: Nid */
+  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['table'] = 'node';
+  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['relationship'] = 'soccer_boss_player_team_target_id';
+  $handler->display->display_options['arguments']['nid']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'node';
+  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
   /* Filter criterion: Content: Published */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
