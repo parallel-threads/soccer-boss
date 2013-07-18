@@ -500,3 +500,27 @@ function soccer_boss_clear_block_visibilities () {
       ->execute   ();
   }
 }
+
+// ----- VII. Miscellaneous -----
+
+/**
+  @brief Returns the ids of those entities that
+    reference the given entity using the given
+    entity reference field.
+  @param $id (integer) the referenced entity id.
+  @param $type (string) the referenced entity type.
+  @param $field_name (string) the entity reference field name.
+*/
+function soccer_boss_get_references ($id, $type, $field_name) {
+  $records = db_select     ('{field_data_' . $field_name . '}', 'tbl')
+               ->fields    ('tbl', array ('entity_id'))
+               ->condition ('entity_type', $type)
+               ->condition ($field_name . '_target_id', $id)
+               ->execute   ();
+
+  $ids = array ();
+  foreach ($records as $record) {
+    $ids [] = $record->entity_id;
+  }
+  return $ids;
+}

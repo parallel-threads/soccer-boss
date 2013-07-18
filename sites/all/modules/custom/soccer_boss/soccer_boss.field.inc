@@ -8,7 +8,7 @@
 // ----- I. Defines generic field creation functions. -----
 
 /**
-  @brief Creats a photo field that has the given properties.
+  @brief Creates a photo field that has the given properties.
   @param $description (array) a field description.
 */
 function soccer_boss_create_photo_field ($description) {
@@ -454,11 +454,12 @@ function soccer_boss_create_team_logo_field () {
 function soccer_boss_create_team_coach_field () {
   soccer_boss_create_entity_reference_field (
     array (
-      'name'        => 'soccer_boss_team_coach',
-      'entity'      => 'node',
-      'bundle'      => soccer_boss_TEAM_TYPE,
-      'label'       => t ('Coach'),
-      'description' => t ('The Team\'s coach.'),
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED
+      'name'           => 'soccer_boss_team_coach',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_TEAM_TYPE,
+      'label'          => t ('Coach'),
+      'description'    => t ('The Team\'s coach.'),
+      'cardinality'    => FIELD_CARDINALITY_UNLIMITED,
+      'target_bundles' => array (soccer_boss_COACH_TYPE)
   ));
 }
