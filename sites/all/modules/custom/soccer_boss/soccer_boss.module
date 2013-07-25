@@ -102,6 +102,23 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc',
       'weight'           => 3
+    ),
+    'player-comparison' => array (
+      'title'            => t ('Player Comparison'),
+      'description'      => t ('Displays two players side-by-side for comparison.'),
+      'access callback'  => true,
+      'page callback'    => 'soccer_boss_player_comparison',
+      'page arguments'   => array (1, 2),
+      'type'             => MENU_CALLBACK,
+      'file'             => 'soccer_boss.page.inc',
+    ),
+    'player-comparison-form' => array (
+      'title'            => t ('Player Comparison'),
+      'description'      => t ('Lets users select players to compare.'),
+      'access callback'  => true,
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_player_comparison_form'),
+      'type'             => MENU_NORMAL_ITEM
     )
   );
 }
@@ -115,13 +132,55 @@ function soccer_boss_menu () {
   @return (boolean).
 */
 function _soccer_boss_check_type ($node, $type) {
+  return $node->type == $type;
+}
+
+/**
+  @brief
+    Returns the Player Comparison form. The form is
+    used to select players to compare on the player
+    comparison page.
+*/
+function soccer_boss_player_comparison_form ($form, &$form_state) {
+  module_load_include ('inc', 'soccer_boss');
+
+  return array (
+    'player_x' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('First Player'),
+      '#era_entity_type' => 'node',
+      '#era_bundle'      => soccer_boss_PLAYER_TYPE,
+      '#era_cardinality' => 1
+    ),
+    'player_y' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Second Player'),
+      '#era_entity_type' => 'node',
+      '#era_bundle'      => soccer_boss_PLAYER_TYPE,
+      '#era_cardinality' => 1
+    ),
+    'submit' => array (
+      '#type'  => 'submit',
+      '#value' => 'Compare!'
+    )
+  );
+}
+
+/**
+  @brief Processes a Player Comparison Form
+    submission and redirects the user to the Player
+    Comparison Page.
+*/
+function soccer_boss_player_comparison_form_submit ($form, &$form_state) {
   watchdog (
     'soccer_boss',
-    '[_soccer_boss_check_type] node type: @node_type type: @type',
+    '[soccer_boss_player_comparison_form_submit] values: <pre>@values</pre>',
     array (
-      '@node_type' => $node->type,
-      '@type'      => $type
+      '@values' => print_r ($form_state ['values'], true)
   ));
 
-  return $node->type == $type;
+  drupal_goto ('player-comparison/' . 
+    $form_state ['values']['player_x']['entity_id'] . '/' .
+    $form_state ['values']['player_y']['entity_id']
+  );
 }

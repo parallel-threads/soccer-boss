@@ -92,3 +92,121 @@ function soccer_boss_team_roster_page ($node) {
 function soccer_boss_team_games_page ($node) {
   drupal_goto ('team-games/' . $node->nid);
 }
+
+/**
+  @brief Returns the player comparison page.
+  @param $x (object) the first player node.
+  @param $y (object) the second player node.
+  @return (array) a render array.
+*/
+function soccer_boss_player_comparison ($x, $y) {
+  module_load_include ('inc', 'stats');
+
+  // Exit if the page arguments are unset.
+  if (!$x || !$y) {
+    drupal_set_message (t ('Error: An internal error occured.'), 'error');
+    return array ();
+  }
+
+  // Load the player nodes.
+  $x = node_load ($x);
+  $y = node_load ($y);
+
+  // Exit if the player nodes could not be loaded.
+  if (is_null ($x) || is_null ($y)) {
+    drupal_set_message (t ('Error: An error occured while trying to load one or both of the players.'), 'error');
+    return array ();
+  }
+
+  // Initialize the stat values array.
+  $stat_values = array ();
+
+  // Retrieve the stats.
+  $x_stats = stats_load_multiple (stats_get_stats ($x->nid));
+  $y_stats = stats_load_multiple (stats_get_stats ($y->nid));
+
+  // Set the stat values array.
+  foreach ((array) $x_stats as $x_stat) {
+    // I. Find the y stat that has the same name.
+    $y_stat = null;
+    foreach ((array) $y_stats as $stat) {
+      if ($stat->name === $x_stat->name) {
+        $y_stat = $stat;
+        break;
+      }
+    }
+
+    // ignore stats that can not be cross-compared.
+    if (is_null ($y_stat)) {
+      continue;
+    }
+
+    // II. Retrieve the stat values.
+    $x_stat_values = stats_value_load_multiple (stats_get_stat_values ($x_stat->id));
+    $y_stat_values = stats_value_load_multiple (stats_get_stat_values ($y_stat->id));
+
+    // III. Store values for each year.
+    foreach ((array) $x_stat_values as $x_stat_value) {
+      // III.A. Get the value date.
+      $x_stat_value_year = date ('Y', $x_stat_value->date);
+
+      // III.B. Get the y stat value that has the given date.
+      $y_stat_value = null;
+      foreach ((array) $y_stat_values as $stat_value) {
+        $stat_value_year = date ('Y', $stat_value->date);
+
+        if ($x_stat_value_year === $stat_value_year) {
+          $y_stat_value = $stat_value;
+          break;
+        }
+      }
+
+      // III.C. Store the stat values if defined.
+      if (isset ($y_stat_value)) {
+        $stat_values [$x_stat_value_year][$x_stat->name] = array (
+          $x_stat_value->content,
+          $y_stat_value->content
+        );
+      }
+    }
+  }
+
+  // Create the stat tables.
+  $stat_tables = '';
+  foreach ((array) $stat_values as $year => $stats) {
+    $stat_tables .= "<table>
+                       <tr>
+                         <th>$year</th>
+                       </tr>";
+
+    foreach ((array) $stats as $name => $values) {
+      $stat_tables .= "<tr>
+                         <td>$name</td>
+                         <td>" . ($values [0] > $values [1] ? '<em>' . $values [0] . '</em>' : $values [0]) . "</td>
+                         <td>" . ($values [1] > $values [0] ? '<em>' . $values [1] . '</em>' : $values [1]) . "</td>
+                       </tr>";
+    }
+                       
+    $stat_tables .= '</table>';
+  }
+
+  // Define the Player Comparison Page.
+  return array (
+    'content' => array (
+      '#type'   => 'markup',
+      '#markup' => "<table>
+                      <tr>
+                        <th>$x->title</th>
+                        <th>$y->title</th>
+                      </tr>
+                      <tr>
+                        <td><img src='" . image_style_url ('thumbnail', $x->soccer_boss_player_photo ['und'][0]['uri']) . "' alt='player photo.' />
+                        <td><img src='" . image_style_url ('thumbnail', $y->soccer_boss_player_photo ['und'][0]['uri']) . "' alt='player photo.' />
+                      </tr>
+                      <tr>
+                        <td>" . text_summary ($x->body ['und'][0]['value']) . "</td>
+                        <td>" . text_summary ($y->body ['und'][0]['value']) . "</td>
+                      </tr>
+                    </table>" . $stat_tables
+  ));
+}
