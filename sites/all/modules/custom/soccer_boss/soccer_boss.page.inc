@@ -191,13 +191,17 @@ function soccer_boss_player_comparison ($x, $y) {
   }
 
   // Define the Player Comparison Page.
+
+  $x_uri = node_uri ($x);
+  $y_uri = node_uri ($y);
+
   return array (
     'content' => array (
       '#type'   => 'markup',
       '#markup' => "<table>
                       <tr>
-                        <th>$x->title</th>
-                        <th>$y->title</th>
+                        <th>" . l ($x->title, $x_uri ['path']) . "</th>
+                        <th>" . l ($y->title, $y_uri ['path']) . "</th>
                       </tr>
                       <tr>
                         <td><img src='" . image_style_url ('thumbnail', $x->soccer_boss_player_photo ['und'][0]['uri']) . "' alt='player photo.' />
