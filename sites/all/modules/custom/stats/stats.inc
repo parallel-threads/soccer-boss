@@ -35,6 +35,26 @@ function stats_get_stats ($id) {
   return $ids;
 } 
 
+/**
+  @brief Returns the stats that have the given name.
+  @param $name (string) the stat name.
+  @param $subject (int) the subject id.
+  @return (array) the stat ids. 
+*/
+function stats_get_stats_by_name_and_subject ($name, $id) {
+  $records = db_select   ('{stats}', 'tbl')
+             ->fields    ('tbl', array ('id'))
+             ->condition ('name', $name)
+             ->condition ('subject', $id)
+             ->execute   ();
+
+  $ids = array ();
+  foreach ($records as $record) {
+    $ids [] = $record->id;
+  }
+  return $ids;
+}
+
 /// Saves the given stat.
 function stats_save ($stat) {
   return entity_save ('stat', $stat);
@@ -66,7 +86,8 @@ function stats_view ($stats, $view_mode = 'web', $langcode = null, $page = null)
 
 /// Deletes the given stat.
 function stats_delete ($id) {
-  return entity_delete ('stat', $id);
+  stats_value_delete_multiple (stats_get_stat_values ($id));
+  entity_delete ('stat', $id);
 }
 
 /**

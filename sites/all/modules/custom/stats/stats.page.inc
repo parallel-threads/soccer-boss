@@ -14,6 +14,10 @@ function stats_page ($id) {
   module_load_include ('inc', 'stats');
   drupal_set_title ('View Stat');
   $stat = stats_load ($id);
+
+  $destination = drupal_get_destination ();
+  $_SESSION ['soccer_boss']['destination'] = $destination ['destination'];
+
   return stats_view (
     $stat ? array ($stat) : stats_load_multiple (),
     'web', null, true
@@ -39,7 +43,7 @@ function stats_delete_page ($statId) {
   module_load_include ('inc', 'stats');
   stats_delete ($statId);
   drupal_set_message ('Deleted the stat.');
-  drupal_goto ('stat');
+  drupal_goto ($_SESSION ['soccer_boss']['destination']);
 }
 
 /**
