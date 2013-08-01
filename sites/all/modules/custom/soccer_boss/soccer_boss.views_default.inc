@@ -123,7 +123,7 @@ function soccer_boss_player_game_stats_view () {
 }
 
 /// Returns the Player Stats view.
-function soccer_boss_player_stats_view () 
+function soccer_boss_player_stats_view () {
   $view = new view();
   $view->name = 'player_stats';
   $view->description = 'Lists the stats associated with a given node.';
