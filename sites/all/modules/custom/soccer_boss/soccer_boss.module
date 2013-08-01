@@ -112,6 +112,15 @@ function soccer_boss_menu () {
       'type'             => MENU_CALLBACK,
       'file'             => 'soccer_boss.page.inc',
     ),
+    'team-comparison' => array (
+      'title'            => t ('Team Comparison'),
+      'description'      => t ('Displays two teams side-by-side for comparison.'),
+      'access callback'  => true,
+      'page callback'    => 'soccer_boss_team_comparison',
+      'page arguments'   => array (1, 2),
+      'type'             => MENU_CALLBACK,
+      'file'             => 'soccer_boss.page.inc',
+    ),
     'player-comparison-form' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Lets users select players to compare.'),
@@ -120,12 +129,28 @@ function soccer_boss_menu () {
       'page arguments'   => array ('soccer_boss_player_comparison_form'),
       'type'             => MENU_NORMAL_ITEM
     ),
+    'team-comparison-form' => array (
+      'title'            => t ('Team Comparison'),
+      'description'      => t ('Lets users select teams to compare.'),
+      'access callback'  => true,
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_team_comparison_form'),
+      'type'             => MENU_NORMAL_ITEM
+    ),
     'player-stats-form' => array (
       'title'            => t ('Player Stats'),
       'description'      => t ('The Player Stats form.'),
       'access callback'  => true,
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_player_stats_form'),
+      'type'             => MENU_NORMAL_ITEM
+    ),
+    'team-stats-form' => array (
+      'title'            => t ('Team Stats'),
+      'description'      => t ('The Team Stats form.'),
+      'access callback'  => true,
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_team_stats_form'),
       'type'             => MENU_NORMAL_ITEM
     )
   );
@@ -143,6 +168,8 @@ function _soccer_boss_check_type ($node, $type) {
   return $node->type == $type;
 }
 
+// ----- II. Comparison Forms ----- 
+
 /**
   @brief
     Returns the Player Comparison form. The form is
@@ -157,14 +184,14 @@ function soccer_boss_player_comparison_form ($form, &$form_state) {
       '#type'            => 'entityreference',
       '#title'           => t ('First Player'),
       '#era_entity_type' => 'node',
-      '#era_bundle'      => soccer_boss_PLAYER_TYPE,
+      '#era_bundles'     => array (soccer_boss_PLAYER_TYPE),
       '#era_cardinality' => 1
     ),
     'player_y' => array (
       '#type'            => 'entityreference',
       '#title'           => t ('Second Player'),
       '#era_entity_type' => 'node',
-      '#era_bundle'      => soccer_boss_PLAYER_TYPE,
+      '#era_bundles'     => array (soccer_boss_PLAYER_TYPE),
       '#era_cardinality' => 1
     ),
     'submit' => array (
@@ -193,7 +220,109 @@ function soccer_boss_player_comparison_form_submit ($form, &$form_state) {
   );
 }
 
-// ----- II. Stat Sheets -----
+/**
+  @brief
+    Returns the Team Comparison form. The form is
+    used to select teams to compare on the Team 
+    Comparison page.
+*/
+function soccer_boss_team_comparison_form ($form, &$form_state) {
+  module_load_include ('inc', 'soccer_boss');
+
+  return array (
+    'team_x' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('First Team'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (soccer_boss_TEAM_TYPE),
+      '#era_cardinality' => 1
+    ),
+    'team_y' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Second Team'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (soccer_boss_TEAM_TYPE),
+      '#era_cardinality' => 1
+    ),
+    'submit' => array (
+      '#type'  => 'submit',
+      '#value' => 'Compare!'
+    )
+  );
+}
+
+/**
+  @brief Processes a Team Comparison Form
+    submission and redirects the user to the Team
+    Comparison Page.
+*/
+function soccer_boss_team_comparison_form_submit ($form, &$form_state) {
+  watchdog (
+    'soccer_boss',
+    '[soccer_boss_player_comparison_form_submit] values: <pre>@values</pre>',
+    array (
+      '@values' => print_r ($form_state ['values'], true)
+  ));
+
+  drupal_goto ('team-comparison/' . 
+    $form_state ['values']['team_x']['entity_id'] . '/' .
+    $form_state ['values']['team_y']['entity_id']
+  );
+}
+
+// ----- III. Stat Sheets -----
+
+/**
+  @brief Processes the values within a Stats Sheet.
+  @param $form_values (array) the form values from a Stats Sheet.
+  @param $mappings (array) an associative array
+    describing the mappings between sheet fields
+    and stat names.
+*/
+function soccer_boss_process_stat_sheet ($form_values, $mapping) {
+  module_load_include ('inc', 'stats');
+
+  watchdog (
+    'soccer_boss',
+    '[soccer_boss_process_stat_sheet] form values: <pre>@form_values</pre>',
+    array (
+      '@form_values' => print_r ($form_values, true)
+  ));
+
+  foreach ($mapping as $field_name => $stat_name) {
+    // I. Skip the stat iff the field is empty.
+    if (empty ($form_values [$field_name])) {
+      continue;
+    }
+
+    // II. Retrieve the stat if it exists.
+    $subject = $form_values ['entity']['entity_id'];
+
+    $stats = stats_load_multiple (stats_get_stats_by_name_and_subject ($stat_name, $subject));
+    $stat = null;
+
+    // III. Create the stat if it does not exist.
+    if (empty ($stats)) {
+      $stat = entity_create ('stat', array ('type' => 'stat'));
+
+      $stat->name    = $stat_name;
+      $stat->subject = $subject;
+
+      stats_save ($stat);
+    } else {
+      $stat = array_shift ($stats);
+    }
+
+    // IV. Create the stat value.
+    $stat_value = entity_create ('stat_value', array ('type' => 'stat_value'));
+
+    $stat_value->stat    = $stat->id;
+    $stat_value->content = $form_values [$field_name];
+    $stat_value->date    = strtotime ($form_values ['date'] . ' 12:00');
+
+    stats_value_save ($stat_value);
+  }
+} 
 
 /**
   @brief Returns the Player Stats form.
@@ -206,11 +335,11 @@ function soccer_boss_player_stats_form ($form, &$form_state) {
   module_load_include ('inc', 'soccer_boss');
 
   return array (
-    'player' => array (
+    'entity' => array (
       '#type'            => 'entityreference',
       '#title'           => t ('Player'),
       '#era_entity_type' => 'node',
-      '#era_bundle'      => soccer_boss_PLAYER_TYPE,
+      '#era_bundles'     => array (soccer_boss_PLAYER_TYPE),
       '#era_cardinality' => 1,
       '#cardinality'     => 1,
       '#required'        => true
@@ -269,70 +398,111 @@ function soccer_boss_player_stats_form ($form, &$form_state) {
     Creates Stats for each of the fields.
 */
 function soccer_boss_player_stats_form_submit ($form, &$form_state) {
-  module_load_include ('inc', 'stats');
-
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_player_stats_form_submit] form values: <pre>@form_values</pre>',
+  soccer_boss_process_stat_sheet (
+    $form_state ['values'],
     array (
-      '@form_values' => print_r ($form_state ['values'], true)
+      'goals'         => 'Goals',
+      'goals_against' => 'Goals Against',
+      'shots'         => 'Shots',
+      'goal_shots'    => 'Goal Shots',
+      'assists'       => 'Assists',
+      'saves'         => 'Saves',
+      'shutouts'      => 'Shutouts'
   ));
+}
 
-  foreach (array (
-    'goals'         => 'Goals',
-    'goals_against' => 'Goals Against',
-    'shots'         => 'Shots',
-    'goal_shots'    => 'Goal Shots',
-    'assists'       => 'Assists',
-    'saves'         => 'Saves',
-    'shutouts'      => 'Shutouts'
-  ) as $field_name => $stat_name) {
-    // I. Skip the stat iff the field is empty.
-    if (empty ($form_state ['values'][$field_name])) {
-      continue;
-    }
+/**
+  @brief Returns the Team Stats form.
+  @details
+    The Team Stats form represents a 'stat sheet',
+    a form that creates multiple related stats that
+    are associated with a single entity.
+*/
+function soccer_boss_team_stats_form ($form, &$form_state) {
+  module_load_include ('inc', 'soccer_boss');
 
-    // II. Retrieve the stat if it exists.
-    $subject = $form_state ['values']['player']['entity_id'];
+  return array (
+    'entity' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Team'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (soccer_boss_TEAM_TYPE),
+      '#era_cardinality' => 1,
+      '#cardinality'     => 1,
+      '#required'        => true
+    ),
+    'date' => array (
+      '#type'        => 'textfield',
+      '#title'       => t ('Date'),
+      '#description'   => t ('The date on which these stat values were measured, reported, or applied.'),
+      '#default_value' => date ('F j, Y'),
+      '#required'      => true      
+    ),
+    'goals' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Goals'),
+      '#description'   => t ('The number of goals scored by this team.')
+    ),
+    'goals_against' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Goals Against'),
+      '#description'   => t ('The number of goals scored against this team.')
+    ),
+    'shots' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Shots'),
+      '#description'   => t ('The number of shots made by this team.')
+    ),
+    'goal_shots' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Goal Shots'),
+      '#description'   => t ('The number of goal shots made by this team.')
+    ),
+    'shots_against' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Shots Against'),
+      '#description'   => t ('The number of shots made against this team.')
+    ),
+    'assists' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Assists'),
+      '#description'   => t ('The number of assists made by this team.')
+    ),
+    'shutouts' => array (
+      '#type'           => 'textfield',
+      '#title'          => t ('Shutouts'),
+      '#description'    => t ('The number of shutouts by this team.')
+    ),
+    'games_won' => array (
+      '#type'           => 'textfield',
+      '#title'          => t ('Games Won'),
+      '#description'    => t ('The number of games won by this team.')
+    ),
+    'games_lost' => array (
+      '#type'           => 'textfield',
+      '#title'          => t ('Games Lost'),
+      '#description'    => t ('The number of games lost by this team.')
+    ),
+    'submit' => array (
+      '#type'           => 'submit',
+      '#value'          => 'Save'
+  ));
+}
 
-    $stats = stats_load_multiple (stats_get_stats_by_name_and_subject ($stat_name, $subject));
-
-    watchdog (
-      'soccer_boss',
-      '[soccer_boss_player_stats_form_submit] stats: <pre>@stats</pre>.',
-      array (
-        '@stats' => print_r ($stats, true)
-    ));
-
-    $stat = null;
-
-    // III. Create the stat if it does not exist.
-    if (empty ($stats)) {
-      $stat = entity_create ('stat', array ('type' => 'stat'));
-
-      $stat->name    = $stat_name;
-      $stat->subject = $subject;
-
-      stats_save ($stat);
-    } else {
-      $stat = array_shift ($stats);
-    }
-
-    // IV. Create the stat value.
-    $stat_value = entity_create ('stat_value', array ('type' => 'stat_value'));
-
-    $stat_value->stat    = $stat->id;
-    $stat_value->content = $form_state ['values'][$field_name];
-    $stat_value->date    = strtotime ($form_state ['values']['date'] . ' 12:00');
-
-    stats_value_save ($stat_value);
-
-    watchdog (
-      'soccer_boss',
-      '[soccer_boss_player_stats_form_submit] stat: <pre>@stat</pre> stat value: <pre>@stat_value</pre>',
-      array (
-        '@stat'       => print_r ($stat, true),
-        '@stat_value' => print_r ($stat_value, true)
-    ));
-  }
+/**
+*/
+function soccer_boss_team_stats_form_submit ($form, &$form_state) {
+  soccer_boss_process_stat_sheet (
+    $form_state ['values'],
+    array (
+      'goals'         => 'Goals',
+      'goals_against' => 'Goals Against',
+      'shots'         => 'Shots',
+      'goal_shots'    => 'Goal Shots',
+      'shots_against' => 'Shots Against',
+      'assists'       => 'Assists',
+      'shutouts'      => 'Shutouts',
+      'games_won'     => 'Games Won',
+      'games_lost'    => 'Games Lost'
+  ));
 }

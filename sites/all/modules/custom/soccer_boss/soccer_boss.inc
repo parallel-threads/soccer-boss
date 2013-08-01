@@ -465,6 +465,11 @@ function soccer_boss_block_settings () {
       'region' => 'content',
       'module' => 'views'
     ),
+    'team_stats-block' => array (
+      'type'   => soccer_boss_TEAM_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
     'team_games-block' => array (
       'type'   => soccer_boss_TEAM_TYPE,
       'region' => 'content',
