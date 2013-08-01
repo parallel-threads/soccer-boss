@@ -97,6 +97,14 @@ function stats_delete ($id) {
   @return (array) the stats.
 */
 function stats_delete_multiple ($ids) {
+
+  watchdog (
+    'stats',
+    '[stats_delete_multiple] ids: <pre>@ids</pre>',
+    array (
+      '@ids' => print_r ($ids, true)
+  ));
+
   return entity_delete_multiple ('stat', $ids);
 }
 
