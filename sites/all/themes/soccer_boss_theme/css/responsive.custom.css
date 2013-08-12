@@ -15,15 +15,39 @@
 /*
  * Really small screens and up
  */
-/* @media only screen and (min-width: 220px) {} */
+@media screen and (max-width: 220px) {
+  #header {
+    min-height: 10px;
+    max-height: 10px;
+  }
+}
+
+
 /*
  * Smartphone sizes and up
  */
-/* @media only screen and (min-width: 320px) {} */
+@media screen and (max-width: 320px) {
+  #header {
+    min-height: 10px;
+    max-height: 10px;
+  }
+}
+
+
 /*
  * Smartphone sizes and down
  */
-@media only screen and (max-width: 480px) {
+@media screen and (max-width: 480px) {
+  /* to aid users using touch-screens. */
+  a {
+    font-size: large;
+  }
+
+  #header {
+    min-height: 50px;
+    max-height: 50px;
+  }
+
   /* 
    * Float Region blocks example:
    * In smaller screen sizes we can remove the float and widths so all blocks
@@ -40,11 +64,45 @@
     width: 100%;
   }
 }
+
+@media screen and (max-width: 768px) {
+  
+  /* to aid users using touch-screens. */
+  a {
+    font-size: large;
+  }
+
+  #header {
+    min-height: 150px;
+    max-height: 150px;
+  }
+
+  #content-column {
+    float: none;
+    width: 100%;
+  }
+
+  .nav li,
+  .nav ul.menu li {
+    display: block;
+    float:   none;
+  }
+
+  .sidebar {
+    float:        none;
+    margin-left:  0;
+    margin-right: 0;
+    width:        100%;
+  }
+}
+
 /*
  * Tablet sizes and up
  */
 /* @media only screen and (min-width: 768px) {} */
+
 /*
  * Desktops/laptops and up
  */
 /* @media only screen and (min-width: 1025px) {} */
+
