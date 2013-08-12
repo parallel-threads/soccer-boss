@@ -1839,5 +1839,5 @@ tr.error {}
 
 #content-column .field-name-body {
   max-height: 25em;
-  overflow:   scroll;
+  overflow:   auto;
 }
