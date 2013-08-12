@@ -1831,3 +1831,13 @@ tr.error {}
   min-height: 260px;
   width: auto;
 }
+
+.field-name-soccer-boss-team-logo {
+  float:   left;
+  padding: 2em;
+}
+
+#content-column .field-name-body {
+  max-height: 25em;
+  overflow:   scroll;
+}
