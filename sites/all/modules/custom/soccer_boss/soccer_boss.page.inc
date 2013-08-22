@@ -6,49 +6,6 @@
 */
 
 /**
-  @brief Redirects the user to the Team page
-    associated with the given coach node.
-  @param $node (object) the coach node.
-*/
-function soccer_boss_coach_team_page ($node) {
-  module_load_include ('inc', 'soccer_boss');
-
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_coach_team_page]'
-  );
-
-  // I. Retrieve the team node ids.
-  $ids = soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_team_coach');
-
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_coach_team_page] ids: <pre>@ids</pre>',
-    array (
-      '@ids' => print_r ($ids, true)
-  ));
-
-  // II. Retrieve the team node uri.
-  if (empty ($ids)) {
-    drupal_set_message ('This coach is not currently affiliated with any known teams.');
-    $uri = node_uri ($node);
-  } else {
-    $uri = node_uri (node_load ($ids [0])); 
-  }
-
-  // III. Redirect the user.
-  drupal_goto ($uri ['path']);
-}
-
-/**
-  @brief Redirects the user to the Player's Stats view.
-  @param $node (object) the player node.
-*/
-function soccer_boss_player_stats_page ($node) {
-  drupal_goto ("player-stats/$node->nid");
-}
-
-/**
   @brief Redirects the user to the Player's Team page.
   @param $node (object) the player node.
 */
@@ -63,95 +20,19 @@ function soccer_boss_player_team_page ($node) {
 }
 
 /**
-  @brief Redirects the user to profile of the head
-    coach associated with the given team.
+  @brief Redirects the user to the Team Player Stats page.
   @param $node (object) the team node.
 */
-function soccer_boss_team_coach_page ($node) {
-  if (empty ($node->soccer_boss_team_coach ['und'])) {
-    drupal_set_message ('This team does not have a Head Coach.');
-    $uri = node_uri ($node);
-  } else {
-    $uri = node_uri (node_load ($node->soccer_boss_team_coach ['und'][0]['target_id']));
-  }
-  drupal_goto ($uri ['path']);
-}
-
-/**
-  @brief Redirects the user to the Team Roster page.
-  @param $node (object) the current team node.
-*/
-function soccer_boss_team_roster_page ($node) {
-  drupal_goto ('team-roster/' . $node->nid);
-}
-
-/**
-  @brief Redirects the user to the Team Games page.
-  @param $node (object) the current team node.
-*/
-function soccer_boss_team_games_page ($node) {
-  drupal_goto ('team-games/' . $node->nid);
+function soccer_boss_team_player_stats_page ($node) {
+  drupal_goto ('team-player-stats-form/' . $node->nid);
 }
 
 /**
   @brief Returns a Stats Comparison table for the given entities.
-  @param $x (integer) the first entity id.
-  @param $y (integer) the second entity id.
+  @param $stat_values (array) the stat values array.
   @return (array) a render array representing the table.
 */
-function soccer_boss_stats_comparison_tables ($x, $y) {
-  // Initialize the stat values array.
-  $stat_values = array ();
-
-  // Retrieve the stats.
-  $x_stats = stats_load_multiple (stats_get_stats ($x));
-  $y_stats = stats_load_multiple (stats_get_stats ($y));
-
-  // Set the stat values array.
-  foreach ((array) $x_stats as $x_stat) {
-    // I. Find the y stat that has the same name.
-    $y_stat = null;
-    foreach ((array) $y_stats as $stat) {
-      if ($stat->name === $x_stat->name) {
-        $y_stat = $stat;
-        break;
-      }
-    }
-
-    // ignore stats that can not be cross-compared.
-    if (is_null ($y_stat)) {
-      continue;
-    }
-
-    // II. Retrieve the stat values.
-    $x_stat_values = stats_value_load_multiple (stats_get_stat_values ($x_stat->id));
-    $y_stat_values = stats_value_load_multiple (stats_get_stat_values ($y_stat->id));
-
-    // III. Store values for each year.
-    foreach ((array) $x_stat_values as $x_stat_value) {
-      // III.A. Get the value date.
-      $x_stat_value_year = date ('Y', $x_stat_value->date);
-
-      // III.B. Get the y stat value that has the given date.
-      $y_stat_value = null;
-      foreach ((array) $y_stat_values as $stat_value) {
-        $stat_value_year = date ('Y', $stat_value->date);
-
-        if ($x_stat_value_year === $stat_value_year) {
-          $y_stat_value = $stat_value;
-          break;
-        }
-      }
-
-      // III.C. Store the stat values if defined.
-      if (isset ($y_stat_value)) {
-        $stat_values [$x_stat_value_year][$x_stat->name] = array (
-          $x_stat_value->content,
-          $y_stat_value->content
-        );
-      }
-    }
-  }
+function soccer_boss_stats_comparison_tables ($stat_values) {
 
   watchdog (
     'soccer_boss',
@@ -189,7 +70,7 @@ function soccer_boss_stats_comparison_tables ($x, $y) {
   @return (array) a render array.
 */
 function soccer_boss_player_comparison ($x, $y) {
-  module_load_include ('inc', 'stats');
+  module_load_include ('inc', 'soccer_boss');
 
   // Exit if the page arguments are unset.
   if (!$x || !$y) {
@@ -208,7 +89,31 @@ function soccer_boss_player_comparison ($x, $y) {
   }
 
   // II. Create the Stat Comparison tables.
-  $stat_tables = soccer_boss_stats_comparison_tables ($x->nid, $y->nid);
+
+  $x_stats = node_load_multiple (soccer_boss_get_references ($x->nid, 'node', 'soccer_boss_pps_player'));
+  $y_stats = node_load_multiple (soccer_boss_get_references ($y->nid, 'node', 'soccer_boss_pps_player'));
+
+  $stat_values = array ();
+  foreach ($x_stats as $x_stat) {
+    $y_stat = null;
+    foreach ($y_stats as $_y_stat) {
+      if (
+        $x_stat->title == $_y_stat->title &&
+        $x_stat->soccer_boss_pps_year ['und'][0]['value'] == $_y_stat->soccer_boss_pps_year ['und'][0]['value']
+      ) {
+        $y_stat = $_y_stat;
+        break;
+      }
+    }
+    if (!is_null ($y_stat)) {
+      $stat_values [$x_stat->soccer_boss_pps_year ['und'][0]['value']][$x_stat->title] = array (
+        $x_stat->soccer_boss_pps_value ['und'][0]['value'],
+        $y_stat->soccer_boss_pps_value ['und'][0]['value']
+      );
+    }
+  }
+  
+  $stat_tables = soccer_boss_stats_comparison_tables ($stat_values);
 
   // III. Define the Player Comparison Page.
 
@@ -242,7 +147,7 @@ function soccer_boss_player_comparison ($x, $y) {
   @return (array) a render array.
 */
 function soccer_boss_team_comparison ($x, $y) {
-  module_load_include ('inc', 'stats');
+  module_load_include ('inc', 'soccer_boss');
 
   // Exit if the page arguments are unset.
   if (!$x || !$y) {
@@ -261,7 +166,31 @@ function soccer_boss_team_comparison ($x, $y) {
   }
 
   // II. Create the Stats Comparison table.
-  $stat_tables = soccer_boss_stats_comparison_tables ($x->nid, $y->nid);
+
+  $x_stats = node_load_multiple (soccer_boss_get_references ($x->nid, 'node', 'soccer_boss_ts_team'));
+  $y_stats = node_load_multiple (soccer_boss_get_references ($y->nid, 'node', 'soccer_boss_ts_team'));
+
+  $stat_values = array ();
+  foreach ($x_stats as $x_stat) {
+    $y_stat = null;
+    foreach ($y_stats as $_y_stat) {
+      if (
+        $x_stat->title == $_y_stat->title &&
+        $x_stat->soccer_boss_ts_year ['und'][0]['value'] == $_y_stat->soccer_boss_ts_year ['und'][0]['year']
+      ) {
+        $y_stat = $_y_stat;
+        break;
+      }
+    }
+    if (!is_null ($y_stat)) {
+      $stat_values [$x_stat->soccer_boss_ts_year ['und'][0]['value']][$x_stat->title] = array (
+        $x_stat->soccer_boss_ts_value ['und'][0]['value'],
+        $y_stat->soccer_boss_ts_value ['und'][0]['value']
+      );
+    }
+  }
+
+  $stat_tables = soccer_boss_stats_comparison_tables ($stat_values);
 
   // III. Create the Team Comparison page.
 

@@ -1645,6 +1645,10 @@ th {
   padding: 5px 7px;
 }
 
+td input {
+  width: 100%;
+}
+
 tbody {}
 
 tbody tr {

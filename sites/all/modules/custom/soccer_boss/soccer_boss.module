@@ -29,35 +29,12 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
       $blocks [$module][$delta]['pages']      = 'node/*';
     }
   }
+
 }
 
 /// Implements hook_menu ().
 function soccer_boss_menu () {
   return array (
-    // I. Defines the Coach menu tabs.
-    'node/%node/team' => array (
-      'title'            => t ('Team'),
-      'description'      => t ('Redirects the user to the team associated with the given coach\'s node id.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_coach'),
-      'page callback'    => 'soccer_boss_coach_team_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 1
-    ),
-    // II. Defines the Player menu tabs.
-    'node/%node/stats' => array (
-      'title'            => t ('Stats'),
-      'description'      => t ('Redirects the user to the stats page.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
-      'page callback'    => 'soccer_boss_player_stats_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 1
-    ),
     'node/%node/team' => array (
       'title'            => t ('Team'),
       'description'      => t ('Redirects the user to the player\'s team page.'),
@@ -68,40 +45,6 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc',
       'weight'           => 1
-    ),
-    // III. Defines the Team menu tabs.
-    'node/%node/coach' => array (
-      'title'            => t ('Coach'),
-      'description'      => t ('Displays information about the team\'s coach.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
-      'page callback'    => 'soccer_boss_team_coach_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 1
-    ),
-    'node/%node/roster' => array (
-      'title'            => t ('Roster'),
-      'description'      => t ('Lists the team\'s players.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
-      'page callback'    => 'soccer_boss_team_roster_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 2
-    ),
-    'node/%node/games' => array (
-      'title'            => t ('Matches'),
-      'description'      => t ('Lists the team\'s past and upcoming matches.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
-      'page callback'    => 'soccer_boss_team_games_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 3
     ),
     'player-comparison' => array (
       'title'            => t ('Player Comparison'),
@@ -121,6 +64,16 @@ function soccer_boss_menu () {
       'type'             => MENU_CALLBACK,
       'file'             => 'soccer_boss.page.inc',
     ),
+    'node/%node/team-player-stats' => array (
+      'title'            => t ('Add Team Player Stats'),
+      'description'      => t ('Displays a form in which player performance stats can be added.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
+      'page callback'    => 'soccer_boss_team_player_stats_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+    ),
     'player-comparison-form' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Lets users select players to compare.'),
@@ -137,20 +90,20 @@ function soccer_boss_menu () {
       'page arguments'   => array ('soccer_boss_team_comparison_form'),
       'type'             => MENU_NORMAL_ITEM
     ),
-    'player-stats-form' => array (
-      'title'            => t ('Player Stats'),
-      'description'      => t ('The Player Stats form.'),
+    'team-game-stats-form/%' => array (
+      'title'            => t ('Team Game Stats'),
+      'description'      => t ('The Team Game Stats form.'),
       'access callback'  => true,
       'page callback'    => 'drupal_get_form',
-      'page arguments'   => array ('soccer_boss_player_stats_form'),
+      'page arguments'   => array ('soccer_boss_team_game_stats_form', 1),
       'type'             => MENU_NORMAL_ITEM
     ),
-    'team-stats-form' => array (
-      'title'            => t ('Team Stats'),
-      'description'      => t ('The Team Stats form.'),
+    'team-player-stats-form/%' => array (
+      'title'            => t ('Team Player Stats'),
+      'description'      => t ('The Team Player Stats form.'),
       'access callback'  => true,
       'page callback'    => 'drupal_get_form',
-      'page arguments'   => array ('soccer_boss_team_stats_form'),
+      'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
       'type'             => MENU_NORMAL_ITEM
     )
   );
@@ -162,10 +115,11 @@ function soccer_boss_menu () {
     type.
   @param $node (object) the referenced node.
   @param $type (string) the required node type.
+  @param $privilege (string) an optional privilege to check.
   @return (boolean).
 */
-function _soccer_boss_check_type ($node, $type) {
-  return $node->type == $type;
+function _soccer_boss_check_type ($node, $type, $privilege = false) {
+  return $node->type == $type && ($privilege ? user_access ($privilege) : true);
 }
 
 // ----- II. Comparison Forms ----- 
@@ -207,13 +161,6 @@ function soccer_boss_player_comparison_form ($form, &$form_state) {
     Comparison Page.
 */
 function soccer_boss_player_comparison_form_submit ($form, &$form_state) {
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_player_comparison_form_submit] values: <pre>@values</pre>',
-    array (
-      '@values' => print_r ($form_state ['values'], true)
-  ));
-
   drupal_goto ('player-comparison/' . 
     $form_state ['values']['player_x']['entity_id'] . '/' .
     $form_state ['values']['player_y']['entity_id']
@@ -273,236 +220,227 @@ function soccer_boss_team_comparison_form_submit ($form, &$form_state) {
 // ----- III. Stat Sheets -----
 
 /**
-  @brief Processes the values within a Stats Sheet.
-  @param $form_values (array) the form values from a Stats Sheet.
-  @param $mappings (array) an associative array
-    describing the mappings between sheet fields
-    and stat names.
-*/
-function soccer_boss_process_stat_sheet ($form_values, $mapping) {
-  module_load_include ('inc', 'stats');
-
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_process_stat_sheet] form values: <pre>@form_values</pre>',
+  @brief Creates a stat sheet organized into a spreadsheet
+  @param $info (array) the spreadsheet description.
+  @note $info has the following structure:
     array (
-      '@form_values' => print_r ($form_values, true)
-  ));
-
-  foreach ($mapping as $field_name => $stat_name) {
-    // I. Skip the stat iff the field is empty.
-    if (empty ($form_values [$field_name])) {
-      continue;
-    }
-
-    // II. Retrieve the stat if it exists.
-    $subject = $form_values ['entity']['entity_id'];
-
-    $stats = stats_load_multiple (stats_get_stats_by_name_and_subject ($stat_name, $subject));
-    $stat = null;
-
-    // III. Create the stat if it does not exist.
-    if (empty ($stats)) {
-      $stat = entity_create ('stat', array ('type' => 'stat'));
-
-      $stat->name    = $stat_name;
-      $stat->subject = $subject;
-
-      stats_save ($stat);
-    } else {
-      $stat = array_shift ($stats);
-    }
-
-    // IV. Create the stat value.
-    $stat_value = entity_create ('stat_value', array ('type' => 'stat_value'));
-
-    $stat_value->stat    = $stat->id;
-    $stat_value->content = $form_values [$field_name];
-    $stat_value->date    = strtotime ($form_values ['date'] . ' 12:00');
-
-    stats_value_save ($stat_value);
+      'columns'  => array (<stat name> => <header label>, ...)
+      'entities' => array (<entity>, ...)
+    )
+*/
+function soccer_boss_create_stat_sheet ($info) {
+  // I. Define the table headers.
+  $prefix = '<table><thead><tr><th>Name</th>';
+  foreach (array_values ($info ['columns']) as $label) {
+    $prefix .= "<th>$label</th>";
   }
-} 
+  $prefix .= '</tr></thead><tbody>';
+
+  $form = array (
+    '#prefix'     => $prefix,
+    '#suffix'     => '</tbody></table>',
+    '#attributes' => array (
+      'class' => array ('statsheet-table')
+    )
+  );
+
+  // II. Define the table rows.
+  foreach ($info ['entities'] as $entity) {
+    $entity_id    = entity_id    ('node', $entity);
+    $entity_label = entity_label ('node', $entity);
+
+    // II.A. Define the table row.
+    $form [$entity_id . '_row'] = array (
+      '#prefix'     => "<tr><td>$entity_label</td>",
+      '#suffix'     => '</tr>',
+      '#type'       => 'fieldset',
+      '#attributes' => array (
+        'class' => array ('statsheet-row')
+      )
+    );
+
+    // II.B. Define table cells.
+    foreach (array_keys ($info ['columns']) as $stat_name) {
+      $form [$entity_id . '_row'][$entity_id . '_' . $stat_name] = array (
+        '#prefix'     => '<td>',
+        '#suffix'     => '</td>',
+        '#type'       => 'textfield',
+        '#attributes' => array (
+          'class' => array ('statsheet-cell')
+        )
+      ); 
+    }
+  }
+
+  $form ['submit'] = array (
+    '#type'  => 'submit',
+    '#value' => 'Save'
+  );
+
+  return $form;
+}
 
 /**
-  @brief Returns the Player Stats form.
-  @details
-    The Player Stats form represents a 'stat sheet',
-    a form that creates multiple related stats that
-    are associated with a single entity.
+  @brief Accepts a stat sheet form and creates
+    stats for the values listed in the form.
+  @param $form_values (array) the form values.
 */
-function soccer_boss_player_stats_form ($form, &$form_state) {
+function soccer_boss_process_stat_sheet ($info, $form_values) {
+  $values = array ();
+  foreach ($info ['entities'] as $entity) {
+    $entity_id = entity_id ('node', $entity);
+
+    foreach ($form_values as $key => $value) {
+      if (0 === strpos ($key, $entity_id, 0) && $value !== '') {
+        $i = strpos ($key, '_', 0);
+        $stat_name = substr ($key, $i + 1);
+        $values [$entity_id][$stat_name] = array (
+          'label' => $info ['columns'][$stat_name],
+          'value' => $value
+        );
+      }
+    }
+  }
+  return $values;
+}
+
+/**
+  @brief Implements hook_form ().
+  @details
+    Creates the Team Game Stats form, which is used
+    to enter stats for team players following a game.
+*/
+function soccer_boss_team_game_stats_form ($form, &$form_state, $team_nid) {
   module_load_include ('inc', 'soccer_boss');
 
-  return array (
-    'entity' => array (
-      '#type'            => 'entityreference',
-      '#title'           => t ('Player'),
-      '#era_entity_type' => 'node',
-      '#era_bundles'     => array (soccer_boss_PLAYER_TYPE),
-      '#era_cardinality' => 1,
-      '#cardinality'     => 1,
-      '#required'        => true
-    ),
-    'date' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Date'),
-      '#description'   => t ('The date on which these stat values were measured, reported, or applied.'),
-      '#default_value' => date ('F j, Y'),
-      '#required'      => true      
-    ),
-    'goals' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goals'),
-      '#description'   => t ('The number of goals scored by this player.')
-    ),
-    'goals_against' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goals Against'),
-      '#description'   => t ('The number of goals scored against this player (for Goal Keepers).')
-    ),
-    'shots' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Shots'),
-      '#description'   => t ('The number of shots made by this player.')
-    ),
-    'goal_shots' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goal Shots'),
-      '#description'   => t ('The number of goal shots made by this player.')
-    ),
-    'assists' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Assists'),
-      '#description'   => t ('The number of assists made by this player.')
-    ),
-    'saves' => array (
-      '#type'           => 'textfield',
-      '#title'          => t ('Saves'),
-      '#description'    => t ('The number of saves made by this player (for Goal Keepers).')
-    ),
-    'shutouts' => array (
-      '#type'           => 'textfield',
-      '#title'          => t ('Shutouts'),
-      '#description'    => t ('The number of shutouts by this player (for Goal Keepers).')
-    ),
-    'submit' => array (
-      '#type'           => 'submit',
-      '#value'          => 'Save'
-  ));
-}
+  $player_nids = soccer_boss_get_references (
+    $team_nid,
+    'node',
+    'soccer_boss_player_team'
+  );
 
-/**
-  @brief Processes the Player Stats form.
-  @details
-    Creates Stats for each of the fields.
-*/
-function soccer_boss_player_stats_form_submit ($form, &$form_state) {
-  soccer_boss_process_stat_sheet (
-    $form_state ['values'],
-    array (
-      'goals'         => 'Goals',
-      'goals_against' => 'Goals Against',
-      'shots'         => 'Shots',
-      'goal_shots'    => 'Goal Shots',
-      'assists'       => 'Assists',
-      'saves'         => 'Saves',
-      'shutouts'      => 'Shutouts'
-  ));
-}
-
-/**
-  @brief Returns the Team Stats form.
-  @details
-    The Team Stats form represents a 'stat sheet',
-    a form that creates multiple related stats that
-    are associated with a single entity.
-*/
-function soccer_boss_team_stats_form ($form, &$form_state) {
-  module_load_include ('inc', 'soccer_boss');
-
-  return array (
-    'entity' => array (
-      '#type'            => 'entityreference',
-      '#title'           => t ('Team'),
-      '#era_entity_type' => 'node',
-      '#era_bundles'     => array (soccer_boss_TEAM_TYPE),
-      '#era_cardinality' => 1,
-      '#cardinality'     => 1,
-      '#required'        => true
-    ),
-    'date' => array (
-      '#type'        => 'textfield',
-      '#title'       => t ('Date'),
-      '#description'   => t ('The date on which these stat values were measured, reported, or applied.'),
-      '#default_value' => date ('F j, Y'),
-      '#required'      => true      
-    ),
-    'goals' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goals'),
-      '#description'   => t ('The number of goals scored by this team.')
-    ),
-    'goals_against' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goals Against'),
-      '#description'   => t ('The number of goals scored against this team.')
-    ),
-    'shots' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Shots'),
-      '#description'   => t ('The number of shots made by this team.')
-    ),
-    'goal_shots' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Goal Shots'),
-      '#description'   => t ('The number of goal shots made by this team.')
-    ),
-    'shots_against' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Shots Against'),
-      '#description'   => t ('The number of shots made against this team.')
-    ),
-    'assists' => array (
-      '#type'          => 'textfield',
-      '#title'         => t ('Assists'),
-      '#description'   => t ('The number of assists made by this team.')
-    ),
-    'shutouts' => array (
-      '#type'           => 'textfield',
-      '#title'          => t ('Shutouts'),
-      '#description'    => t ('The number of shutouts by this team.')
-    ),
-    'games_won' => array (
-      '#type'           => 'textfield',
-      '#title'          => t ('Games Won'),
-      '#description'    => t ('The number of games won by this team.')
-    ),
-    'games_lost' => array (
-      '#type'           => 'textfield',
-      '#title'          => t ('Games Lost'),
-      '#description'    => t ('The number of games lost by this team.')
-    ),
-    'submit' => array (
-      '#type'           => 'submit',
-      '#value'          => 'Save'
-  ));
-}
-
-/**
-*/
-function soccer_boss_team_stats_form_submit ($form, &$form_state) {
-  soccer_boss_process_stat_sheet (
-    $form_state ['values'],
-    array (
+  $info = array (
+    'columns' => array (
       'goals'         => 'Goals',
       'goals_against' => 'Goals Against',
       'shots'         => 'Shots',
       'goal_shots'    => 'Goal Shots',
       'shots_against' => 'Shots Against',
       'assists'       => 'Assists',
-      'shutouts'      => 'Shutouts',
-      'games_won'     => 'Games Won',
-      'games_lost'    => 'Games Lost'
+      'shutouts'      => 'Shutouts'
+    ),
+    'entities' => node_load_multiple ($player_nids)
+  );
+
+  $form_state ['soccer_boss_info'] = $info;
+
+  $form = array (
+    'game' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Game'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (soccer_boss_GAME_TYPE),
+      '#era_cardinality' => 1,
+      '#cardinality'     => 1,
+      '#required'        => true
   ));
+  $form += soccer_boss_create_stat_sheet ($info);
+  return $form;
+}
+
+function soccer_boss_team_game_stats_form_submit ($form, $form_state) {
+  $values = soccer_boss_process_stat_sheet (
+    $form_state ['soccer_boss_info'],
+    $form_state ['values']
+  );
+
+  foreach ($values as $entity_id => $stat_values) {
+    foreach ($stat_values as $stat_name => $stat_value) {
+      $node = new stdClass ();
+      $node->type = soccer_boss_PGS_TYPE;
+      node_object_prepare ($node);
+
+      $node->title = $stat_value ['label'];
+      $node->field_pgs_player ['und'][0]['target_id'] = $entity_id;
+      $node->field_pgs_game   ['und'][0]['target_id'] = $form_state ['values']['game']['target_id'];
+      $node->field_pgs_value  ['und'][0] = array (
+        'value' => $stat_value ['value'],
+        'format' => 'plain_text'
+      );
+
+      node_save ($node);
+    }
+  }
+}
+
+/**
+  @brief Creates the Team Player Stats form.
+  @param $form (array) the initial form.
+  @param $form_state (array) the initial form state.
+  @param $team_nid (integer) the team node id.
+  @return (array) the form array.
+*/
+function soccer_boss_team_player_stats_form ($form, &$form_state, $team_nid) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nids = soccer_boss_get_references (
+    $team_nid,
+    'node',
+    'soccer_boss_player_team'
+  );
+
+  $info = array (
+    'columns' => array (
+      'goals'         => 'Goals',
+      'goals_against' => 'Goals Against',
+      'shots'         => 'Shots',
+      'goal_shots'    => 'Goal Shots',
+      'shots_against' => 'Shots Against',
+      'assists'       => 'Assists',
+      'shutouts'      => 'Shutouts'
+    ),
+    'entities' => node_load_multiple ($player_nids)
+  );
+
+  $form_state ['soccer_boss_info'] = $info;
+
+  $form = array (
+    'year' => array (
+      '#type'            => 'textfield',
+      '#title'           => t ('Year'),
+      '#required'        => true
+  ));
+  $form += soccer_boss_create_stat_sheet ($info);
+  return $form;
+}
+
+/**
+  @brief Processes the Team Player Stats form.
+*/
+function soccer_boss_team_player_stats_form_submit ($form, $form_state) {
+  $values = soccer_boss_process_stat_sheet (
+    $form_state ['soccer_boss_info'],
+    $form_state ['values']
+  );
+
+  foreach ($values as $entity_id => $stat_values) {
+    foreach ($stat_values as $stat_name => $stat_value) {
+      $node = new stdClass ();
+      $node->type = soccer_boss_PPS_TYPE;
+      node_object_prepare ($node);
+
+      $node->title = $stat_value ['label'];
+      $node->soccer_boss_pps_player ['und'][0]['target_id'] = $entity_id;
+      $node->soccer_boss_pps_year   ['und'][0] = array (
+        'value'  => $form_state ['values']['year'],
+        'format' => 'plain_text'
+      );
+      $node->soccer_boss_pps_value  ['und'][0] = array (
+        'value'  => $stat_value ['value'],
+        'format' => 'plain_text'
+      );
+
+      node_save ($node);
+    }
+  }
 }

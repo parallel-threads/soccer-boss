@@ -50,4 +50,7 @@ function soccer_boss_uninstall () {
 
   // IV. Clear the block visibility settings.
   soccer_boss_clear_block_visibilities ();
+
+  node_type_delete ('soccer_boss_coach');
+  node_type_delete ('soccer_boss_player_game_stats');
 }
