@@ -20,11 +20,47 @@ function soccer_boss_player_team_page ($node) {
 }
 
 /**
-  @brief Redirects the user to the Team Player Stats page.
-  @param $node (object) the team node.
+  @brief Returns a render array that represents the Player Bio page.
+  @param $node (object) the player node.
+  @return (array) the render array.
 */
-function soccer_boss_team_player_stats_page ($node) {
-  drupal_goto ('team-player-stats-form/' . $node->nid);
+function soccer_boss_player_bio_page ($node) {
+  return array (
+    'content' => array (
+      '#type' => 'markup',
+      '#markup' => $node->body ['und'][0]['value']
+  ));
+}
+
+/**
+  @brief Redirects the user to the Team Player Stats page.
+  @param $team_node (object) the team node.
+*/
+function soccer_boss_add_team_player_stats_page ($team_node) {
+  drupal_goto ('team-player-stats-form/' . $team_node->nid);
+}
+
+/**
+  @brief Returns a render array that represents the Team Player Stats Page.
+  @param $team_node (object) the team node.
+*/
+function soccer_boss_team_player_stats_page ($team_node) {
+/*
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nids = soccer_boss_get_references (
+    $team_node->nid,
+    'node',
+    'soccer_boss_player_team'
+  );
+
+  $stat_values = array ();
+  foreach ($player_nids as $player_nid) {
+    $player_stats = soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pps_player');
+    foreach ($player_stats as $player_stat) {
+    }
+  }
+*/
 }
 
 /**
@@ -33,13 +69,6 @@ function soccer_boss_team_player_stats_page ($node) {
   @return (array) a render array representing the table.
 */
 function soccer_boss_stats_comparison_tables ($stat_values) {
-
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_stats_comparison_tables] stat values: <pre>@stat_values</pre>',
-    array (
-      '@stat_values' => print_r ($stat_values, true)
-  ));
 
   // Create the stat tables.
   $stat_tables = '';

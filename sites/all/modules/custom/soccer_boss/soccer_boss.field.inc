@@ -149,7 +149,23 @@ function soccer_boss_create_date_field ($description) {
 }
 
 
-// ----- II. Defines the Game fields. -----
+// ----- II. Defines the Club fields. -----
+
+/// Creates the League field for the Club content type.
+function soccer_boss_create_club_league_field () {
+  soccer_boss_create_entity_reference_field (
+    array (
+      'name'           => 'soccer_boss_club_league',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_CLUB_TYPE,
+      'label'          => t ('League'),
+      'description'    => t ('The league that the club belongs to.'),
+      'cardinality'    => 1,
+      'target_bundles' => array (soccer_boss_LEAGUE_TYPE)
+  ));
+}
+
+// ----- III. Defines the Game fields. -----
 
 /// Creates the Teams field for the Game content type.
 function soccer_boss_create_game_teams_field () {
@@ -191,7 +207,7 @@ function soccer_boss_create_game_score_field () {
   ));
 }
 
-// ----- III. Defines the Player fields. -----
+// ----- IV. Defines the Player fields. -----
 
 /// Creates the Photo field for Player content type.
 function soccer_boss_create_player_photo_field () {
@@ -299,7 +315,7 @@ function soccer_boss_create_player_birth_date_field () {
   ));
 }
 
-// ----- IV. Defines the Staff fields. -----
+// ----- V. Defines the Staff fields. -----
 
 /// Creates the Photo field for Staff Member content type.
 function soccer_boss_create_staff_photo_field () {
@@ -367,7 +383,7 @@ function soccer_boss_create_staff_role_field () {
   ));
 }
 
-// ----- V. Defines the Team fields. -----
+// ----- VI. Defines the Team fields. -----
 
 /// Creates the Logo field for the Team content type.
 function soccer_boss_create_team_logo_field () {
@@ -382,7 +398,49 @@ function soccer_boss_create_team_logo_field () {
   ));
 }
 
-// ----- VI. Defines the Player Game Stat fields. -----
+// ----- VII. Defines the Player Fitness Stat fields. -----
+
+/// Creates the Player field for the Player Fitness Stat content type.
+function soccer_boss_create_pfs_player_field () {
+  soccer_boss_create_entity_reference_field (
+    array (
+      'name'           => 'soccer_boss_pfs_player',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_PFS_TYPE,
+      'label'          => t ('Player'),
+      'description'    => t ('The player that the stat applies to.'),
+      'cardinality'    => 1,
+      'target_bundles' => array (soccer_boss_PLAYER_TYPE)
+  ));
+}
+
+/// Creates the Value field for the Player Fitness Stat content type.
+function soccer_boss_create_pfs_value_field () {
+  soccer_boss_create_text_field (
+    array (
+      'name'        => 'soccer_boss_pfs_value',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PFS_TYPE,
+      'label'       => t ('Value'),
+      'description' => t ('The stat value.'),
+      'cardinality' => 1
+  ));
+}
+
+/// Creates the Date field for Player Fitness Stat content type.
+function soccer_boss_create_pfs_date_field () {
+  soccer_boss_create_date_field (
+    array (
+      'name'        => 'soccer_boss_pfs_date',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_PFS_TYPE,
+      'label'       => t ('Date'),
+      'description' => t ('The date on which the stat was measured or applied.'),
+      'cardinality' => 1
+  ));
+}
+
+// ----- VIII. Defines the Player Game Stat fields. -----
 
 /// Creates the Player field for the Player Game Stat content type.
 function soccer_boss_create_pgs_player_field () {
@@ -425,7 +483,7 @@ function soccer_boss_create_pgs_value_field () {
   ));
 }
 
-// ----- VII. Defines the Player Performance Stat fields. -----
+// ----- IX. Defines the Player Performance Stat fields. -----
 
 /// Creates the Player field for the Player Performance Stat (PPS) content type.
 function soccer_boss_create_pps_player_field () {
@@ -467,7 +525,7 @@ function soccer_boss_create_pps_year_field () {
   ));
 }
 
-// ----- IX. Defines the Team Stat (TS) fields. -----
+// ----- X. Defines the Team Stat (TS) fields. -----
 
 /// Creates the Team field for the Team Stat (TS) content type.
 function soccer_boss_create_ts_team_field () {
@@ -508,4 +566,3 @@ function soccer_boss_create_ts_year_field () {
       'cardinality' => 1
   ));
 }
-

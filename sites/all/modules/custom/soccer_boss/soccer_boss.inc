@@ -8,8 +8,14 @@
 
 // ----- I. Defines the content type names. -----
 
+/// Defines the club content type's name.
+define ('soccer_boss_CLUB_TYPE', 'soccer_boss_club');
+
 /// Defines the game content type's name.
 define ('soccer_boss_GAME_TYPE', 'soccer_boss_game');
+
+/// Defines the league content type's name.
+define ('soccer_boss_LEAGUE_TYPE', 'soccer_boss_league');
 
 /// Defines the player content type's name.
 define ('soccer_boss_PLAYER_TYPE', 'soccer_boss_player');
@@ -21,6 +27,9 @@ define ('soccer_boss_STAFF_TYPE', 'soccer_boss_staff');
 define ('soccer_boss_TEAM_TYPE', 'soccer_boss_team');
  
 // ----- I.A. Define the stat type names. -----
+
+/// Defines the player fitness stat (PFS) type's name.
+define ('soccer_boss_PFS_TYPE', 'soccer_boss_pfs');
 
 /// Defines the player game stat (PGS) type's name.
 define ('soccer_boss_PGS_TYPE', 'soccer_boss_pgs');
@@ -38,6 +47,22 @@ function soccer_boss_vocabularies () {
   global $base_url;
 
   return array (
+    'soccer_boss_age' => array (
+      'name'         => 'Age Group',
+      'machine_name' => 'soccer_boss_age',
+      'description'  => 'The set of recognized age groups.'
+    ),
+    'soccer_boss_division' => array (
+      'name'         => 'Division',
+      'machine_name' => 'soccer_boss_division',
+      'description'  => 'The set of league divisions.'
+    ),
+    'soccer_boss_gender' => array (
+      'name'         => 'Gender',
+      'machine_name' => 'soccer_boss_gender',
+      'description'  => 'The set of genders.',
+      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/genders.csv')
+    ),
     'soccer_boss_player_position' => array (
       'name'         => 'Player Position',
       'machine_name' => 'soccer_boss_player_position',
@@ -129,6 +154,24 @@ function soccer_boss_delete_vocabularies () {
 
 // ----- III. Defines the content types. -----
 
+/// Defines the Club content type.
+function soccer_boss_club_content_type () {
+  $t = get_t ();
+  return node_type_set_defaults (
+    array (
+      'type'        => soccer_boss_CLUB_TYPE,
+      'name'        => $t ('Club'),
+      'description' => $t ('Represents amateur soccer clubs.'),
+      'help'        => $t ('Represents amateur soccer clubs.'),
+      'has_title'   => true,
+      'base'        => 'node_content',
+      'custom'      => false,
+      'modified'    => true,
+      'locked'      => true,
+      'module'      => 'soccer_boss'
+  ));
+}
+
 /// Defines the Game content type.
 function soccer_boss_game_content_type () {
   $t = get_t (); 
@@ -138,6 +181,24 @@ function soccer_boss_game_content_type () {
       'name'        => $t ('Game'),
       'description' => $t ('Represents amateur soccer matches.'),
       'help'        => $t ('Represents amateur soccer matches.'),
+      'has_title'   => true,
+      'base'        => 'node_content',
+      'custom'      => false,
+      'modified'    => true,
+      'locked'      => true,
+      'module'      => 'soccer_boss'
+  )); 
+}
+
+/// Defines the League content type.
+function soccer_boss_league_content_type () {
+  $t = get_t (); 
+  return node_type_set_defaults (
+    array (
+      'type'        => soccer_boss_LEAGUE_TYPE,
+      'name'        => $t ('League'),
+      'description' => $t ('Represents amateur soccer leagues.'),
+      'help'        => $t ('Represents amateur soccer leagues.'),
       'has_title'   => true,
       'base'        => 'node_content',
       'custom'      => false,
@@ -203,6 +264,24 @@ function soccer_boss_team_content_type () {
 
 // ----- III.A. Defines the Stat content types.
 
+/// Defines the Player Fitness Stat (PFS) type.
+function soccer_boss_pfs_content_type () {
+  $t = get_t (); 
+  return node_type_set_defaults (
+    array (
+      'type'        => soccer_boss_PFS_TYPE,
+      'name'        => $t ('Player Fitness Stat'),
+      'description' => $t ('Represents player fitness stats.'),
+      'help'        => $t ('Represents player fitness stats.'),
+      'has_title'   => true,
+      'base'        => 'node_content',
+      'custom'      => false,
+      'modified'    => true,
+      'locked'      => true,
+      'module'      => 'soccer_boss'
+  )); 
+}
+
 /// Defines the Player Game Stat (PGS) type.
 function soccer_boss_pgs_content_type () {
   $t = get_t (); 
@@ -260,6 +339,12 @@ function soccer_boss_ts_content_type () {
 /// Returns the content type definitions array.
 function soccer_boss_content_types () {
   return array (
+    soccer_boss_CLUB_TYPE => array (
+      'type'       => soccer_boss_club_content_type (),
+      'body_label' => 'Overview',
+      'fields'     => array (
+        'soccer_boss_club_league' => 'soccer_boss_create_club_league_field'
+    )),
     soccer_boss_GAME_TYPE => array (
       'type'       => soccer_boss_game_content_type (),
       'body_label' => 'Commentary',
@@ -268,6 +353,11 @@ function soccer_boss_content_types () {
         'soccer_boss_game_date'  => 'soccer_boss_create_game_date_field',
         'soccer_boss_game_score' => 'soccer_boss_create_game_score_field',
     )),
+    soccer_boss_LEAGUE_TYPE => array (
+      'type'       => soccer_boss_league_content_type (),
+      'body_label' => 'Overview',
+      'fields'     => array ()
+    ),
     soccer_boss_PLAYER_TYPE => array (
       'type'       => soccer_boss_player_content_type (),
       'body_label' => 'Bio',
@@ -293,9 +383,17 @@ function soccer_boss_content_types () {
     )),
     soccer_boss_TEAM_TYPE => array (
       'type'       => soccer_boss_team_content_type (),
-      'body_label' => 'Description',
+      'body_label' => 'Overview',
       'fields'     => array (
         'soccer_boss_team_logo'    => 'soccer_boss_create_team_logo_field'
+    )),
+    soccer_boss_PFS_TYPE => array (
+      'type'       => soccer_boss_pfs_content_type (),
+      'body_label' => false,
+      'fields'     => array (
+        'soccer_boss_pfs_player' => 'soccer_boss_create_pfs_player_field',
+        'soccer_boss_pfs_value'  => 'soccer_boss_create_pfs_value_field',
+        'soccer_boss_pfs_date'   => 'soccer_boss_create_pfs_date_field'
     )),
     soccer_boss_PGS_TYPE => array (
       'type'       => soccer_boss_pgs_content_type (),
@@ -393,9 +491,17 @@ function soccer_boss_delete_nodes ($type) {
 
 // ----- V. Defines the core user roles. -----
 
+/// Define the Team Coach role name.
 define ('soccer_boss_COACH_ROLE', 'soccer_boss_coach');
+
+/// Define the Player role name.
 define ('soccer_boss_PLAYER_ROLE', 'soccer_boss_player');
-define ('soccer_boss_STAFF_ROLE', 'soccer_boss_role');
+
+/// Define the Team Staff role name.
+define ('soccer_boss_TEAM_STAFF_ROLE', 'soccer_boss_team_staff');
+
+/// Define the Club Staff role name.
+define ('soccer_boss_CLUB_STAFF_ROLE', 'soccer_boss_club_staff');
 
 /**
   @brief Creates the given user role.
@@ -446,13 +552,13 @@ function soccer_boss_roles () {
       'edit any '   . soccer_boss_PPS_TYPE               . ' content',
       'delete any ' . soccer_boss_PPS_TYPE               . ' content',
     ),
-    soccer_boss_STAFF_ROLE => array (
-      'create '     . soccer_boss_PLAYER_TYPE            . ' content', 
-      'edit any '   . soccer_boss_PLAYER_TYPE            . ' content', 
-      'delete any ' . soccer_boss_PLAYER_TYPE            . ' content', 
+    soccer_boss_TEAM_STAFF_ROLE => array (
       'create '     . soccer_boss_GAME_TYPE              . ' content',
       'edit any '   . soccer_boss_GAME_TYPE              . ' content',
       'delete any ' . soccer_boss_GAME_TYPE              . ' content',
+      'create '     . soccer_boss_PLAYER_TYPE            . ' content', 
+      'edit any '   . soccer_boss_PLAYER_TYPE            . ' content', 
+      'delete any ' . soccer_boss_PLAYER_TYPE            . ' content', 
       'create '     . soccer_boss_STAFF_TYPE             . ' content',
       'edit own '   . soccer_boss_STAFF_TYPE             . ' content',
       'delete own ' . soccer_boss_STAFF_TYPE             . ' content',
@@ -468,7 +574,33 @@ function soccer_boss_roles () {
       'create '     . soccer_boss_TS_TYPE               . ' content',
       'edit any '   . soccer_boss_TS_TYPE               . ' content',
       'delete any ' . soccer_boss_TS_TYPE               . ' content',
-    )
+    ),
+    soccer_boss_CLUB_STAFF_ROLE => array (
+      'create '     . soccer_boss_CLUB_TYPE              . ' content',
+      'edit any '   . soccer_boss_CLUB_TYPE              . ' content',
+      'delete any ' . soccer_boss_CLUB_TYPE              . ' content',
+      'create '     . soccer_boss_GAME_TYPE              . ' content',
+      'edit any '   . soccer_boss_GAME_TYPE              . ' content',
+      'delete any ' . soccer_boss_GAME_TYPE              . ' content',
+      'create '     . soccer_boss_PLAYER_TYPE            . ' content', 
+      'edit any '   . soccer_boss_PLAYER_TYPE            . ' content', 
+      'delete any ' . soccer_boss_PLAYER_TYPE            . ' content', 
+      'create '     . soccer_boss_STAFF_TYPE             . ' content',
+      'edit own '   . soccer_boss_STAFF_TYPE             . ' content',
+      'delete own ' . soccer_boss_STAFF_TYPE             . ' content',
+      'create '     . soccer_boss_TEAM_TYPE              . ' content',
+      'edit own '   . soccer_boss_TEAM_TYPE              . ' content',
+      'delete own ' . soccer_boss_TEAM_TYPE              . ' content',
+      'create '     . soccer_boss_PGS_TYPE               . ' content',
+      'edit any '   . soccer_boss_PGS_TYPE               . ' content',
+      'delete any ' . soccer_boss_PGS_TYPE               . ' content',
+      'create '     . soccer_boss_PPS_TYPE               . ' content',
+      'edit any '   . soccer_boss_PPS_TYPE               . ' content',
+      'delete any ' . soccer_boss_PPS_TYPE               . ' content',
+      'create '     . soccer_boss_TS_TYPE               . ' content',
+      'edit any '   . soccer_boss_TS_TYPE               . ' content',
+      'delete any ' . soccer_boss_TS_TYPE               . ' content',
+    ),
   );
 }
 
@@ -522,30 +654,51 @@ function soccer_boss_set_block_visibility ($delta, $type, $module) {
 */
 function soccer_boss_block_settings () {
   return array (
+    'club_teams-block' => array (
+      'type'   => soccer_boss_CLUB_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
+    'league_clubs-block' => array (
+      'type'   => soccer_boss_LEAGUE_TYPE,
+      'region' => 'content',
+      'module' => 'views'
+    ),
     'player_performance_stats-block'  => array (
       'type'   => soccer_boss_PLAYER_TYPE,
       'region' => 'content',
-      'module' => 'views'
+      'module' => 'views',
+      'weight' => 2
     ),
     'player_vital_stats-block' => array (
       'type'   => soccer_boss_PLAYER_TYPE,
       'region' => 'content',
-      'module' => 'views'
+      'module' => 'views',
+      'weight' => 1
     ),
     'team_games-block' => array (
       'type'   => soccer_boss_TEAM_TYPE,
       'region' => 'content',
-      'module' => 'views'
+      'module' => 'views',
+      'weight' => 2
     ),
     'team_roster-block' => array (
       'type'   => soccer_boss_TEAM_TYPE,
       'region' => 'content',
-      'module' => 'views'
+      'module' => 'views',
+      'weight' => 4
     ),
     'team_staff-block' => array (
       'type'   => soccer_boss_TEAM_TYPE,
       'region' => 'content',
-      'module' => 'views'
+      'module' => 'views',
+      'weight' => 3
+    ),
+    'team_vitals-block' => array (
+      'type'   => soccer_boss_TEAM_TYPE,
+      'region' => 'content',
+      'module' => 'views',
+      'weight' => 1
   ));
 }
 

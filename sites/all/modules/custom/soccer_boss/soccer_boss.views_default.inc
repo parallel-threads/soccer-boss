@@ -8,11 +8,14 @@
 function soccer_boss_views_default_views () {
   $views = array ();
   foreach (array (
+    soccer_boss_club_teams_view (),
+    soccer_boss_league_clubs_view (),
     soccer_boss_player_performance_stats_view (),
     soccer_boss_player_vital_stats_view (),
     soccer_boss_team_games_view (),
     soccer_boss_team_roster_view (),
-    soccer_boss_team_staff_view ()
+    soccer_boss_team_staff_view (),
+    soccer_boss_team_vitals_view ()
   ) as $view) {
     $views [$view->name] = $view;
   }
@@ -27,6 +30,212 @@ function soccer_boss_delete_views () {
 }
 
 // ----- The following section contains the exported views bundled into functions -----
+
+/// Returns the Club Teams view.
+function soccer_boss_club_teams_view () {
+  $view = new view();
+  $view->name = 'club_teams';
+  $view->description = 'Lists the teams that belong to a club.';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'Club Teams';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Club Teams';
+  $handler->display->display_options['use_more'] = TRUE;
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_league_target_id']['id'] = 'field_league_target_id';
+  $handler->display->display_options['relationships']['field_league_target_id']['table'] = 'field_data_field_league';
+  $handler->display->display_options['relationships']['field_league_target_id']['field'] = 'field_league_target_id';
+  $handler->display->display_options['relationships']['field_league_target_id']['label'] = 'Content entity referenced from field_league (club)';
+  $handler->display->display_options['relationships']['field_league_target_id']['required'] = TRUE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Age */
+  $handler->display->display_options['fields']['field_age']['id'] = 'field_age';
+  $handler->display->display_options['fields']['field_age']['table'] = 'field_data_field_age';
+  $handler->display->display_options['fields']['field_age']['field'] = 'field_age';
+  /* Field: Content: Gender */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  /* Field: Content: Body */
+  $handler->display->display_options['fields']['body']['id'] = 'body';
+  $handler->display->display_options['fields']['body']['table'] = 'field_data_body';
+  $handler->display->display_options['fields']['body']['field'] = 'body';
+  $handler->display->display_options['fields']['body']['label'] = 'Description';
+  $handler->display->display_options['fields']['body']['type'] = 'text_summary_or_trimmed';
+  $handler->display->display_options['fields']['body']['settings'] = array(
+    'trim_length' => 600,
+  );
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Sort criterion: Content: Age (field_age) */
+  $handler->display->display_options['sorts']['field_age_tid']['id'] = 'field_age_tid';
+  $handler->display->display_options['sorts']['field_age_tid']['table'] = 'field_data_field_age';
+  $handler->display->display_options['sorts']['field_age_tid']['field'] = 'field_age_tid';
+  /* Contextual filter: Content: Nid */
+  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['table'] = 'node';
+  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['relationship'] = 'field_league_target_id';
+  $handler->display->display_options['arguments']['nid']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'node';
+  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'soccer_boss_team' => 'soccer_boss_team',
+  );
+  /* Filter criterion: Content: Age (field_age) */
+  $handler->display->display_options['filters']['field_age_tid']['id'] = 'field_age_tid';
+  $handler->display->display_options['filters']['field_age_tid']['table'] = 'field_data_field_age';
+  $handler->display->display_options['filters']['field_age_tid']['field'] = 'field_age_tid';
+  $handler->display->display_options['filters']['field_age_tid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_age_tid']['expose']['operator_id'] = 'field_age_tid_op';
+  $handler->display->display_options['filters']['field_age_tid']['expose']['label'] = 'Age (field_age)';
+  $handler->display->display_options['filters']['field_age_tid']['expose']['operator'] = 'field_age_tid_op';
+  $handler->display->display_options['filters']['field_age_tid']['expose']['identifier'] = 'field_age_tid';
+  $handler->display->display_options['filters']['field_age_tid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    24 => 0,
+    41 => 0,
+    42 => 0,
+  );
+  $handler->display->display_options['filters']['field_age_tid']['type'] = 'select';
+  $handler->display->display_options['filters']['field_age_tid']['vocabulary'] = 'age';
+  /* Filter criterion: Content: Gender (field_gender) */
+  $handler->display->display_options['filters']['field_gender_tid']['id'] = 'field_gender_tid';
+  $handler->display->display_options['filters']['field_gender_tid']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['filters']['field_gender_tid']['field'] = 'field_gender_tid';
+  $handler->display->display_options['filters']['field_gender_tid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_gender_tid']['expose']['operator_id'] = 'field_gender_tid_op';
+  $handler->display->display_options['filters']['field_gender_tid']['expose']['label'] = 'Gender (field_gender)';
+  $handler->display->display_options['filters']['field_gender_tid']['expose']['operator'] = 'field_gender_tid_op';
+  $handler->display->display_options['filters']['field_gender_tid']['expose']['identifier'] = 'field_gender_tid';
+  $handler->display->display_options['filters']['field_gender_tid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+    24 => 0,
+    41 => 0,
+    42 => 0,
+  );
+  $handler->display->display_options['filters']['field_gender_tid']['type'] = 'select';
+  $handler->display->display_options['filters']['field_gender_tid']['vocabulary'] = 'gender';
+
+  /* Display: Block */
+  $handler = $view->new_display('block', 'Block', 'block');
+
+  return $view;
+}
+
+/// Returns the League Clubs view.
+function soccer_boss_league_clubs_view () {
+  $view = new view();
+  $view->name = 'league_clubs';
+  $view->description = 'Lists the clubs that belong to a given league.';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'League Clubs';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'League Clubs';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_club_league_target_id']['id'] = 'field_club_league_target_id';
+  $handler->display->display_options['relationships']['field_club_league_target_id']['table'] = 'field_data_field_club_league';
+  $handler->display->display_options['relationships']['field_club_league_target_id']['field'] = 'field_club_league_target_id';
+  $handler->display->display_options['relationships']['field_club_league_target_id']['required'] = TRUE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Body */
+  $handler->display->display_options['fields']['body']['id'] = 'body';
+  $handler->display->display_options['fields']['body']['table'] = 'field_data_body';
+  $handler->display->display_options['fields']['body']['field'] = 'body';
+  $handler->display->display_options['fields']['body']['label'] = 'Description';
+  /* Sort criterion: Content: Post date */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'node';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+  /* Contextual filter: Content: Nid */
+  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['table'] = 'node';
+  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['relationship'] = 'field_club_league_target_id';
+  $handler->display->display_options['arguments']['nid']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'node';
+  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'club' => 'club',
+  );
+
+  /* Display: Block */
+  $handler = $view->new_display('block', 'Block', 'block');
+
+  return $view;
+}
 
 /// Returns the Player Performance Stats view.
 function soccer_boss_player_performance_stats_view () {
@@ -247,7 +456,7 @@ function soccer_boss_team_games_view () {
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
-    /* Display: Master */
+  /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Team Games';
   $handler->display->display_options['use_more_always'] = FALSE;
@@ -531,6 +740,77 @@ function soccer_boss_team_staff_view () {
   $handler->display->display_options['defaults']['pager'] = FALSE;
   $handler->display->display_options['pager']['type'] = 'some';
   $handler->display->display_options['pager']['options']['items_per_page'] = '20';
+
+  return $view;
+}
+
+/// Returns the Team Vitals view.
+function soccer_boss_team_vitals_view () {
+  $view = new view();
+  $view->name = 'team_vitals';
+  $view->description = 'Summary information about teams';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'Team Vitals';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* Field: Content: Age */
+  $handler->display->display_options['fields']['field_age']['id'] = 'field_age';
+  $handler->display->display_options['fields']['field_age']['table'] = 'field_data_field_age';
+  $handler->display->display_options['fields']['field_age']['field'] = 'field_age';
+  /* Field: Content: Division */
+  $handler->display->display_options['fields']['field_division']['id'] = 'field_division';
+  $handler->display->display_options['fields']['field_division']['table'] = 'field_data_field_division';
+  $handler->display->display_options['fields']['field_division']['field'] = 'field_division';
+  /* Field: Content: Gender */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  /* Field: Content: Club */
+  $handler->display->display_options['fields']['field_league']['id'] = 'field_league';
+  $handler->display->display_options['fields']['field_league']['table'] = 'field_data_field_league';
+  $handler->display->display_options['fields']['field_league']['field'] = 'field_league';
+  $handler->display->display_options['fields']['field_league']['settings'] = array(
+    'link' => 0,
+  );
+  /* Contextual filter: Content: Nid */
+  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['table'] = 'node';
+  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
+  $handler->display->display_options['arguments']['nid']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'node';
+  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'soccer_boss_team' => 'soccer_boss_team',
+  );
+
+  /* Display: Block */
+  $handler = $view->new_display('block', 'Block', 'block');
 
   return $view;
 }
