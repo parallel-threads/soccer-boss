@@ -27,6 +27,15 @@ function soccer_boss_create_photo_field ($description) {
     'bundle'            => $description ['bundle'],
     'label'             => $description ['label'],
     'description'       => $description ['description'],
+    'display'           => array (
+      'default'         => array (
+        'visible'       => $description ['visible'],
+        'weight'        => $description ['weight']
+      ),
+      'teaser'          => array (
+        'visible'       => $description ['visible'],
+        'weight'        => $description ['weight']
+    )),
     'instance_settings' => array (
       'file_extensions' => 'jpg jpeg png',
       'alt_field'       => 1,
@@ -55,8 +64,16 @@ function soccer_boss_create_text_field ($description) {
     'label'         => $description ['label'],
     'description'   => $description ['description'],
     'required'      => true,
-    'widget'        => array ('type' => 'text_textfield')
-  ));
+    'widget'        => array ('type' => 'text_textfield'),
+    'display'       => array (
+      'default'     => array (
+        'visible'   => $description ['visible'],
+        'weight'    => $description ['weight']
+      ),
+      'teaser'      => array (
+        'visible'   => $description ['visible'],
+        'weight'    => $description ['weight']
+  ))));
 } 
 
 /**
@@ -85,10 +102,16 @@ function soccer_boss_create_entity_reference_field ($description) {
     'description'  => $description ['description'],
     'widget'       => array ('type' => 'entityreference_autocomplete'),
     'display'      => array (
-      'default' => array (
-        'label' => $description ['label'],
-        'type'  => 'entityreference_entity_view'
-    ))  
+      'default'  => array (
+        'label'   => $description ['label'],
+        'type'    => 'entityreference_entity_view',
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+      ),
+      'teaser'   => array (
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+    ))
   )); 
 }
 
@@ -116,6 +139,15 @@ function soccer_boss_create_term_reference_field ($description) {
     'bundle'      => $description ['bundle'],
     'label'       => $description ['label'],
     'description' => $description ['description'],
+    'display'     => array (
+      'default'   => array (
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+      ),
+      'teaser'    => array (
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+    )),
     'widget' => array (
       'type' => 'options_select',
     ),  
@@ -144,8 +176,16 @@ function soccer_boss_create_date_field ($description) {
     'label'        => $description ['label'],
     'description'  => $description ['description'],
     'required'     => true,
-    'widget'       => array ('type' => 'date_text')
-  ));
+    'widget'       => array ('type' => 'date_text'), 
+    'display'     => array (
+      'default'   => array (
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+      ),
+      'teaser'    => array (
+        'visible' => $description ['visible'],
+        'weight'  => $description ['weight']
+  ))));
 }
 
 
@@ -161,7 +201,9 @@ function soccer_boss_create_club_league_field () {
       'label'          => t ('League'),
       'description'    => t ('The league that the club belongs to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_LEAGUE_TYPE)
+      'target_bundles' => array (soccer_boss_LEAGUE_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -177,7 +219,9 @@ function soccer_boss_create_game_teams_field () {
       'label'          => t ('Teams'),
       'description'    => t ('The Teams involved in the match.'),
       'cardinality'    => 2,
-      'target_bundles' => array (soccer_boss_TEAM_TYPE)
+      'target_bundles' => array (soccer_boss_TEAM_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -190,7 +234,9 @@ function soccer_boss_create_game_date_field () {
       'bundle'      => soccer_boss_GAME_TYPE,
       'label'       => t ('Date'),
       'description' => t ('The date on which the match was held.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 1
+      'visible'     => true
   ));
 }
 
@@ -203,7 +249,9 @@ function soccer_boss_create_game_score_field () {
       'bundle'      => soccer_boss_GAME_TYPE,
       'label'       => t ('Score'),
       'description' => t ('The game\'s score.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 2,
+      'visible'     => true
   ));
 }
 
@@ -218,7 +266,9 @@ function soccer_boss_create_player_photo_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('Photo'),
       'description' => t ('A photo of the player.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => true
   ));
 }
 
@@ -231,7 +281,9 @@ function soccer_boss_create_player_first_name_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('First Name'),
       'description' => t ('The player\'s first name.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -244,7 +296,9 @@ function soccer_boss_create_player_last_name_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('Last Name'),
       'description' => t ('The player\'s last name.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -258,7 +312,9 @@ function soccer_boss_create_player_team_field () {
       'label'          => t ('Team'),
       'description'    => t ('The player\'s team.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_TEAM_TYPE)
+      'target_bundles' => array (soccer_boss_TEAM_TYPE),
+      'weight'         => 0,
+      'visible'        => false
   ));
 }
 
@@ -272,7 +328,9 @@ function soccer_boss_create_player_position_field () {
       'label'       => t ('Position'),
       'description' => t ('The Player\'s position.'),
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'vocabulary'  => 'soccer_boss_player_position'
+      'vocabulary'  => 'soccer_boss_player_position',
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -285,7 +343,9 @@ function soccer_boss_create_player_height_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('Height'),
       'description' => t ('The player\'s height in feet and inches (<feet>\' <inches>").'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -298,7 +358,9 @@ function soccer_boss_create_player_weight_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('Weight'),
       'description' => t ('The player\'s weight in lbs.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -311,7 +373,9 @@ function soccer_boss_create_player_birth_date_field () {
       'bundle'      => soccer_boss_PLAYER_TYPE,
       'label'       => t ('Birth Date'),
       'description' => t ('The player\'s date of birth.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -326,7 +390,9 @@ function soccer_boss_create_staff_photo_field () {
       'bundle'      => soccer_boss_STAFF_TYPE,
       'label'       => t ('Photo'),
       'description' => t ('A photo of the staff member.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => true
   ));
 }
 
@@ -339,7 +405,9 @@ function soccer_boss_create_staff_first_name_field () {
       'bundle'      => soccer_boss_STAFF_TYPE,
       'label'       => t ('First Name'),
       'description' => t ('The staff member\'s first name.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -352,7 +420,9 @@ function soccer_boss_create_staff_last_name_field () {
       'bundle'      => soccer_boss_STAFF_TYPE,
       'label'       => t ('Last Name'),
       'description' => t ('The staff member\'s last name.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -366,7 +436,9 @@ function soccer_boss_create_staff_team_field () {
       'label'          => t ('Team'),
       'description'    => t ('The staff member\'s team.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_TEAM_TYPE)
+      'target_bundles' => array (soccer_boss_TEAM_TYPE),
+      'weight'         => 0,
+      'visible'        => false
   ));
 }
 /// Creates the Role field the Team Staff content type.
@@ -379,7 +451,9 @@ function soccer_boss_create_staff_role_field () {
       'label'       => t ('Role'),
       'description' => t ('The staff member\'s role.'),
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'vocabulary'  => 'soccer_boss_staff_role'
+      'vocabulary'  => 'soccer_boss_staff_role',
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
@@ -394,7 +468,9 @@ function soccer_boss_create_team_logo_field () {
       'bundle'      => soccer_boss_TEAM_TYPE,
       'label'       => t ('Logo'),
       'description' => t ('The Team\'s logo.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 0,
+      'visible'     => true
   ));
 }
 
@@ -410,7 +486,9 @@ function soccer_boss_create_pfs_player_field () {
       'label'          => t ('Player'),
       'description'    => t ('The player that the stat applies to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_PLAYER_TYPE)
+      'target_bundles' => array (soccer_boss_PLAYER_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -423,7 +501,9 @@ function soccer_boss_create_pfs_value_field () {
       'bundle'      => soccer_boss_PFS_TYPE,
       'label'       => t ('Value'),
       'description' => t ('The stat value.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 1,
+      'visible'     => true
   ));
 }
 
@@ -436,7 +516,9 @@ function soccer_boss_create_pfs_date_field () {
       'bundle'      => soccer_boss_PFS_TYPE,
       'label'       => t ('Date'),
       'description' => t ('The date on which the stat was measured or applied.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 2,
+      'visible'     => true
   ));
 }
 
@@ -452,7 +534,9 @@ function soccer_boss_create_pgs_player_field () {
       'label'          => t ('Player'),
       'description'    => t ('The player that the stat applies to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_PLAYER_TYPE)
+      'target_bundles' => array (soccer_boss_PLAYER_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -466,7 +550,9 @@ function soccer_boss_create_pgs_game_field () {
       'label'          => t ('Game'),
       'description'    => t ('The game that the stat applies to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_GAME_TYPE)
+      'target_bundles' => array (soccer_boss_GAME_TYPE),
+      'weight'         => 1,
+      'visible'        => true
   ));
 }
 
@@ -479,7 +565,9 @@ function soccer_boss_create_pgs_value_field () {
       'bundle'      => soccer_boss_PGS_TYPE,
       'label'       => t ('Value'),
       'description' => t ('The stat value.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 2,
+      'visible'     => true
   ));
 }
 
@@ -495,7 +583,9 @@ function soccer_boss_create_pps_player_field () {
       'label'          => t ('Player'),
       'description'    => t ('The player that the stat applies to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_PLAYER_TYPE)
+      'target_bundles' => array (soccer_boss_PLAYER_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -508,7 +598,9 @@ function soccer_boss_create_pps_value_field () {
       'bundle'      => soccer_boss_PPS_TYPE,
       'label'       => t ('Value'),
       'description' => t ('The stat value.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 1,
+      'visible'     => true
   ));
 }
 
@@ -521,7 +613,9 @@ function soccer_boss_create_pps_year_field () {
       'bundle'      => soccer_boss_PPS_TYPE,
       'label'       => t ('Year'),
       'description' => t ('The year that this stat applies to.'),
-      'cardinality' => 1
+      'cardinality' => 1, 
+      'weight'      => 2,
+      'visible'     => true
   ));
 }
 
@@ -537,7 +631,9 @@ function soccer_boss_create_ts_team_field () {
       'label'          => t ('Team'),
       'description'    => t ('The team that the stat applies to.'),
       'cardinality'    => 1,
-      'target_bundles' => array (soccer_boss_TEAM_TYPE)
+      'target_bundles' => array (soccer_boss_TEAM_TYPE),
+      'weight'         => 0,
+      'visible'        => true
   ));
 }
 
@@ -550,7 +646,9 @@ function soccer_boss_create_ts_value_field () {
       'bundle'      => soccer_boss_TS_TYPE,
       'label'       => t ('Value'),
       'description' => t ('The stat value.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 1,
+      'visible'     => true
   ));
 }
 
@@ -563,6 +661,8 @@ function soccer_boss_create_ts_year_field () {
       'bundle'      => soccer_boss_TS_TYPE,
       'label'       => t ('Year'),
       'description' => t ('The year that this stat applies to.'),
-      'cardinality' => 1
+      'cardinality' => 1,
+      'weight'      => 2,
+      'visible'     => true
   ));
 }
