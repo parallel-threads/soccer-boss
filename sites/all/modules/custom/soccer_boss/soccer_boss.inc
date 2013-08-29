@@ -385,7 +385,8 @@ function soccer_boss_content_types () {
       'type'       => soccer_boss_team_content_type (),
       'body_label' => 'Overview',
       'fields'     => array (
-        'soccer_boss_team_logo'    => 'soccer_boss_create_team_logo_field'
+        'soccer_boss_team_club' => 'soccer_boss_create_team_club_field',
+        'soccer_boss_team_logo' => 'soccer_boss_create_team_logo_field'
     )),
     soccer_boss_PFS_TYPE => array (
       'type'       => soccer_boss_pfs_content_type (),

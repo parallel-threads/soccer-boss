@@ -459,6 +459,22 @@ function soccer_boss_create_staff_role_field () {
 
 // ----- VI. Defines the Team fields. -----
 
+/// Creates the Club field for the Team content type.
+function soccer_boss_create_team_club_field () {
+  soccer_boss_create_entity_reference_field (
+    array (
+      'name'           => 'soccer_boss_team_club',
+      'entity'         => 'node',
+      'bundle'         => soccer_boss_TEAM_TYPE,
+      'label'          => t ('Club'),
+      'description'    => t ('The club that the team belongs to.'),
+      'cardinality'    => 1,
+      'target_bundles' => array (soccer_boss_CLUB_TYPE),
+      'weight'         => 1,
+      'visible'        => true
+  ));
+}
+
 /// Creates the Logo field for the Team content type.
 function soccer_boss_create_team_logo_field () {
   soccer_boss_create_photo_field (
