@@ -459,6 +459,22 @@ function soccer_boss_create_staff_role_field () {
 
 // ----- VI. Defines the Team fields. -----
 
+/// Creates the Age field for the Team content type.
+function soccer_boss_create_team_age_field () {
+  soccer_boss_create_term_reference_field (
+    array (
+      'name'        => 'soccer_boss_team_age',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_TEAM_TYPE,
+      'label'       => t ('Age'),
+      'description' => t ('The age bracket that this team belongs to.'),
+      'cardinality' => 1,
+      'vocabulary'  => 'soccer_boss_age',
+      'weight'      => 0,
+      'visible'     => false
+  ));
+}
+
 /// Creates the Club field for the Team content type.
 function soccer_boss_create_team_club_field () {
   soccer_boss_create_entity_reference_field (
@@ -472,6 +488,38 @@ function soccer_boss_create_team_club_field () {
       'target_bundles' => array (soccer_boss_CLUB_TYPE),
       'weight'         => 1,
       'visible'        => true
+  ));
+}
+
+/// Creates the Division field for the Team content type.
+function soccer_boss_create_team_division_field () {
+  soccer_boss_create_term_reference_field (
+    array (
+      'name'        => 'soccer_boss_team_division',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_TEAM_TYPE,
+      'label'       => t ('Division'),
+      'description' => t ('The division that this team belongs to.'),
+      'cardinality' => 1,
+      'vocabulary'  => 'soccer_boss_division',
+      'weight'      => 0,
+      'visible'     => false
+  ));
+}
+
+/// Creates the Gender field for the Team content type.
+function soccer_boss_create_team_gender_field () {
+  soccer_boss_create_term_reference_field (
+    array (
+      'name'        => 'soccer_boss_team_gender',
+      'entity'      => 'node',
+      'bundle'      => soccer_boss_TEAM_TYPE,
+      'label'       => t ('Gender'),
+      'description' => t ('The team gender.'),
+      'cardinality' => 1,
+      'vocabulary'  => 'soccer_boss_gender',
+      'weight'      => 0,
+      'visible'     => false
   ));
 }
 
