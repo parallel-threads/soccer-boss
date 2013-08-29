@@ -235,7 +235,7 @@ function soccer_boss_create_game_date_field () {
       'label'       => t ('Date'),
       'description' => t ('The date on which the match was held.'),
       'cardinality' => 1,
-      'weight'      => 1
+      'weight'      => 1,
       'visible'     => true
   ));
 }
