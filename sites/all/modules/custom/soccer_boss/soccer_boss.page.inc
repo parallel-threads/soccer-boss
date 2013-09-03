@@ -28,7 +28,7 @@ function soccer_boss_player_bio_page ($node) {
   return array (
     'content' => array (
       '#type' => 'markup',
-      '#markup' => $node->body ['und'][0]['value']
+      '#markup' => $node->body ['und'][0]['safe_value']
   ));
 }
 
@@ -68,7 +68,6 @@ function soccer_boss_add_team_player_stats_page ($team_node) {
   @param $team_node (object) the team node.
 */
 function soccer_boss_team_player_stats_page ($team_node) {
-/*
   module_load_include ('inc', 'soccer_boss');
 
   $player_nids = soccer_boss_get_references (
@@ -78,12 +77,45 @@ function soccer_boss_team_player_stats_page ($team_node) {
   );
 
   $stat_values = array ();
+  $stat_names  = array ();
+
   foreach ($player_nids as $player_nid) {
-    $player_stats = soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pps_player');
+    $player_stats = node_load_multiple (soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pps_player'));
+
     foreach ($player_stats as $player_stat) {
+      $stat_values [$player_stat->soccer_boss_pps_year ['und'][0]['value']][$player_nid][$player_stat->title] = 
+        $player_stat->soccer_boss_pps_value ['und'][0]['value'];
+      $stat_names [] = $player_stat->title;
     }
   }
-*/
+  $stat_names = array_unique ($stat_names);
+
+  $stat_tables = '';
+  foreach ($stat_values as $stat_year => $stat_value) {
+    $stat_tables .= '<table><caption>' . $stat_year . '</caption><thead><tr><th>Name</th>';
+
+    foreach ($stat_names as $stat_name) {
+      $stat_tables .= "<th>$stat_name</th>"; 
+    }
+    $stat_tables .= '</thead><tbody>';
+
+    foreach ($stat_value as $stat_player_nid => $stat_player_values) {
+      $player = node_load ($stat_player_nid);
+
+      $stat_tables .= '<tr><td>' . $player->title . '</td>';
+      foreach ($stat_names as $stat_name) {
+        $stat_tables .= '<td>' . $stat_player_values [$stat_name] . '</td>';
+      }
+      $stat_tables .= '</tr>';
+    }
+    $stat_tables .= '</tbody></table>';
+  }
+
+  return array (
+    'content' => array (
+      '#type'   => 'markup',
+      '#markup' => $stat_tables
+  ));
 }
 
 /**
