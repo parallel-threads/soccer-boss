@@ -668,6 +668,20 @@ function soccer_boss_block_settings () {
       'region' => 'content',
       'module' => 'views'
     ),
+    'player_fitness_stats-block' => array (
+      'type'   => soccer_boss_PLAYER_TYPE,
+      'region' => 'content',
+      'module' => 'views',
+      'weight' => 3,
+      'pages'  => 'node/*/fitness'
+    ),
+    'player_fitness_stats_chart-block' => array (
+      'type'   => soccer_boss_PLAYER_TYPE,
+      'region' => 'content',
+      'module' => 'views',
+      'weight' => 4,
+      'pages'  => 'node/*/fitness'
+    ),
     'player_performance_stats-block'  => array (
       'type'   => soccer_boss_PLAYER_TYPE,
       'region' => 'content',

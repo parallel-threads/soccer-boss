@@ -33,6 +33,29 @@ function soccer_boss_player_bio_page ($node) {
 }
 
 /**
+  @brief Returns a render array that represents the Player Fitness page.
+  @param $node (object) the player node.
+  @return (array) the render array.
+  @note the Fitness Stats View block will be added to this page.
+*/
+function soccer_boss_player_fitness_page ($node) {
+  return node_view ($node, 'teaser');
+}
+
+/**
+  @brief Returns a render array that represents the Team Overview page.
+  @param $node (object) the team node.
+  @return (array) the render array.
+*/
+function soccer_boss_team_overview_page ($node) {
+  return array (
+    'content' => array (
+      '#type'   => 'markup',
+      '#markup' => $node->body ['und'][0]['value']
+  )); 
+}
+
+/**
   @brief Redirects the user to the Team Player Stats page.
   @param $team_node (object) the team node.
 */

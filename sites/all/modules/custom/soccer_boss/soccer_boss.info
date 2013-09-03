@@ -2,6 +2,7 @@ name = Soccer Boss
 description = "Defines the core content types, views, user roles, etc for the Soccer Boss site."
 package = SoccerBoss
 core = 7.x
+dependencies[] = chart_views
 dependencies[] = date
 dependencies[] = entityreference
 dependencies[] = entityreference_autocomplete

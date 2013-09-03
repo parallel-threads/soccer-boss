@@ -26,7 +26,8 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
       $blocks [$module][$delta]['status']     = 1;
       $blocks [$module][$delta]['region']     = $settings ['region'];
       $blocks [$module][$delta]['visibility'] = 1;
-      $blocks [$module][$delta]['pages']      = 'node/*';
+
+      $blocks [$module][$delta]['pages'] = isset ($settings ['pages']) ? $settings ['pages'] : 'node/*';
 
       if (isset ($settings ['weight'])) {
         $blocks [$module][$delta]['weight']   = $settings ['weight'];
@@ -39,6 +40,7 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
 /// Implements hook_menu ().
 function soccer_boss_menu () {
   return array (
+    // I. Player pages.
     'node/%node/team' => array (
       'title'            => t ('Team'),
       'description'      => t ('Redirects the user to the player\'s team page.'),
@@ -58,6 +60,40 @@ function soccer_boss_menu () {
       'page arguments'   => array (1, 2),
       'type'             => MENU_CALLBACK,
       'file'             => 'soccer_boss.page.inc',
+    ),
+    'node/%node/bio' => array (
+      'title'            => t ('Player Bio'),
+      'description'      => t ('The player bio page.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_player'),
+      'page callback'    => 'soccer_boss_player_bio_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+      'weight'           => 5
+    ),
+    'node/%node/fitness' => array (
+      'title'            => t ('Player Fitness'),
+      'description'      => t ('Displays the player fitness stats.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_player'),
+      'page callback'    => 'soccer_boss_player_fitness_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+      'weight'           => 6
+    ),
+    // II. Team pages.
+    'node/%node/overview' => array (
+      'title'            => t ('Team Overview'),
+      'description'      => t ('The team overview page.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'soccer_boss_team_overview_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+      'weight'           => 6
     ),
     'team-comparison' => array (
       'title'            => t ('Team Comparison'),
@@ -122,24 +158,13 @@ function soccer_boss_menu () {
       'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
       'type'             => MENU_NORMAL_ITEM
     ),
-    'node/%node/bio' => array (
-      'title'            => t ('Player Bio'),
-      'description'      => t ('The player bio page.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
-      'page callback'    => 'soccer_boss_player_bio_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 5
-    ),
     'node/%node/add-player-fitness-stats' => array (
       'title'            => t ('Add Player Fitness Stats'),
       'description'      => t ('Displays a form in which a player can add fitness stats.'),
       'access callback'  => '_soccer_boss_check_type',
       'access arguments' => array (1, 'soccer_boss_player', 'create any soccer_boss_pps content'),
       'page callback'    => 'drupal_get_form',
-      'page arguments'   => array ('soccer_boss_pps_form'),
+      'page arguments'   => array ('soccer_boss_pfs_form', 1),
       'type'             => MENU_LOCAL_TASK
     )
   );
@@ -414,13 +439,13 @@ function soccer_boss_team_player_stats_form_submit ($form, $form_state) {
 }
 
 /**
-  @brief Defines the Player Performance Stats form.
+  @brief Defines the Player Fitness Stats form.
 */
-function soccer_boss_pps_form ($form, $form_state, $player_nid) {
+function soccer_boss_pfs_form ($form, $form_state, $player_node) {
   return array (
     'player' => array (
       '#type'  => 'value',
-      '#value' => $player_nid
+      '#value' => $player_node->nid
     ),
     'date' => array (
       '#type'          => 'textfield',
@@ -431,7 +456,27 @@ function soccer_boss_pps_form ($form, $form_state, $player_nid) {
     ),
     'mile_time' => array (
       '#type'  => 'textfield',
-      '#title' => t ('Mile Time'),
+      '#title' => t ('Mile Time')
+    ),
+    'two_mile_time' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Two Mile Time')
+    ),
+    'dash_time' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('60 yard dash time')
+    ),
+    'bench_press' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Bench press')
+    ),
+    'squat' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Squat')
+    ),
+    'juggles' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Juggles')
     ),
     'submit' => array (
       '#type'  => 'submit',
@@ -440,10 +485,18 @@ function soccer_boss_pps_form ($form, $form_state, $player_nid) {
 }
 
 /**
+  @brief Processes the Player Fitness Stats form.
 */
-function soccer_boss_pps_form_submit ($form, &$form_state) {
+function soccer_boss_pfs_form_submit ($form, &$form_state) {
+  module_load_include ('inc', 'soccer_boss');
+
   foreach (array (
-    'mile_time' => t ('Mile Time')
+    'mile_time'     => t ('Mile Time'),
+    'two_mile_time' => t ('Two Mile Time'),
+    'dash_time'     => t ('Dash Time'),
+    'bench_press'   => t ('Bench Press'),
+    'squat'         => t ('Squat'),
+    'juggles'       => t ('Juggles')
   ) as $stat_name => $stat_label) {
     $node = new stdClass ();
     $node->type = soccer_boss_PFS_TYPE;
@@ -456,7 +509,7 @@ function soccer_boss_pps_form_submit ($form, &$form_state) {
       'format' => 'plain_text'
     );
 
-    $date = date ('r', strtotime ($form_state ['values']['date']));
+    $date = strtotime ($form_state ['values']['date']);
 
     $node->soccer_boss_pfs_date   ['und'][0] = array (
       'value'     => $date,
