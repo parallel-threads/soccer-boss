@@ -170,11 +170,12 @@ function soccer_boss_team_player_stats_page ($team_node) {
     $stat_tables .= '</thead><tbody>';
 
     foreach ($stat_value as $stat_player_nid => $stat_player_values) {
-      $player = node_load ($stat_player_nid);
+      $player     = node_load ($stat_player_nid);
+      $player_uri = node_uri ($player);
 
-      $stat_tables .= '<tr><td>' . $player->title . '</td>';
+      $stat_tables .= '<tr><td>' . l ($player->title, $player_uri ['path']) . '</td>';
       foreach ($stat_names as $stat_name) {
-        $stat_tables .= '<td>' . $stat_player_values [$stat_name] . '</td>';
+        $stat_tables .= '<td>' . (isset ($stat_player_values [$stat_name]) ? $stat_player_values [$stat_name] : '') . '</td>';
       }
       $stat_tables .= '</tr>';
     }

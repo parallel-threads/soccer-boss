@@ -312,12 +312,12 @@ function soccer_boss_create_stat_sheet ($info) {
   foreach ($info ['entities'] as $entity) {
     $entity_id    = entity_id    ('node', $entity);
     $entity_label = entity_label ('node', $entity);
+    $entity_uri   = entity_uri   ('node', $entity);
 
     // II.A. Define the table row.
     $form [$entity_id . '_row'] = array (
-      '#prefix'     => "<tr><td>$entity_label</td>",
+      '#prefix'     => '<tr><td>' . l ($entity_label, $entity_uri ['path']) . '</td>',
       '#suffix'     => '</tr>',
-      '#type'       => 'fieldset',
       '#attributes' => array (
         'class' => array ('statsheet-row')
       )
@@ -552,7 +552,7 @@ function _soccer_boss_prev_chart () {
     0 - 100 inclusive.
 */
 function _soccer_boss_get_scaled_value ($min, $max, $value) {
-  return (($value - $min)/($max - $min)) * 100;
+  return $min - $max > 0 ? (($value - $min)/($max - $min)) * 100 : 0;
 }
 
 /**
