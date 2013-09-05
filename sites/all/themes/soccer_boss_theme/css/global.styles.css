@@ -91,7 +91,9 @@ q {}
 
 address {}
 
-ul {}
+ul {
+  list-style-position: inside;
+}
 
 ol {}
 
@@ -1838,10 +1840,19 @@ tr.error {}
 
 .field-name-soccer-boss-team-logo {
   float:   left;
-  padding: 2em;
+  padding: 0em 2em 2em 0em;
+}
+
+.field-name-soccer-boss-player-photo {
+  float:   left;
+  padding: 0em 2em 5em 0em;
 }
 
 #content-column .field-name-body {
   max-height: 25em;
   overflow:   auto;
+}
+
+img.chart {
+  width: 100%;
 }

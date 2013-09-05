@@ -37,9 +37,83 @@ function soccer_boss_player_bio_page ($node) {
   @param $node (object) the player node.
   @return (array) the render array.
   @note the Fitness Stats View block will be added to this page.
+  @see http://code.google.com/p/drupal-chart-api/wiki/Examples
 */
 function soccer_boss_player_fitness_page ($node) {
-  return node_view ($node, 'teaser');
+  module_load_include ('inc', 'soccer_boss'); 
+
+  // I. Get the stat values.
+
+  $stats = node_load_multiple (
+    soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_pfs_player')
+  );
+
+  $stat_names  = array ();
+  $stat_values = array ();
+
+  foreach ($stats as $stat) {
+    if (!in_array ($stat->title, $stat_names)) {
+      $stat_names [] = $stat->title;
+    }
+
+    $stat_values [$stat->title]
+                 [$stat->soccer_boss_pfs_date ['und'][0]['value']] 
+                 = $stat->soccer_boss_pfs_value ['und'][0]['value'];
+  } 
+
+  // II. Create the stat chart data arrays.
+
+  $data_arrays = array ();
+
+  foreach ($stat_values as $stat_name => $values) {
+    
+    $sorted_values = array_values ($values);
+    sort ($sorted_values);
+
+    ksort ($values);
+
+    $dates = array ();
+    $converted_values = array ();
+
+    foreach ($values as $date => $value) {
+      $dates [] = date ('D, d M Y', $date);
+
+      // convert times to seconds.
+      if (preg_match ('/(\d\d):(\d\d)/', $value, $matches)) {
+        $converted_values [] = $matches [1] * 60 + $matches [2];
+      } else if (preg_match ('/^(\d+)/', $value, $matches)) { // strip units.
+        $converted_values [] = $matches [1];
+      }
+    }
+
+    $sorted_converted_values = $converted_values;
+    sort ($sorted_converted_values);
+
+    $data_arrays [] = array (
+      'chart_id'      => $stat_name,
+      'title'         => $stat_name,
+      'type'          => CHART_TYPE_LINE,
+      'size'          => chart_size (700, 400),
+      'legend'        => $stat_name,
+      'y_axis_label'  => null,
+      'y_axis_values' => $sorted_converted_values,
+      'x_axis_label'  => null,
+      'x_axis_values' => $dates,
+      'values'        => $converted_values
+    );
+  }
+
+  // III. return the chart form.
+
+  $_SESSION ['soccer_boss']['chart_data'] = $data_arrays;
+
+  $content = array (
+    'content' => array (
+      'node'  => node_view ($node, 'teaser'),
+      'chart' => drupal_get_form ('soccer_boss_chart_form')
+  ));
+
+  return $content;
 }
 
 /**
@@ -51,7 +125,7 @@ function soccer_boss_team_overview_page ($node) {
   return array (
     'content' => array (
       '#type'   => 'markup',
-      '#markup' => $node->body ['und'][0]['value']
+      '#markup' => $node->body ['und'][0]['safe_value']
   )); 
 }
 

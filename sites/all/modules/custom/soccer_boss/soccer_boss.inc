@@ -495,9 +495,6 @@ function soccer_boss_delete_nodes ($type) {
 
 // ----- V. Defines the core user roles. -----
 
-/// Define the Team Coach role name.
-define ('soccer_boss_COACH_ROLE', 'soccer_boss_coach');
-
 /// Define the Player role name.
 define ('soccer_boss_PLAYER_ROLE', 'soccer_boss_player');
 
