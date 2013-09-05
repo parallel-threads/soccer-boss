@@ -79,15 +79,12 @@ function soccer_boss_player_fitness_page ($node) {
       $dates [] = date ('D, d M Y', $date);
 
       // convert times to seconds.
-      if (preg_match ('/(\d\d):(\d\d)/', $value, $matches)) {
+      if (preg_match ('/\s*(\d?\d):(\d\d)\s*/', $value, $matches)) {
         $converted_values [] = $matches [1] * 60 + $matches [2];
       } else if (preg_match ('/^(\d+)/', $value, $matches)) { // strip units.
         $converted_values [] = $matches [1];
       }
     }
-
-    $sorted_converted_values = $converted_values;
-    sort ($sorted_converted_values);
 
     $data_arrays [] = array (
       'chart_id'      => $stat_name,
@@ -96,7 +93,6 @@ function soccer_boss_player_fitness_page ($node) {
       'size'          => chart_size (700, 400),
       'legend'        => $stat_name,
       'y_axis_label'  => null,
-      'y_axis_values' => $sorted_converted_values,
       'x_axis_label'  => null,
       'x_axis_values' => $dates,
       'values'        => $converted_values

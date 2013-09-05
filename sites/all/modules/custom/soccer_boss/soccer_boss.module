@@ -540,10 +540,69 @@ function _soccer_boss_prev_chart () {
 }
 
 /**
+  @brief Accepts a chart value along with the
+    minimum and maximum value displayed on the
+    chart and returns the scaled equivalent of the
+    given value.
+  @param $min (float) the minimum chart value.
+  @param $max (float) the maximum chart value.
+  @param $value (float) the unscaled chart value.
+  @return (float) the scaled chart value.
+  @note Google Charts only allows values between
+    0 - 100 inclusive.
+*/
+function _soccer_boss_get_scaled_value ($min, $max, $value) {
+  return (($value - $min)/($max - $min)) * 100;
+}
+
+/**
+  @brief Accepts an array of chart values and
+    returns their scaled equivalents.
+  @param $values (array) the values.
+  @return (array) the scaled values.
+*/
+function _soccer_boss_scale_chart_values ($values) {
+  $scaled_values = array ();
+
+  $min = min ($values);
+  $max = max ($values);
+
+  foreach ($values as $value) {
+    $scaled_values [] = _soccer_boss_get_scaled_value ($min, $max, $value);
+  }
+
+  return $scaled_values;
+}
+
+/**
+  @brief Accepts an array of unscaled chart values
+    and returns the chart value labels for the
+    y-axis.
+  @param $values (array) the unscaled values.
+  @return (array) the chart labels.
+*/
+function _soccer_boss_get_chart_value_labels ($values) {
+  $labels = array ();
+
+  $unique_values = array_unique ($values);  
+  $min   = min ($unique_values);
+  $max   = max ($unique_values);
+
+  foreach ($unique_values as $unique_value) {
+    $labels [] = chart_mixed_axis_label ($unique_value, _soccer_boss_get_scaled_value ($min, $max, $unique_value));
+  }
+
+  return $labels;
+}
+
+/**
   @brief Returns a Chart that represents the given data.
   @param $data (array) the chart data array.
 */
 function _soccer_boss_create_chart ($data) {
+  $y_axis_values = array_unique ($data ['values']);
+  $x_axis_values = array_unique ($data ['x_axis_values']);
+
   return array (
     '#chart_id'           => $data ['chart_id'],
     '#title'              => $data ['title'],
@@ -553,16 +612,16 @@ function _soccer_boss_create_chart ($data) {
     '#legends'            => array ($data ['legend']),
     '#mixed_axis_labels'  => array (
       CHART_AXIS_Y_LEFT   => array (
-        array_map ('chart_mixed_axis_label', array_unique ($data ['y_axis_values'])),
+        _soccer_boss_get_chart_value_labels ($y_axis_values),
         chart_mixed_axis_label ($data ['y_axis_label'], 50)
       ),
       CHART_AXIS_X_BOTTOM => array (
-        array_map ('chart_mixed_axis_label', array_unique ($data ['x_axis_values'])),
+        array_map ('chart_mixed_axis_label', $x_axis_values),
         chart_mixed_axis_label ($data ['x_axis_label'], 50)
       )
     ),
     '#data'               => array (
-      'values'            => $data ['values']
+      'values'            => _soccer_boss_scale_chart_values ($data ['values'])
   ));
 }
 
