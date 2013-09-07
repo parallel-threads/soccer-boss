@@ -51,6 +51,8 @@ function soccer_boss_player_fitness_page ($node) {
   $stat_names  = array ();
   $stat_values = array ();
 
+  $field_values = array ();
+
   foreach ($stats as $stat) {
     if (!in_array ($stat->title, $stat_names)) {
       $stat_names [] = $stat->title;
@@ -59,6 +61,12 @@ function soccer_boss_player_fitness_page ($node) {
     $stat_values [$stat->title]
                  [$stat->soccer_boss_pfs_date ['und'][0]['value']] 
                  = $stat->soccer_boss_pfs_value ['und'][0]['value'];
+
+    $field_values [] = array (
+      'column_name' => $stat->title,
+      'row_name'    => date ('Y', $stat->soccer_boss_pfs_date ['und'][0]['value']),
+      'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
+    );
   } 
 
   // II. Create the stat chart data arrays.
@@ -97,10 +105,13 @@ function soccer_boss_player_fitness_page ($node) {
   $content = array (
     'content' => array (
       'node'  => node_view ($node, 'teaser'),
-      'chart' => drupal_get_form ('soccer_boss_chart_form')
+      'chart' => drupal_get_form ('soccer_boss_chart_form'),
+      'stats' => array ('#markup' => soccer_boss_create_table_from_field_values ('', $field_values))
   ));
 
   return $content;
+
+  // return soccer_boss_create_table_from_field_values ('', $field_values);
 }
 
 /**
