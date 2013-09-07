@@ -167,8 +167,8 @@ function soccer_boss_menu () {
       'description'      => t ('Displays a form in which player performance stats can be added.'),
       'access callback'  => '_soccer_boss_check_type',
       'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
-      'page callback'    => 'soccer_boss_add_team_player_stats_page',
-      'page arguments'   => array (1),
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc',
     ),
@@ -427,14 +427,14 @@ function soccer_boss_process_stat_sheet ($info, $form_values) {
   @brief Creates the Team Player Stats form.
   @param $form (array) the initial form.
   @param $form_state (array) the initial form state.
-  @param $team_nid (integer) the team node id.
+  @param $team (node) the team node.
   @return (array) the form array.
 */
-function soccer_boss_team_player_stats_form ($form, &$form_state, $team_nid) {
+function soccer_boss_team_player_stats_form ($form, &$form_state, $team) {
   module_load_include ('inc', 'soccer_boss');
 
   $player_nids = soccer_boss_get_references (
-    $team_nid,
+    $team->nid,
     'node',
     'soccer_boss_player_team'
   );

@@ -117,14 +117,6 @@ function soccer_boss_team_overview_page ($node) {
 }
 
 /**
-  @brief Redirects the user to the Team Player Stats page.
-  @param $team_node (object) the team node.
-*/
-function soccer_boss_add_team_player_stats_page ($team_node) {
-  drupal_goto ('team-player-stats-form/' . $team_node->nid);
-}
-
-/**
   @brief Returns a render array that represents the Team Player Stats Page.
   @param $team_node (object) the team node.
 */
