@@ -765,3 +765,79 @@ function soccer_boss_get_references ($id, $type, $field_name) {
   }
   return $ids;
 }
+
+/**
+  @brief Returns a table element that represents the given data.
+  @param $table (array) the table descriptor array. 
+  @return (string) an HTML string.
+  @note The table array has the following structure:
+    array ('caption' => <caption>,
+           'column_names' => array (<column name>, ...),
+           'rows' => array (array (<field value>, ...), ...))
+*/
+function soccer_boss_create_table ($table) {
+  $html = '<table><caption>' . $table ['caption'] . '</caption><thead><tr>';
+  foreach ($table ['column_names'] as $column_name) {
+    $html .= '<th>' . $column_name . '</th>';
+  }
+  $html .= '</tr></thead><tbody>';
+  foreach ($table ['rows'] as $row) {
+    $html .= '<tr>';
+    foreach ($row as $field) {
+      $html .= '<td>' . $field . '</td>';
+    }
+    $html .= '</tr>';
+  }
+  return $html . '</tbody></table>';
+}
+
+/**
+  @brief Returns a stat table that represents the given values.
+  @param $data (array) the stat table descriptor array.
+  @return (string) the HTML table element. 
+
+  @note The stat table descriptor array must have
+    the following structure:
+    array ('caption' => <caption>,
+           'subjects' => array (<subject node>, ...),
+           'get_subject_name'  => <function ref>,
+           'get_subject_stats' => <function ref>,
+           'get_stat_name'     => <function ref>,
+           'get_stat_value'    => <function ref>)
+
+  @note The get_subject_name function should return
+    a unique name for each subject.
+*/
+function soccer_boss_create_stat_table ($data) {
+  $stats      = array ();
+  $stat_names = array ();
+
+  foreach ($data ['subjects'] as $subject) {
+    $subject_stats = call_user_func ($data ['get_subject_stats'], $subject);
+    foreach ($subject_stats as $stat) {
+      $stat_name     = call_user_func ($data ['get_stat_name'], $stat);
+      $stat_names [] = $stat_name;
+
+      $stats [$subject->title][$stat_name] = call_user_func ($data ['get_stat_value'], $stat);
+    }
+  }
+
+  $stat_names = array_unique ($stat_names);
+
+  $table = array (
+    'caption'      => $data ['caption'],
+    'column_names' => array_merge (array ('Name'), $stat_names),
+    'rows'         => array ()
+  );
+
+  foreach ($data ['subjects'] as $subject) {
+    $row = array ($subject->title);
+    foreach ($stat_names as $stat_name) {
+      $row [] = isset ($stats [$subject->title][$stat_name]) ?
+                  $stats [$subject->title][$stat_name] : '';
+    }
+    $table ['rows'][] = $row;
+  }
+
+  return soccer_boss_create_table ($table);
+}

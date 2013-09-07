@@ -73,17 +73,8 @@ function soccer_boss_player_fitness_page ($node) {
     ksort ($values);
 
     $dates = array ();
-    $converted_values = array ();
-
-    foreach ($values as $date => $value) {
+    foreach (array_keys ($values) as $date) {
       $dates [] = date ('D, d M Y', $date);
-
-      // convert times to seconds.
-      if (preg_match ('/\s*(\d?\d):(\d\d)\s*/', $value, $matches)) {
-        $converted_values [] = $matches [1] * 60 + $matches [2];
-      } else if (preg_match ('/^(\d+)/', $value, $matches)) { // strip units.
-        $converted_values [] = $matches [1];
-      }
     }
 
     $data_arrays [] = array (
@@ -95,7 +86,7 @@ function soccer_boss_player_fitness_page ($node) {
       'y_axis_label'  => null,
       'x_axis_label'  => null,
       'x_axis_values' => $dates,
-      'values'        => $converted_values
+      'values'        => $values
     );
   }
 
@@ -186,6 +177,69 @@ function soccer_boss_team_player_stats_page ($team_node) {
     'content' => array (
       '#type'   => 'markup',
       '#markup' => $stat_tables
+  ));
+}
+
+/**
+  @brief Returns a render array that represents the Team Player Game Stats Page.
+  @param $team_node (object) the team node.
+*/
+function soccer_boss_team_player_game_stats_page ($team_node) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nids = soccer_boss_get_references (
+    $team_node->nid,
+    'node',
+    'soccer_boss_player_team'
+  );
+
+  $stat_values = array ();
+  $stat_names  = array ();
+
+  foreach ($player_nids as $player_nid) {
+    $player_stats = node_load_multiple (soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pgs_player'));
+
+    foreach ($player_stats as $player_stat) {
+      $stat_values [$player_stat->soccer_boss_pgs_game ['und'][0]['target_id']][$player_nid][$player_stat->title] = 
+        $player_stat->soccer_boss_pgs_value ['und'][0]['value'];
+      $stat_names [] = $player_stat->title;
+    }
+  }
+  $stat_names = array_unique ($stat_names);
+
+  $stat_tables = '';
+  foreach ($stat_values as $game_nid => $stat_value) {
+    $game = node_load ($game_nid);
+    if (!$game) {
+      continue;
+    }
+
+    $game_uri = node_uri ($game);
+
+    $stat_tables .= '<table><caption>' . l ($game->title, $game_uri ['path']) . ': ' . date ('Y-m-d', strtotime ($game->soccer_boss_game_date ['und'][0]['value'])) . '</caption><thead><tr><th>Name</th>';
+
+    foreach ($stat_names as $stat_name) {
+      $stat_tables .= "<th>$stat_name</th>"; 
+    }
+    $stat_tables .= '</thead><tbody>';
+
+    foreach ($stat_value as $stat_player_nid => $stat_player_values) {
+      $player     = node_load ($stat_player_nid);
+      $player_uri = node_uri ($player);
+
+      $stat_tables .= '<tr><td>' . l ($player->title, $player_uri ['path']) . '</td>';
+      foreach ($stat_names as $stat_name) {
+        $stat_tables .= '<td>' . (isset ($stat_player_values [$stat_name]) ? $stat_player_values [$stat_name] : '') . '</td>';
+      }
+      $stat_tables .= '</tr>';
+    }
+    $stat_tables .= '</tbody></table>';
+  }
+
+  return array (
+    'content' => array (
+      '#type'   => 'markup',
+      '#markup' => '<h2>Individual Game Stats</h2>' . $stat_tables
   ));
 }
 

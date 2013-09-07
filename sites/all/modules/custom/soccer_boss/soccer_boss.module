@@ -40,6 +40,41 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
   }
 }
 
+/// Implements hook_block_info ().
+function soccer_boss_block_info () {
+  return array (
+    'soccer_boss_pgs' => array (
+      'info' => t ('Displays the Player Game Stats associated with the given player, team, or game.')
+  ));
+}
+
+/// Implements hook_block_view ().
+function soccer_boss_block_view ($delta = '') {
+  module_load_include ('inc', 'soccer_boss');
+
+  switch ($delta) {
+    case 'soccer_boss_pgs':
+
+      $data = array (
+        'caption'  => t ('Player Game Stats'),
+        'subjects' => array ()
+      );
+
+      $page_node = node_load (arg (1));
+
+      if ($page_node) {
+        switch ($page_node->type) {
+          case soccer_boss_PLAYER_TYPE:
+        }
+      }
+
+      return array (
+        'subject' => t ('Player Game Stats'),
+        'content' => '<p>Test Block</p>' // soccer_boss_create_stat_table ($data)
+      );
+  }
+}
+
 /// Implements hook_menu ().
 function soccer_boss_menu () {
   return array (
@@ -108,7 +143,7 @@ function soccer_boss_menu () {
       'file'             => 'soccer_boss.page.inc',
     ),
     'node/%node/team-player-stats' => array (
-      'title'            => t ('Team Player Stats'),
+      'title'            => t ('Player Performance Stats'),
       'description'      => t ('Displays the performance stats for each player on the team.'),
       'access callback'  => '_soccer_boss_check_type',
       'access arguments' => array (1, 'soccer_boss_team'),
@@ -117,8 +152,18 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc'
     ),
+    'node/%node/team-player-game-stats' => array (
+      'title'            => t ('Player Game Stats'),
+      'description'      => t ('Displays the game stats for each player on the team.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'soccer_boss_team_player_game_stats_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc'
+    ),
     'node/%node/add-team-player-stats' => array (
-      'title'            => t ('Add Team Player Stats'),
+      'title'            => t ('Add Player Performance Stats'),
       'description'      => t ('Displays a form in which player performance stats can be added.'),
       'access callback'  => '_soccer_boss_check_type',
       'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
@@ -134,6 +179,16 @@ function soccer_boss_menu () {
       'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
       'page callback'    => '',
       'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc'
+    ),
+    'node/%node/add-team-player-game-stats' => array (
+      'title'            => t ('Add Player Game Stats'),
+      'description'      => t ('Displays a form to enter player game stats.'),
+      'access callback'  => true,
+      'access arguments' => array (1, 'soccer_boss_team'),
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_team_player_game_stats_form', 1),
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc'
     ),
@@ -442,6 +497,78 @@ function soccer_boss_team_player_stats_form_submit ($form, $form_state) {
 }
 
 /**
+  @brief Creates the Team Player Game Stats form.
+  @param $form (array) the initial form.
+  @param $form_state (array) the initial form state.
+  @param $team (node) the team node.
+  @return (array) the form array.
+*/
+function soccer_boss_team_player_game_stats_form ($form, &$form_state, $team) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nids = soccer_boss_get_references (
+    $team->nid,
+    'node',
+    'soccer_boss_player_team'
+  );
+
+  $info = array (
+    'columns' => array (
+      'goals'         => 'Goals',
+      'shots'         => 'Shots',
+      'goal_shots'    => 'Shots on Goal',
+      'shots_against' => 'Shots Against',
+      'assists'       => 'Assists',
+      'yellow_cards'  => 'Yellow Cards',
+      'red_cards'     => 'Red Cards',
+      'shutouts'      => 'Shutouts'
+    ),
+    'entities' => node_load_multiple ($player_nids)
+  );
+
+  $form_state ['soccer_boss_info'] = $info;
+
+  $form = array (
+    'game' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Game'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (soccer_boss_GAME_TYPE),
+      '#era_cardinality' => 1
+  ));
+  $form += soccer_boss_create_stat_sheet ($info);
+  return $form;
+}
+
+/**
+  @brief Processes the Team Player Game Stats form.
+*/
+function soccer_boss_team_player_game_stats_form_submit ($form, $form_state) {
+  $values = soccer_boss_process_stat_sheet (
+    $form_state ['soccer_boss_info'],
+    $form_state ['values']
+  );
+
+  foreach ($values as $entity_id => $stat_values) {
+    foreach ($stat_values as $stat_name => $stat_value) {
+      $node = new stdClass ();
+      $node->type = soccer_boss_PGS_TYPE;
+      node_object_prepare ($node);
+
+      $node->title = $stat_value ['label'];
+      $node->soccer_boss_pgs_player ['und'][0]['target_id'] = $entity_id;
+      $node->soccer_boss_pgs_game   ['und'][0]['target_id'] = $form_state ['values']['game']['entity_id'];
+      $node->soccer_boss_pgs_value  ['und'][0] = array (
+        'value'  => $stat_value ['value'],
+        'format' => 'plain_text'
+      );
+
+      node_save ($node);
+    }
+  }
+}
+
+/**
   @brief Defines the Player Fitness Stats form.
 */
 function soccer_boss_pfs_form ($form, $form_state, $player_node) {
@@ -514,7 +641,7 @@ function soccer_boss_pfs_form_submit ($form, &$form_state) {
 
     $node->soccer_boss_pfs_date   ['und'][0] = array (
       'value'     => strtotime ($form_state ['values']['date']),
-      'date_type' => 'date'
+      'date_type' => 'datestamp'
     );
 
     node_save ($node);
@@ -552,7 +679,37 @@ function _soccer_boss_prev_chart () {
     0 - 100 inclusive.
 */
 function _soccer_boss_get_scaled_value ($min, $max, $value) {
-  return $min - $max > 0 ? (($value - $min)/($max - $min)) * 100 : 0;
+  return $max - $min > 0 ? (($value - $min)/($max - $min)) * 100 : 0;
+}
+
+/**
+  @brief Accepts a raw unscaled chart value and
+    converts the value into a float that can be
+    scaled.
+  @param $value (string) the raw chart value.
+  @return (float) the converted chart value.
+  @note This function tries to convert time
+    measures into second counts and strips units
+    from unit measures.
+*/
+function _soccer_boss_convert_value ($value) {
+  if (preg_match ('/\s*(\d?\d):(\d\d)\s*/', $value, $matches)) {
+    $value = $matches [1] * 60 + $matches [2];
+  } else if (preg_match ('/^(\d+)/', $value, $matches)) { // strip units.
+    $value = $matches [1];
+  }
+  return $value;
+}
+
+/**
+  @brief Accepts raw unscaled chart values and
+    converts the values into floats that can be
+    scaled.
+  @param $values (array) the raw chart values.
+  @return (array) the converted chart values.
+*/
+function _soccer_boss_convert_values ($values) {
+  return array_map ('_soccer_boss_convert_value', $values);
 }
 
 /**
@@ -621,7 +778,8 @@ function _soccer_boss_create_chart ($data) {
       )
     ),
     '#data'               => array (
-      'values'            => _soccer_boss_scale_chart_values ($data ['values'])
+      'values'            => _soccer_boss_scale_chart_values (
+                               _soccer_boss_convert_values ($data ['values']))
   ));
 }
 
@@ -633,6 +791,8 @@ function _soccer_boss_create_chart ($data) {
 */
 function soccer_boss_chart_form ($form, $form_state) {
   $data = $_SESSION ['soccer_boss']['chart_data'];
+
+  if (empty ($data)) { return array (); }
 
   $chart = _soccer_boss_create_chart ($data [0]);
 
