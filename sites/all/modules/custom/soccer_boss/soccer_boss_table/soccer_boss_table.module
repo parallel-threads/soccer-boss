@@ -57,17 +57,6 @@ function soccer_boss_table_block_view ($delta = '') {
           case soccer_boss_PLAYER_TYPE:
             $content = theme ('simple_table', soccer_boss_table_pps ($node));
             break;
-          case soccer_boss_TEAM_TYPE:
-            $players = node_load_multiple (soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_player_team'));
-            foreach ($players as $player) {
-              $table = soccer_boss_table_pps ($player);
-
-              $player_uri = node_uri ($player);
-              $table ['#simple_table']['caption'] = l ($player->title, $player_uri ['path']);
-
-              $content .= theme ('simple_table', $table);
-            }
-            break;
         }
       }
       return array (
