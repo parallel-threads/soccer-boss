@@ -69,6 +69,7 @@ function soccer_boss_table_pgs ($player) {
   foreach ($games as $game_date => $_games) {
     ksort ($_games);
     foreach ($_games as $game) {
+      $game_uri = node_uri ($game);
       $field_values = array_merge (
         array (
           array (
@@ -79,7 +80,7 @@ function soccer_boss_table_pgs ($player) {
           array (
             'column_name' => t ('Game'),
             'row_name'    => $game->nid,
-            'value'       => $game->title
+            'value'       => l ($game->title, $game_uri ['path'])
         )), $field_values);
     }
   }
