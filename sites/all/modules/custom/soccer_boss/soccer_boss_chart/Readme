@@ -1,0 +1,7 @@
+Soccer Boss Chart Readme
+------------------------
+
+The Soccer Boss Chart module defines the charts
+displayed on the Soccer Boss Website. The module
+uses the Chart module to create Google Charts and
+embed them in blocks.
