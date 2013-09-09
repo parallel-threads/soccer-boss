@@ -73,7 +73,7 @@ function soccer_boss_player_fitness_page ($node) {
 
     $dates = array ();
     foreach (array_keys ($values) as $date) {
-      $dates [] = date ('D, d M Y', $date);
+      $dates [] = date ('D, d M Y', strtotime ($date));
     }
 
     $data_arrays [] = array (
