@@ -118,16 +118,6 @@ function soccer_boss_menu () {
       'type'             => MENU_CALLBACK,
       'file'             => 'soccer_boss.page.inc',
     ),
-    'node/%node/team-player-stats' => array (
-      'title'            => t ('Player Performance Stats'),
-      'description'      => t ('Displays the performance stats for each player on the team.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
-      'page callback'    => 'soccer_boss_team_player_stats_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc'
-    ),
     'node/%node/team-player-game-stats' => array (
       'title'            => t ('Player Game Stats'),
       'description'      => t ('Displays the game stats for each player on the team.'),
@@ -148,18 +138,6 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc',
     ),
-/*
-    'node/%node/add-team-stats' => array (
-      'title'            => t ('Add Team Stats'),
-      'description'      => t ('Displays a form to enter team stats.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
-      'page callback'    => '',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc'
-    ),
-*/
     'node/%node/add-team-player-game-stats' => array (
       'title'            => t ('Add Player Game Stats'),
       'description'      => t ('Displays a form to enter player game stats.'),

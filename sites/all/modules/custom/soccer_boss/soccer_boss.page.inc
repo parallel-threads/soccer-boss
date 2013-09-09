@@ -128,14 +128,6 @@ function soccer_boss_team_overview_page ($node) {
 }
 
 /**
-  @brief Returns a render array that represents the Team Player Stats Page.
-  @param $team_node (object) the team node.
-*/
-function soccer_boss_team_player_stats_page ($team_node) {
-  return array ();
-}
-
-/**
   @brief Returns a render array that represents the Team Player Game Stats Page.
   @param $team_node (object) the team node.
 */
