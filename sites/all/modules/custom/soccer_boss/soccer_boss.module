@@ -86,6 +86,17 @@ function soccer_boss_menu () {
       'file'             => 'soccer_boss.page.inc',
       'weight'           => 6
     ),
+    'node/%node/player-game-stats' => array (
+      'title'            => t ('Player Game Stats'),
+      'description'      => t ('Displays the player game stats.'),
+      'access callback'  => '_soccer_boss_check_type',
+      'access arguments' => array (1, 'soccer_boss_player'),
+      'page callback'    => 'soccer_boss_player_game_stats_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+      'weight'           => 7
+    ),
     // II. Team pages.
     'node/%node/overview' => array (
       'title'            => t ('Team Overview'),

@@ -110,13 +110,23 @@ function soccer_boss_player_fitness_page ($node) {
   ));
 
   return $content;
+}
 
-  // return soccer_boss_create_table_from_field_values ('', $field_values);
+/**
+  @brief Returns a render array that represents the Player Game Stats page.
+  @param $node (node) the player node.
+  @return (array) the render array.
+*/
+function soccer_boss_player_game_stats_page ($node) {
+  return array (
+    'content' => array (
+      'node' => node_view ($node, 'teaser')
+  ));
 }
 
 /**
   @brief Returns a render array that represents the Team Overview page.
-  @param $node (object) the team node.
+  @param $node (node) the team node.
   @return (array) the render array.
 */
 function soccer_boss_team_overview_page ($node) {
