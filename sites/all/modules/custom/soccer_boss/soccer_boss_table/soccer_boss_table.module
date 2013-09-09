@@ -1,0 +1,78 @@
+<?php
+/**
+  @file
+  @brief Implements the block hooks needed to
+    create the table blocks.
+*/
+
+/// Implements hook_block_info ().
+function soccer_boss_table_block_info () {
+  return array (
+    'soccer_boss_pfs_table' => array (
+      'info' => t ('Display\'s the current player\'s fitness stats.')
+    ),
+    'soccer_boss_pgs_table' => array (
+      'info' => t ('Display\'s the current player\'s game stats.')
+    ),
+    'soccer_boss_pps_table' => array (
+      'info' => t ('Display\'s the current player\'s performance stats.')
+  ));
+}
+
+/// Implements hook_block_view ().
+function soccer_boss_table_block_view ($delta = '') {
+  module_load_include ('inc', 'soccer_boss');
+  module_load_include ('inc', 'soccer_boss_table');
+
+  $content = '';
+  $node = menu_get_object ();
+  switch ($delta) {
+    case 'soccer_boss_pfs_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $content = theme ('simple_table', soccer_boss_table_pfs ($node));
+            break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Fitness Stats'),
+        'content' => $content
+      );
+    case 'soccer_boss_pgs_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $content = theme ('simple_table', soccer_boss_table_pgs ($node));
+            break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Game Stats'),
+        'content' => $content
+      );
+    case 'soccer_boss_pps_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $content = theme ('simple_table', soccer_boss_table_pps ($node));
+            break;
+          case soccer_boss_TEAM_TYPE:
+            $players = node_load_multiple (soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_player_team'));
+            foreach ($players as $player) {
+              $table = soccer_boss_table_pps ($player);
+
+              $player_uri = node_uri ($player);
+              $table ['#simple_table']['caption'] = l ($player->title, $player_uri ['path']);
+
+              $content .= theme ('simple_table', $table);
+            }
+            break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Performance Stats'),
+        'content' => $content
+      );
+  }
+}

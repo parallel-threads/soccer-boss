@@ -1,8 +1,0 @@
-name = Soccer Boss: Stat Table
-description = "Creates the stat tables displayed on the Soccer Boss website."
-package = SoccerBoss
-core = 7.x
-dependencies[] = simple_table
-dependencies[] = soccer_boss
-files[] = soccer_boss_stat_table.inc
-files[] = soccer_boss_stat_table.module
