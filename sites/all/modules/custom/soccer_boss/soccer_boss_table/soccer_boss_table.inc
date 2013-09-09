@@ -83,8 +83,7 @@ function soccer_boss_table_pgs ($player) {
         )), $field_values);
     }
   }
-
-  return simple_table ('', $field_values));
+  return simple_table ('', $field_values);
 }
 
 /**
