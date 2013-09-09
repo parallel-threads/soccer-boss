@@ -36,70 +36,13 @@ function soccer_boss_player_bio_page ($node) {
   @brief Returns a render array that represents the Player Fitness page.
   @param $node (object) the player node.
   @return (array) the render array.
-  @note the Fitness Stats View block will be added to this page.
-  @see http://code.google.com/p/drupal-chart-api/wiki/Examples
+  @note the Fitness Stats Table and Fitness Stats Chart blocks will be added to this page.
 */
 function soccer_boss_player_fitness_page ($node) {
-  module_load_include ('inc', 'soccer_boss'); 
-
-  // I. Get the stat values.
-
-  $stats = node_load_multiple (
-    soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_pfs_player')
-  );
-
-  $stat_names  = array ();
-  $stat_values = array ();
-
-  foreach ($stats as $stat) {
-    if (!in_array ($stat->title, $stat_names)) {
-      $stat_names [] = $stat->title;
-    }
-    $stat_values [$stat->title]
-                 [$stat->soccer_boss_pfs_date ['und'][0]['value']] 
-                 = $stat->soccer_boss_pfs_value ['und'][0]['value'];
-  } 
-
-  // II. Create the stat chart data arrays.
-
-  $data_arrays = array ();
-
-  foreach ($stat_values as $stat_name => $values) {
-    
-    $sorted_values = array_values ($values);
-    sort ($sorted_values);
-
-    ksort ($values);
-
-    $dates = array ();
-    foreach (array_keys ($values) as $date) {
-      $dates [] = date ('D, d M Y', strtotime ($date));
-    }
-
-    $data_arrays [] = array (
-      'chart_id'      => $stat_name,
-      'title'         => $stat_name,
-      'type'          => CHART_TYPE_LINE,
-      'size'          => chart_size (700, 400),
-      'legend'        => $stat_name,
-      'y_axis_label'  => null,
-      'x_axis_label'  => null,
-      'x_axis_values' => $dates,
-      'values'        => $values
-    );
-  }
-
-  // III. return the chart form.
-
-  $_SESSION ['soccer_boss']['chart_data'] = $data_arrays;
-
-  $content = array (
+  return array (
     'content' => array (
-      'node'  => node_view ($node, 'teaser'),
-      'chart' => drupal_get_form ('soccer_boss_chart_form'),
+      'node'  => node_view ($node, 'teaser')
   ));
-
-  return $content;
 }
 
 /**

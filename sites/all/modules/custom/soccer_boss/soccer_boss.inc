@@ -504,6 +504,9 @@ define ('soccer_boss_TEAM_STAFF_ROLE', 'soccer_boss_team_staff');
 /// Define the Club Staff role name.
 define ('soccer_boss_CLUB_STAFF_ROLE', 'soccer_boss_club_staff');
 
+/// Defines the Director role name.
+define ('soccer_boss_DIRECTOR_ROLE', 'soccer_boss_director');
+
 /**
   @brief Creates the given user role.
   @param $name (string) the role name.
@@ -602,6 +605,8 @@ function soccer_boss_roles () {
       'edit any '   . soccer_boss_TS_TYPE               . ' content',
       'delete any ' . soccer_boss_TS_TYPE               . ' content',
     ),
+    soccer_boss_DIRECTOR_ROLE => array (
+    )
   );
 }
 
@@ -665,25 +670,12 @@ function soccer_boss_block_settings () {
       'region' => 'content',
       'module' => 'views'
     ),
-    'player_fitness_stats-block' => array (
-      'type'   => soccer_boss_PLAYER_TYPE,
-      'region' => 'content',
-      'module' => 'views',
-      'weight' => 3,
-      'pages'  => 'node/*/fitness'
-    ),
     'player_fitness_stats_chart-block' => array (
       'type'   => soccer_boss_PLAYER_TYPE,
       'region' => 'content',
       'module' => 'views',
       'weight' => 4,
       'pages'  => 'node/*/fitness'
-    ),
-    'player_performance_stats-block'  => array (
-      'type'   => soccer_boss_PLAYER_TYPE,
-      'region' => 'content',
-      'module' => 'views',
-      'weight' => 2
     ),
     'player_vital_stats-block' => array (
       'type'   => soccer_boss_PLAYER_TYPE,
