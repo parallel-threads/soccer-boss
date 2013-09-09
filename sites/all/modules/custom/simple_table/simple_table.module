@@ -1,0 +1,96 @@
+<?php
+/**
+  @file
+  @brief Defines the Simple Table theme function.
+*/
+
+/// Implements hook_theme ().
+function simple_table_theme ($existing, $type, $theme, $path) {
+  return array (
+    'simple_table' => array (
+      'render element' => '#simple_table',
+  ));
+}
+
+/**
+  @brief Implements theme_callback ().
+  @details
+    Accepts a render array that represents a simple
+    table and returns an HTML string that
+    represents the table.
+  @note The render array must have the following
+    structure:
+    array ('#simple_table' =>
+      array ('caption' => <caption>,
+             'column_names' => array (<column name>, ...),
+             'rows' => array (array (<field value>, ...), ...))
+*/
+function theme_simple_table (&$vars) {
+  $table = $vars ['#simple_table'];
+
+  $html = '<table><caption>' . $table ['caption'] . '</caption><thead><tr>';
+  foreach ($table ['column_names'] as $column_name) {
+    $html .= '<th>' . $column_name . '</th>';
+  }
+  $html .= '</tr></thead><tbody>';
+  foreach ($table ['rows'] as $row) {
+    $html .= '<tr>';
+    foreach ($row as $field) {
+      $html .= '<td>' . $field . '</td>';
+    }
+    $html .= '</tr>';
+  }
+  return $html . '</tbody></table>';
+}
+
+/**
+  @brief Accepts a field values array and returns a
+    render array that represents a table containing
+    them.
+  @param $caption (string) the table caption.
+  @param $field_values (array) the field values.
+  @return (array) the render array.
+  @note
+    The field values array must have the following
+    form:
+    array (array ('column name' => <column name>,
+                  'row name' => <row name>,
+                  'value' => <field value>),
+           ...)
+*/
+function simple_table ($caption, $field_values) {
+  $column_names = array ();
+  $row_names    = array ();
+
+  foreach ($field_values as $field_value) {
+    $column_names [] = $field_value ['column_name'];
+    $row_names []    = $field_value ['row_name'];
+  }
+
+  $column_names = array_unique ($column_names);
+  $row_names    = array_unique ($row_names);
+
+  $table = array (
+    'caption'      => $caption,
+    'column_names' => $column_names,
+    'rows'         => array ()
+  );
+
+  foreach ($row_names as $row_name) {
+    $row = array ();
+    foreach ($column_names as $column_name) {
+      $value = '';
+      foreach ($field_values as $field_value) {
+        if ($field_value ['column_name'] === $column_name &&
+            $field_value ['row_name']    === $row_name) {
+          $value = $field_value ['value'];
+          break;
+        }
+      }
+      $row [] = $value;
+    }
+    $table ['rows'][] = $row;
+  }
+
+  return array ('#simple_table' => $table);
+}

@@ -11,7 +11,6 @@ function soccer_boss_views_default_views () {
     soccer_boss_club_teams_view (),
     soccer_boss_league_clubs_view (),
     soccer_boss_player_fitness_stats_view (),
-    soccer_boss_player_performance_stats_view (),
     soccer_boss_player_vital_stats_view (),
     soccer_boss_team_games_view (),
     soccer_boss_team_roster_view (),
@@ -353,123 +352,6 @@ function soccer_boss_league_clubs_view () {
   $handler->display->display_options['filters']['type']['field'] = 'type';
   $handler->display->display_options['filters']['type']['value'] = array(
     'club' => 'club',
-  );
-
-  /* Display: Block */
-  $handler = $view->new_display('block', 'Block', 'block');
-
-  return $view;
-}
-
-/// Returns the Player Performance Stats view.
-function soccer_boss_player_performance_stats_view () {
-  $view = new view();
-  $view->name = 'player_performance_stats';
-  $view->description = 'Displays stats summarizing a player\'s performance over a given season.';
-  $view->tag = 'default';
-  $view->base_table = 'node';
-  $view->human_name = 'Player Performance Stats';
-  $view->core = 7;
-  $view->api_version = '3.0';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-
-  /* Display: Master */
-  $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['use_more_always'] = FALSE;
-  $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['cache']['type'] = 'none';
-  $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['pager']['type'] = 'full';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
-  $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['grouping'] = array(
-    0 => array(
-      'field' => 'soccer_boss_pps_year',
-      'rendered' => 1,
-      'rendered_strip' => 0,
-    ),
-  );
-  $handler->display->display_options['style_options']['columns'] = array(
-    'title' => 'title',
-    'soccer_boss_pps_value' => 'soccer_boss_pps_value',
-    'soccer_boss_pps_year' => 'soccer_boss_pps_year',
-  );
-  $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'title' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'soccer_boss_pps_value' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'soccer_boss_pps_year' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-  );
-  /* Relationship: Entity Reference: Referenced Entity */
-  $handler->display->display_options['relationships']['soccer_boss_pps_player_target_id']['id'] = 'soccer_boss_pps_player_target_id';
-  $handler->display->display_options['relationships']['soccer_boss_pps_player_target_id']['table'] = 'field_data_soccer_boss_pps_player';
-  $handler->display->display_options['relationships']['soccer_boss_pps_player_target_id']['field'] = 'soccer_boss_pps_player_target_id';
-  $handler->display->display_options['relationships']['soccer_boss_pps_player_target_id']['required'] = TRUE;
-  /* Field: Content: Title */
-  $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'node';
-  $handler->display->display_options['fields']['title']['field'] = 'title';
-  $handler->display->display_options['fields']['title']['label'] = 'Name';
-  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
-  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-  /* Field: Content: Value */
-  $handler->display->display_options['fields']['soccer_boss_pps_value']['id'] = 'soccer_boss_pps_value';
-  $handler->display->display_options['fields']['soccer_boss_pps_value']['table'] = 'field_data_soccer_boss_pps_value';
-  $handler->display->display_options['fields']['soccer_boss_pps_value']['field'] = 'soccer_boss_pps_value';
-  /* Field: Content: Year */
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['id'] = 'soccer_boss_pps_year';
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['table'] = 'field_data_soccer_boss_pps_year';
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['field'] = 'soccer_boss_pps_year';
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['label'] = '';
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['soccer_boss_pps_year']['element_label_colon'] = FALSE;
-  /* Sort criterion: Content: Post date */
-  $handler->display->display_options['sorts']['created']['id'] = 'created';
-  $handler->display->display_options['sorts']['created']['table'] = 'node';
-  $handler->display->display_options['sorts']['created']['field'] = 'created';
-  $handler->display->display_options['sorts']['created']['order'] = 'DESC';
-  /* Contextual filter: Content: Nid */
-  $handler->display->display_options['arguments']['nid']['id'] = 'nid';
-  $handler->display->display_options['arguments']['nid']['table'] = 'node';
-  $handler->display->display_options['arguments']['nid']['field'] = 'nid';
-  $handler->display->display_options['arguments']['nid']['relationship'] = 'soccer_boss_pps_player_target_id';
-  $handler->display->display_options['arguments']['nid']['default_action'] = 'default';
-  $handler->display->display_options['arguments']['nid']['default_argument_type'] = 'node';
-  $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
-  $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
-  $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
-  /* Filter criterion: Content: Published */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'node';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['value'] = 1;
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
-  /* Filter criterion: Content: Type */
-  $handler->display->display_options['filters']['type']['id'] = 'type';
-  $handler->display->display_options['filters']['type']['table'] = 'node';
-  $handler->display->display_options['filters']['type']['field'] = 'type';
-  $handler->display->display_options['filters']['type']['value'] = array(
-    'soccer_boss_pps' => 'soccer_boss_pps',
   );
 
   /* Display: Block */

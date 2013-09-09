@@ -40,41 +40,6 @@ function soccer_boss_block_info_alter (&$blocks, $theme, $code_blocks) {
   }
 }
 
-/// Implements hook_block_info ().
-function soccer_boss_block_info () {
-  return array (
-    'soccer_boss_pgs' => array (
-      'info' => t ('Displays the Player Game Stats associated with the given player, team, or game.')
-  ));
-}
-
-/// Implements hook_block_view ().
-function soccer_boss_block_view ($delta = '') {
-  module_load_include ('inc', 'soccer_boss');
-
-  switch ($delta) {
-    case 'soccer_boss_pgs':
-
-      $data = array (
-        'caption'  => t ('Player Game Stats'),
-        'subjects' => array ()
-      );
-
-      $page_node = node_load (arg (1));
-
-      if ($page_node) {
-        switch ($page_node->type) {
-          case soccer_boss_PLAYER_TYPE:
-        }
-      }
-
-      return array (
-        'subject' => t ('Player Game Stats'),
-        'content' => '<p>Test Block</p>' // soccer_boss_create_stat_table ($data)
-      );
-  }
-}
-
 /// Implements hook_menu ().
 function soccer_boss_menu () {
   return array (
@@ -325,13 +290,6 @@ function soccer_boss_team_comparison_form ($form, &$form_state) {
     Comparison Page.
 */
 function soccer_boss_team_comparison_form_submit ($form, &$form_state) {
-  watchdog (
-    'soccer_boss',
-    '[soccer_boss_player_comparison_form_submit] values: <pre>@values</pre>',
-    array (
-      '@values' => print_r ($form_state ['values'], true)
-  ));
-
   drupal_goto ('team-comparison/' . 
     $form_state ['values']['team_x']['entity_id'] . '/' .
     $form_state ['values']['team_y']['entity_id']
@@ -621,6 +579,7 @@ function soccer_boss_pfs_form ($form, $form_state, $player_node) {
 */
 function soccer_boss_pfs_form_submit ($form, &$form_state) {
   module_load_include ('inc', 'soccer_boss');
+  module_load_include ('inc', 'soccer_boss', 'soccer_boss.field');
 
   foreach (array (
     'mile_time'     => t ('Mile Time'),
@@ -641,10 +600,8 @@ function soccer_boss_pfs_form_submit ($form, &$form_state) {
       'format' => 'plain_text'
     );
 
-    $node->soccer_boss_pfs_date   ['und'][0] = array (
-      'value'     => strtotime ($form_state ['values']['date']),
-      'date_type' => 'datestamp'
-    );
+    $date = date_parse ($form_state ['values']['date']);
+    $node->soccer_boss_pfs_date ['und'][0] = soccer_boss_create_date_field_value ($date ['year'], $date ['month'], $date ['day']);
 
     node_save ($node);
   }

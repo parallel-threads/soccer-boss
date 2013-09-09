@@ -730,3 +730,20 @@ function soccer_boss_create_ts_year_field () {
       'visible'     => true
   ));
 }
+
+// ----- XI. Field value functions -----
+
+/**
+  @brief Returns a date field value.
+  @param $year (int) the year.
+  @param $month (int) the month.
+  @param $day (int) the day.
+  @return (array) the field value.
+*/
+function soccer_boss_create_date_field_value ($year, $month, $day) {
+  return array (
+    'value' => "$year-$month-$day" . 'T05:00:00',
+    'date_type' => 'date'
+  );  
+}
+

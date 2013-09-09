@@ -1,0 +1,6 @@
+name = Simple Table
+description = "Defines a simple API for creating HTML tables."
+package = SimpleTable
+core = 7.x
+files[] = simple_table.inc
+files[] = simple_table.module

@@ -1,0 +1,6 @@
+Simple Table Readme
+-------------------
+
+The Simple Table module provides a simple alternative to Views for
+creating tables. The module defines an API for creating and displaying
+tables programmatically.

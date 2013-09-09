@@ -1,0 +1,102 @@
+<?php
+/**
+  @file
+  @brief Implements the block hooks needed to
+    create the stat table blocks.
+*/
+
+/// Implements hook_block_info ().
+function soccer_boss_stat_table_block_info () {
+  return array (
+    'soccer_boss_pgs_table' => array (
+      'info' => t ('Display\'s the current player\'s game stats.')
+    ),
+    'soccer_boss_pps_table' => array (
+      'info' => t ('Display\'s the current player\'s performance stats.')
+  ));
+}
+
+/// Implements hook_block_view ().
+function soccer_boss_stat_table_block_view ($delta = '') {
+  module_load_include ('inc', 'soccer_boss');
+  module_load_include ('inc', 'soccer_boss_stat_table');
+
+  $content = '';
+  $node = menu_get_object ();
+  switch ($delta) {
+    case 'soccer_boss_pgs_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $stats = node_load_multiple (soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_pgs_player'));
+            $field_values = array ();
+            $games = array ();
+            foreach ($stats as $stat) {
+              $game = node_load ($stat->soccer_boss_pgs_game ['und'][0]['target_id']);
+              $game_date = $game->soccer_boss_game_date ['und'][0]['value'];
+
+              if (!$game) { continue; }
+              if (!array_key_exists ($game_date, $games) ||
+                  !array_key_exists ($game->nid, $games [$game_date])) {
+                $games [$game_date][$game->nid] = $game;
+              }
+
+              $field_values [] = array (
+                'column_name' => $stat->title,
+                'row_name'    => $game->nid,
+                'value'       => $stat->soccer_boss_pgs_value ['und'][0]['value']
+              );
+            }
+            ksort ($games);
+
+            foreach ($games as $game_date => $_games) {
+              ksort ($_games);
+              foreach ($_games as $game) {
+                $field_values = array_merge (
+                  array (
+                    array (
+                      'column_name' => t ('Date'),
+                      'row_name'    => $game->nid,
+                      'value'       => date ('Y-m-d', strtotime ($game_date))
+                   ),
+                   array (
+                     'column_name' => t ('Game'),
+                     'row_name'    => $game->nid,
+                     'value'       => $game->title
+                 )), $field_values);
+              }
+            }
+
+            $content .= theme ('simple_table', simple_table (t ('Player Game Stats'), $field_values));
+            break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Game Stats'),
+        'content' => $content
+      );
+    case 'soccer_boss_pps_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $content = theme ('simple_table', soccer_boss_stat_table_pps ($node));
+            break;
+          case soccer_boss_TEAM_TYPE:
+            $players = node_load_multiple (soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_player_team'));
+            foreach ($players as $player) {
+              $table = soccer_boss_stat_table_pps ($player);
+
+              $player_uri = node_uri ($player);
+              $table ['#simple_table']['caption'] = l ($player->title, $player_uri ['path']);
+
+              $content .= theme ('simple_table', $table);
+            }
+            break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Performance Stats'),
+        'content' => $content
+      );
+  }
+}
