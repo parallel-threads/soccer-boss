@@ -51,7 +51,7 @@ function soccer_boss_stat_table_block_view ($delta = '') {
                 'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
               );
             } 
-            sort ($stat_years);
+            rsort ($stat_years);
             $field_values = array_merge ($stat_years, $field_values);
             $content .= theme ('simple_table', simple_table (t ('Player Fitness Stats'), $field_values));
           break;
