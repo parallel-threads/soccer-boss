@@ -51,22 +51,13 @@ function soccer_boss_player_fitness_page ($node) {
   $stat_names  = array ();
   $stat_values = array ();
 
-  $field_values = array ();
-
   foreach ($stats as $stat) {
     if (!in_array ($stat->title, $stat_names)) {
       $stat_names [] = $stat->title;
     }
-
     $stat_values [$stat->title]
                  [$stat->soccer_boss_pfs_date ['und'][0]['value']] 
                  = $stat->soccer_boss_pfs_value ['und'][0]['value'];
-
-    $field_values [] = array (
-      'column_name' => $stat->title,
-      'row_name'    => date ('Y', $stat->soccer_boss_pfs_date ['und'][0]['value']),
-      'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
-    );
   } 
 
   // II. Create the stat chart data arrays.
@@ -106,7 +97,6 @@ function soccer_boss_player_fitness_page ($node) {
     'content' => array (
       'node'  => node_view ($node, 'teaser'),
       'chart' => drupal_get_form ('soccer_boss_chart_form'),
-      'stats' => array ('#markup' => soccer_boss_create_table_from_field_values ('', $field_values))
   ));
 
   return $content;
@@ -142,55 +132,7 @@ function soccer_boss_team_overview_page ($node) {
   @param $team_node (object) the team node.
 */
 function soccer_boss_team_player_stats_page ($team_node) {
-  module_load_include ('inc', 'soccer_boss');
-
-  $player_nids = soccer_boss_get_references (
-    $team_node->nid,
-    'node',
-    'soccer_boss_player_team'
-  );
-
-  $stat_values = array ();
-  $stat_names  = array ();
-
-  foreach ($player_nids as $player_nid) {
-    $player_stats = node_load_multiple (soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pps_player'));
-
-    foreach ($player_stats as $player_stat) {
-      $stat_values [$player_stat->soccer_boss_pps_year ['und'][0]['value']][$player_nid][$player_stat->title] = 
-        $player_stat->soccer_boss_pps_value ['und'][0]['value'];
-      $stat_names [] = $player_stat->title;
-    }
-  }
-  $stat_names = array_unique ($stat_names);
-
-  $stat_tables = '';
-  foreach ($stat_values as $stat_year => $stat_value) {
-    $stat_tables .= '<table><caption>' . $stat_year . '</caption><thead><tr><th>Name</th>';
-
-    foreach ($stat_names as $stat_name) {
-      $stat_tables .= "<th>$stat_name</th>"; 
-    }
-    $stat_tables .= '</thead><tbody>';
-
-    foreach ($stat_value as $stat_player_nid => $stat_player_values) {
-      $player     = node_load ($stat_player_nid);
-      $player_uri = node_uri ($player);
-
-      $stat_tables .= '<tr><td>' . l ($player->title, $player_uri ['path']) . '</td>';
-      foreach ($stat_names as $stat_name) {
-        $stat_tables .= '<td>' . (isset ($stat_player_values [$stat_name]) ? $stat_player_values [$stat_name] : '') . '</td>';
-      }
-      $stat_tables .= '</tr>';
-    }
-    $stat_tables .= '</tbody></table>';
-  }
-
-  return array (
-    'content' => array (
-      '#type'   => 'markup',
-      '#markup' => $stat_tables
-  ));
+  return array ();
 }
 
 /**

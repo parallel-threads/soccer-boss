@@ -8,6 +8,9 @@
 /// Implements hook_block_info ().
 function soccer_boss_stat_table_block_info () {
   return array (
+    'soccer_boss_pfs_table' => array (
+      'info' => t ('Display\'s the current player\'s fitness stats.')
+    ),
     'soccer_boss_pgs_table' => array (
       'info' => t ('Display\'s the current player\'s game stats.')
     ),
@@ -24,6 +27,40 @@ function soccer_boss_stat_table_block_view ($delta = '') {
   $content = '';
   $node = menu_get_object ();
   switch ($delta) {
+    case 'soccer_boss_pfs_table':
+      if ($node) {
+        switch ($node->type) {
+          case soccer_boss_PLAYER_TYPE:
+            $stats = node_load_multiple (soccer_boss_get_references ($node->nid, 'node', 'soccer_boss_pfs_player'));
+
+            $field_values = array ();
+            $stat_years = array ();
+
+            foreach ($stats as $stat) {
+              $stat_year = date ('Y', strtotime ($stat->soccer_boss_pfs_date ['und'][0]['value']));
+              if (!in_array ($stat_year, $stat_years)) {
+                $stat_years [] = array (
+                  'column_name' => t ('Year'),
+                  'row_name'    => $stat_year,
+                  'value'       => $stat_year
+                );
+              }
+              $field_values [] = array (
+                'column_name' => $stat->title,
+                'row_name'    => $stat_year,
+                'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
+              );
+            } 
+            sort ($stat_years);
+            $field_values = array_merge ($stat_years, $field_values);
+            $content .= theme ('simple_table', simple_table (t ('Player Fitness Stats'), $field_values));
+          break;
+        }
+      }
+      return array (
+        'subject' => t ('Player Fitness Stats'),
+        'content' => $content
+      );
     case 'soccer_boss_pgs_table':
       if ($node) {
         switch ($node->type) {
