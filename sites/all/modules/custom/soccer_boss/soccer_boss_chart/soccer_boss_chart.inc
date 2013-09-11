@@ -121,8 +121,6 @@ function soccer_boss_chart ($data) {
   ));
 }
 
-// ---- II. Specific charts. -----
-
 /**
   @brief Accepts a player node and returns a chart
     that plots the player's fitness stats over time.

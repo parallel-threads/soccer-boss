@@ -441,9 +441,6 @@ function soccer_boss_create_content_types () {
     foreach ($definition ['fields'] as $field_name => $field_hook) {
       call_user_func ($field_hook);
     }
-
-    // III. disable commenting.
-    variable_set ($name, '0');
   }
 }
 
@@ -669,13 +666,6 @@ function soccer_boss_block_settings () {
       'type'   => soccer_boss_LEAGUE_TYPE,
       'region' => 'content',
       'module' => 'views'
-    ),
-    'player_fitness_stats_chart-block' => array (
-      'type'   => soccer_boss_PLAYER_TYPE,
-      'region' => 'content',
-      'module' => 'views',
-      'weight' => 4,
-      'pages'  => 'node/*/fitness'
     ),
     'player_vital_stats-block' => array (
       'type'   => soccer_boss_PLAYER_TYPE,

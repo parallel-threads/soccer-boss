@@ -746,4 +746,3 @@ function soccer_boss_create_date_field_value ($year, $month, $day) {
     'date_type' => 'date'
   );  
 }
-
