@@ -61,19 +61,19 @@ function soccer_boss_vocabularies () {
       'name'         => 'Gender',
       'machine_name' => 'soccer_boss_gender',
       'description'  => 'The set of genders.',
-      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/genders.csv')
+      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/data/genders.csv')
     ),
     'soccer_boss_player_position' => array (
       'name'         => 'Player Position',
       'machine_name' => 'soccer_boss_player_position',
       'description'  => 'The set of possible player positions.',
-      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/player_positions.csv', array ('absolute' => true))
+      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/data/player_positions.csv', array ('absolute' => true))
     ),
     'soccer_boss_staff_role' => array (
       'name'         => 'Staff Role',
       'machine_name' => 'soccer_boss_staff_role',
       'description'  => 'The set of possible staff member roles.',
-      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/staff_roles.csv', array ('absolute' => true))
+      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/data/staff_roles.csv', array ('absolute' => true))
   ));
 }
 
