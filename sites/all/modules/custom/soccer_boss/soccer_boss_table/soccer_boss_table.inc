@@ -14,7 +14,7 @@ function soccer_boss_table_pfs ($player) {
 
   $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pfs_player'));
 
-  $field_values = array ();
+  $data = array ();
   $stat_years = array ();
 
   foreach ($stats as $stat) {
@@ -26,16 +26,16 @@ function soccer_boss_table_pfs ($player) {
         'value'       => $stat_year
       );
     }
-    $field_values [] = array (
+    $data ['fields'][] = array (
       'column_name' => $stat->title,
       'row_name'    => $stat_year,
       'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
     );
   } 
   ksort ($stat_years);
-  $field_values = array_merge (array_values ($stat_years), $field_values);
+  $data ['fields'] = array_merge (array_values ($stat_years), $data ['fields']);
 
-  return simple_table ('', $field_values);
+  return simple_table ($data);
 }
 
 /**
@@ -47,7 +47,7 @@ function soccer_boss_table_pgs ($player) {
   module_load_include ('inc', 'soccer_boss');
 
   $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pgs_player'));
-  $field_values = array ();
+  $data = array ();
   $games = array ();
   foreach ($stats as $stat) {
     $game = node_load ($stat->soccer_boss_pgs_game ['und'][0]['target_id']);
@@ -59,7 +59,7 @@ function soccer_boss_table_pgs ($player) {
       $games [$game_date][$game->nid] = $game;
     }
 
-    $field_values [] = array (
+    $data ['fields'][] = array (
       'column_name' => $stat->title,
       'row_name'    => $game->nid,
       'value'       => $stat->soccer_boss_pgs_value ['und'][0]['value']
@@ -70,7 +70,7 @@ function soccer_boss_table_pgs ($player) {
     ksort ($_games);
     foreach ($_games as $game) {
       $game_uri = node_uri ($game);
-      $field_values = array_merge (
+      $data ['fields'] = array_merge (
         array (
           array (
             'column_name' => t ('Date'),
@@ -81,10 +81,10 @@ function soccer_boss_table_pgs ($player) {
             'column_name' => t ('Game'),
             'row_name'    => $game->nid,
             'value'       => l ($game->title, $game_uri ['path'])
-        )), $field_values);
+        )), $data ['fields']);
     }
   }
-  return simple_table ('', $field_values);
+  return simple_table ($data);
 }
 
 /**
@@ -97,7 +97,20 @@ function soccer_boss_table_pps ($player) {
 
   $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pps_player'));
 
-  $field_values = array ();
+  $data = array (
+    'columns' => array (
+      array (
+        'column_name' => t ('Year'),
+        'weight'      => 0,
+      ),
+      array (
+        'column_name' => 'Goals',
+        'weight'      => 1,
+      ),
+      array (
+        'column_name' => 'Assists',
+        'weight'      => 2
+  )));
   $stat_years = array ();
 
   foreach ($stats as $stat) {
@@ -109,14 +122,14 @@ function soccer_boss_table_pps ($player) {
         'value'       => $stat_year
       );
     }
-    $field_values [] = array (
+    $data ['fields'][] = array (
       'column_name' => $stat->title,
       'row_name'    => $stat->soccer_boss_pps_year  ['und'][0]['value'],
       'value'       => $stat->soccer_boss_pps_value ['und'][0]['value']
     );
   }
   ksort ($stat_years);
-  $field_values = array_merge (array_values ($stat_years), $field_values);
+  $data ['fields'] = array_merge (array_values ($stat_years), $data ['fields']);
 
-  return simple_table ('', $field_values);
+  return simple_table ($data);
 }

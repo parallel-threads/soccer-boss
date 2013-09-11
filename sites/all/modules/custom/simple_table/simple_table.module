@@ -47,31 +47,45 @@ function theme_simple_table (&$vars) {
   @brief Accepts a field values array and returns a
     render array that represents a table containing
     them.
-  @param $caption (string) the table caption.
-  @param $field_values (array) the field values.
+  @param $data (array) the data array.
   @return (array) the render array.
   @note
-    The field values array must have the following
+    The data array must have the following
     form:
-    array (array ('column name' => <column name>,
-                  'row name' => <row name>,
-                  'value' => <field value>),
-           ...)
+    array (
+      'caption' => <caption>
+      'columns' => array (
+        'column_name' => <column name>,
+        'weight'      => <weight>
+      ),
+      'fields' => array (
+         array ('column name' => <column name>,
+                'row name'    => <row name>,
+                'value'       => <field value>),
+           ...))
 */
-function simple_table ($caption, $field_values) {
-  $column_names = array ();
-  $row_names    = array ();
+function simple_table ($data) {
 
-  foreach ($field_values as $field_value) {
-    $column_names [] = $field_value ['column_name'];
-    $row_names []    = $field_value ['row_name'];
+  $columns = isset ($data ['columns']) ? $data ['columns'] : array ();
+
+  usort ($columns,
+    create_function ('$x, $y', 'return $x [\'weight\'] > $y [\'weight\'];'));  
+
+  $column_names = array_map (
+    create_function ('$x', 'return $x [\'column_name\'];'),
+    $columns);
+
+  $row_names    = array ();
+  foreach ($data ['fields'] as $field) {
+    $column_names [] = $field ['column_name'];
+    $row_names []    = $field ['row_name'];
   }
 
   $column_names = array_unique ($column_names);
   $row_names    = array_unique ($row_names);
 
   $table = array (
-    'caption'      => $caption,
+    'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
     'column_names' => $column_names,
     'rows'         => array ()
   );
@@ -80,10 +94,10 @@ function simple_table ($caption, $field_values) {
     $row = array ();
     foreach ($column_names as $column_name) {
       $value = '';
-      foreach ($field_values as $field_value) {
-        if ($field_value ['column_name'] === $column_name &&
-            $field_value ['row_name']    === $row_name) {
-          $value = $field_value ['value'];
+      foreach ($data ['fields'] as $field) {
+        if ($field ['column_name'] === $column_name &&
+            $field ['row_name']    === $row_name) {
+          $value = $field ['value'];
           break;
         }
       }
