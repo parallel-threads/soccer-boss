@@ -361,11 +361,11 @@ function soccer_boss_team_player_stats_form ($form, &$form_state, $team) {
       'goals'         => 'Goals',
       'shots'         => 'Shots',
       'goal_shots'    => 'Shots on Goal',
-      'shots_against' => 'Shots Against',
       'assists'       => 'Assists',
       'yellow_cards'  => 'Yellow Cards',
       'red_cards'     => 'Red Cards',
-      'shutouts'      => 'Shutouts'
+      'shutouts'      => 'Shutouts',
+      'saves'         => 'Saves'
     ),
     'entities' => node_load_multiple ($player_nids)
   );
@@ -434,11 +434,11 @@ function soccer_boss_team_player_game_stats_form ($form, &$form_state, $team) {
       'goals'         => 'Goals',
       'shots'         => 'Shots',
       'goal_shots'    => 'Shots on Goal',
-      'shots_against' => 'Shots Against',
       'assists'       => 'Assists',
       'yellow_cards'  => 'Yellow Cards',
       'red_cards'     => 'Red Cards',
-      'shutouts'      => 'Shutouts'
+      'shutouts'      => 'Shutouts',
+      'saves'         => 'Saves'
     ),
     'entities' => node_load_multiple ($player_nids)
   );

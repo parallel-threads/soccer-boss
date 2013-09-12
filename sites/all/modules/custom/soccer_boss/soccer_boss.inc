@@ -747,3 +747,84 @@ function soccer_boss_get_references ($id, $type, $field_name) {
   }
   return $ids;
 }
+
+/**
+  @brief Returns the Player Fitness Stats
+    associated with the given player.
+  @param $nid (integer) the player node id.
+  @return (array) the Player Fitness Stat nodes.
+*/
+function soccer_boss_get_pfs_nodes ($nid) {
+  return node_load_multiple (
+    soccer_boss_get_references ($nid, 'node', 'soccer_boss_pfs_player'));
+}
+
+/**
+  @brief Returns the Player Game Stats associated
+    with the given player.
+  @param $player_nid (integer) the player node id.
+  @param $game_nid (integer) the game node id.
+  @return (array) the Player Game Stat nodes.
+*/
+function soccer_boss_get_pgs_nodes ($player_nid, $game_nid = null) {
+  $stats = node_load_multiple (
+    soccer_boss_get_references ($player_nid, 'node', 'soccer_boss_pgs_player'));
+
+  $filtered_stats = array ();
+  if (is_null ($game_nid)) {
+    $filtered_stats = $stats;
+  } else {
+    foreach ($stats as $stat) {
+      if ($game_nid == $stat->soccer_boss_pgs_game ['und'][0]['target_id']) {
+        $filtered_stats [] = $stat;
+      }
+    }
+  }
+  return $filtered_stats;
+}
+
+/**
+  @brief Returns the Player Performance Stats
+    associated with the given player.
+  @param $nid (integer) the player node id.
+  @return (array) the Player Performance Stat nodes.
+*/
+function soccer_boss_get_pps_nodes ($nid) {
+  return node_load_multiple (
+    soccer_boss_get_references ($nid, 'node', 'soccer_boss_pps_player'));
+}
+
+/**
+  @brief Returns an array that represents a derived
+    player performance stat - I.E. a stat whose
+    value has been derived by adding up game stats.
+*/
+function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
+  $game_stats = array ();
+  foreach (soccer_boss_get_pgs_nodes ($player_nid) as $game_stat) {
+    if ($game_stat->title != $stat_name) { continue; }
+
+    $game = node_load ($game_stat->soccer_boss_pgs_game_field ['und'][0]['target_id']);
+    if (!$game) { continue; }
+
+    $game_year = date ('Y', strtotime ($game->soccer_boss_game_date ['und'][0]['value']));
+    if ($game_year == $year) {
+      $game_stats [] = $game_stat;
+    }
+  }
+
+  $derived_value = empty ($game_stats) ? null : 0;
+  foreach ($game_stats as $game_stat) {
+    $derived_value += $game_stat->soccer_boss_pgs_value ['und'][0]['value'];
+  }
+
+  return array (
+    'player' => $player_nid,
+    'name'   => $stat_name,
+    'value'  => derived_value,
+    'year'   => $year
+  );
+}
+
+
+
