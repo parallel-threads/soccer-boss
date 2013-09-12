@@ -15,15 +15,15 @@ function soccer_boss_install () {
 
   // I. Creates the vocabularies.
   soccer_boss_create_vocabularies ();
-  drupal_set_message ('Created the Position vocabulary.');
+  drupal_set_message ('Created the core vocabularies.');
 
   // II. Creates the content types.
   soccer_boss_create_content_types ();
-  drupal_set_message ('Created/Updated the Coach, Game, Player, and Team content types.');
+  drupal_set_message ('Created/Updated the core content types.');
 
   // III. Creates the default user roles.
   soccer_boss_create_roles ();
-  drupal_set_message ('Created the Coach and Player user roles.');
+  drupal_set_message ('Created the core user roles.');
 
   // IV. Set the block visibility settings.
   soccer_boss_set_block_visibilities ();
@@ -38,19 +38,16 @@ function soccer_boss_uninstall () {
 
   // I. Deletes the vocabularies.
   soccer_boss_delete_vocabularies ();
-  drupal_set_message ('Deleted the Position vocabulary.');
+  drupal_set_message ('Deleted the core vocabularies.');
 
   // II. Deletes the content types and their nodes.
   soccer_boss_delete_content_types ();
-  drupal_set_message ('Deleted the Coach, Game, Player, and Team content types.');
+  drupal_set_message ('Deleted the core content types.');
 
   // III. Deletes the default user roles.
   soccer_boss_delete_roles ();
-  drupal_set_message ('Deleted the Coach and Player user roles.');
+  drupal_set_message ('Deleted the core user roles.');
 
   // IV. Clear the block visibility settings.
   soccer_boss_clear_block_visibilities ();
-
-  node_type_delete ('soccer_boss_coach');
-  node_type_delete ('soccer_boss_player_game_stats');
 }

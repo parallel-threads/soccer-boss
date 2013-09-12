@@ -61,7 +61,7 @@ function soccer_boss_vocabularies () {
       'name'         => 'Gender',
       'machine_name' => 'soccer_boss_gender',
       'description'  => 'The set of genders.',
-      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/data/genders.csv')
+      'url'          => url (drupal_get_path ('module', 'soccer_boss') . '/data/genders.csv', array ('absolute' => true))
     ),
     'soccer_boss_player_position' => array (
       'name'         => 'Player Position',
