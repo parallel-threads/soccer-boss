@@ -112,3 +112,108 @@ function simple_table ($data) {
 
   return array ('#simple_table' => $table);
 }
+
+/// The AJAX callback for the sort buttons in the Simple Table form.
+function _simple_table_sort () {
+  watchdog (
+    'simple_table',
+    '[_simple_table_sort]'
+  );
+
+  list ($form, $form_state) = ajax_get_form();
+
+  $_SESSION ['simple_table']['data']['sort_column'] = 
+    $form_state ['input']['_triggering_element_value'];
+
+  watchdog (
+    'simple_table',
+    '[_simple_table_sort] form state: <pre>@form_state</pre>',
+    array (
+      '@form_state' => print_r ($form_state, true)
+  ));
+
+  return drupal_get_form ('simple_table_form');
+}
+
+/**
+  @brief Returns a form that embeds a table.
+  @return (array) the table data array.
+  @note The data array must be defined in
+    $_SESSION ['simple_table']['data'].
+*/
+function simple_table_form ($form, $form_state) {
+  watchdog (
+    'simple_table',
+    '[simple_table_form]'
+  );
+
+  if (!isset ($_SESSION ['simple_table']['data'])) {
+    return array ();
+  }
+
+  $data = $_SESSION ['simple_table']['data'];
+  
+  watchdog (
+    'simple_table',
+    '[simple_table_form] data: <pre>@data</pre>',
+    array (
+      '@data' => print_r ($data, true)
+  ));
+
+  $table = simple_table ($data);
+  $table = $table ['#simple_table'];
+
+  $form = array (
+    'table' => array (
+      '#type'   => 'container',
+      '#prefix' => '<div id=\'simple_table\'><table><caption>' . $table ['caption'] . '</caption>',
+      'header'  => array (
+        '#type'   => 'container',
+        '#prefix' => '<thead><tr>',
+        '#suffix' => '</tr></thead>'
+      ),
+      'body'    => array (
+        '#type'   => 'container',
+        '#prefix' => '<tbody>',
+        '#suffix' => '</tbody>'
+      ),
+      '#suffix' => '</table></div>'
+  ));
+  foreach ($table ['column_names'] as $column_name) {
+    $form ['table']['header'][] = array (
+      '#type'   => 'button',
+      '#prefix' => '<th>',
+      '#suffix' => '</th>',
+      '#value'  => $column_name,
+      'column_name' => array (
+        '#type'  => 'hidden',
+        '#value' => $column_name
+      ),
+      '#ajax' => array (
+        'callback' => '_simple_table_sort',
+        'wrapper'  => 'simple_table'
+      )
+    );
+  }
+  foreach ($table ['rows'] as $row) {
+    $row_elem = array (
+      '#prefix' => '<tr>',
+      '#suffix' => '</tr>'
+    );
+    foreach ($row as $field) {
+      $row_elem [] = array (
+        '#prefix' => '<td>',
+        '#suffix' => '</td>',
+        '#markup' => $field
+      );
+    }
+    $form ['table']['body'][] = $row_elem;
+  }
+  watchdog (
+    'simple_table',
+    '[simple_table_form] form: <pre>@form</pre>',
+    array (
+      '@form' => print_r ($form, true)
+  ));
+  return $form;
+}

@@ -1,0 +1,7 @@
+
+/* Render buttons as simple links in the Simple Table header. */
+#simple_table th input {
+    background:none!important;
+     border:none; 
+     padding:0!important;
+}
