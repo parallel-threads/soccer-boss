@@ -211,7 +211,31 @@ function soccer_boss_player_comparison ($x, $y) {
       );
     }
   }
-  
+
+  $x_stats = node_load_multiple (soccer_boss_get_references ($x->nid, 'node', 'soccer_boss_pfs_player'));
+  $y_stats = node_load_multiple (soccer_boss_get_references ($y->nid, 'node', 'soccer_boss_pfs_player'));
+
+  foreach ($x_stats as $x_stat) {
+    $y_stat = null;
+    foreach ($y_stats as $_y_stat) {
+      $x_stat_year = date ('Y', strtotime ($x_stat->soccer_boss_pfs_date ['und'][0]['value']));
+      $y_stat_year = date ('Y', strtotime ($_y_stat->soccer_boss_pfs_date ['und'][0]['value']));
+      if (
+        $x_stat->title == $_y_stat->title &&
+        $x_stat_year == $y_stat_year
+      ) {
+        $y_stat = $_y_stat;
+        break;
+      }
+    }
+    if (!is_null ($y_stat)) {
+      $stat_values [$x_stat_year][$x_stat->title] = array (
+        $x_stat->soccer_boss_pfs_value ['und'][0]['value'],
+        $y_stat->soccer_boss_pfs_value ['und'][0]['value']
+      );
+    }
+  }
+
   $stat_tables = soccer_boss_stats_comparison_tables ($stat_values);
 
   // III. Define the Player Comparison Page.
