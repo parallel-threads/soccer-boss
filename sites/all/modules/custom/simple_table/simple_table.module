@@ -79,8 +79,10 @@ function simple_table ($data) {
     create_function ('$column', 'return $column [\'column_name\'];'),
     $columns);
 
+  $fields = isset ($data ['fields']) ? $data ['fields'] : array ();
+
   $rows = array ();
-  foreach ($data ['fields'] as $field) {
+  foreach ($fields as $field) {
     $column_names [] = $field ['column_name'];
     $rows [$field ['row_name']][$field ['column_name']] = $field ['value'];
   }
