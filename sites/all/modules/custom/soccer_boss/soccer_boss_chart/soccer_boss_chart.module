@@ -57,7 +57,7 @@ function _soccer_boss_chart_prev () {
 function soccer_boss_chart_form ($form, $form_state) {
   module_load_include ('inc', 'soccer_boss_chart');
 
-  if (!isset ($_SESSION ['soccer_boss']['chart_data'])) {
+  if (!isset ($_SESSION ['soccer_boss']['chart_data']) || empty ($_SESSION ['soccer_boss']['chart_data'])) {
     return array ();
   }
 
