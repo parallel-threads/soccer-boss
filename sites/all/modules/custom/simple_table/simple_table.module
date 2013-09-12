@@ -142,24 +142,12 @@ function _simple_table_sort () {
     $_SESSION ['simple_table']['data'].
 */
 function simple_table_form ($form, $form_state) {
-  watchdog (
-    'simple_table',
-    '[simple_table_form]'
-  );
-
   if (!isset ($_SESSION ['simple_table']['data'])) {
     return array ();
   }
 
   $data = $_SESSION ['simple_table']['data'];
   
-  watchdog (
-    'simple_table',
-    '[simple_table_form] data: <pre>@data</pre>',
-    array (
-      '@data' => print_r ($data, true)
-  ));
-
   $table = simple_table ($data);
   $table = $table ['#simple_table'];
 
@@ -179,11 +167,17 @@ function simple_table_form ($form, $form_state) {
       ),
       '#suffix' => '</table></div>'
   ));
+  $column_offset = 0;
+  $sort_column_offset = null;
   foreach ($table ['column_names'] as $column_name) {
-    $form ['table']['header'][] = array (
+    $is_sort_column = isset ($data ['sort_column']) && $column_name == $data ['sort_column'];
+    if ($is_sort_column) {
+      $sort_column_offset = $column_offset;
+    }
+    $column_element = array (
       '#type'   => 'button',
-      '#prefix' => '<th>',
-      '#suffix' => '</th>',
+      '#prefix' => $is_sort_column ? '<th class="simple_table_sort_column_header">' : '<th>',
+      '#suffix' => ($is_sort_column ? '<img id="simple_table_sort_icon" src="' . url (drupal_get_path ('module', 'simple_table') . '/desc_sort_icon.png') . '">' : '') . '</th>',
       '#value'  => $column_name,
       'column_name' => array (
         '#type'  => 'hidden',
@@ -194,26 +188,27 @@ function simple_table_form ($form, $form_state) {
         'wrapper'  => 'simple_table'
       )
     );
+
+    $form ['table']['header'][] = $column_element;
+    $column_offset ++;
   }
   foreach ($table ['rows'] as $row) {
     $row_elem = array (
       '#prefix' => '<tr>',
       '#suffix' => '</tr>'
     );
+    $field_offset = 0;
     foreach ($row as $field) {
-      $row_elem [] = array (
-        '#prefix' => '<td>',
+      $is_sort_field = !is_null ($sort_column_offset) && $field_offset == $sort_column_offset;
+      $field_elem = array (
+        '#prefix' => $is_sort_field ? '<td class="simple_table_sort_column_field">' : '<td>',
         '#suffix' => '</td>',
         '#markup' => $field
       );
+      $row_elem [] = $field_elem;
+      $field_offset ++;
     }
     $form ['table']['body'][] = $row_elem;
   }
-  watchdog (
-    'simple_table',
-    '[simple_table_form] form: <pre>@form</pre>',
-    array (
-      '@form' => print_r ($form, true)
-  ));
   return $form;
 }
