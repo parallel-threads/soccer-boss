@@ -40,7 +40,7 @@ function soccer_boss_table_pfs ($player) {
     );
   } 
 
-  return simple_table ($data);
+  return $data;
 }
 
 /**
@@ -90,7 +90,7 @@ function soccer_boss_table_pgs ($player) {
         )), $data ['fields']);
     }
   }
-  return simple_table ($data);
+  return $data;
 }
 
 /**
@@ -139,5 +139,5 @@ function soccer_boss_table_pps ($player) {
       'value'       => $stat->soccer_boss_pps_value ['und'][0]['value']
     );
   }
-  return simple_table ($data);
+  return $data;
 }
