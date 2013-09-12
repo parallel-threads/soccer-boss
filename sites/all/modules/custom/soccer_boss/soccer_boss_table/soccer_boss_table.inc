@@ -12,19 +12,26 @@
 function soccer_boss_table_pfs ($player) {
   module_load_include ('inc', 'soccer_boss');
 
-  $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pfs_player'));
+  $stats = soccer_boss_get_pfs_nodes ($player->nid);
 
-  $data = array ();
+  $data = array (
+    'columns' => array (
+      array (
+        'column_name' => t ('Year'),
+        'weight'      => 0
+    )),
+    'sort_column' => t ('Year')
+  );
   $stat_years = array ();
-
   foreach ($stats as $stat) {
     $stat_year = date ('Y', strtotime ($stat->soccer_boss_pfs_date ['und'][0]['value']));
-    if (!array_key_exists ($stat_year, $stat_years)) {
-      $stat_years [$stat_year] = array (
+    if (!in_array ($stat_year, $stat_years)) {
+      $data ['fields'][] = array (
         'column_name' => t ('Year'),
         'row_name'    => $stat_year,
         'value'       => $stat_year
       );
+      $stat_years [] = $stat_year;
     }
     $data ['fields'][] = array (
       'column_name' => $stat->title,
@@ -32,8 +39,6 @@ function soccer_boss_table_pfs ($player) {
       'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
     );
   } 
-  ksort ($stat_years);
-  $data ['fields'] = array_merge (array_values ($stat_years), $data ['fields']);
 
   return simple_table ($data);
 }
@@ -46,7 +51,8 @@ function soccer_boss_table_pfs ($player) {
 function soccer_boss_table_pgs ($player) {
   module_load_include ('inc', 'soccer_boss');
 
-  $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pgs_player'));
+  $stats = soccer_boss_get_pgs_nodes ($player->nid);
+
   $data = array ();
   $games = array ();
   foreach ($stats as $stat) {
@@ -95,7 +101,7 @@ function soccer_boss_table_pgs ($player) {
 function soccer_boss_table_pps ($player) {
   module_load_include ('inc', 'soccer_boss');
 
-  $stats = node_load_multiple (soccer_boss_get_references ($player->nid, 'node', 'soccer_boss_pps_player'));
+  $stats = soccer_boss_get_pps_nodes ($player->nid);
 
   $data = array (
     'columns' => array (
@@ -110,13 +116,18 @@ function soccer_boss_table_pps ($player) {
       array (
         'column_name' => 'Assists',
         'weight'      => 2
-  )));
+    )),
+    'sort_column' => t ('Year'),
+    'fields' => array (),
+    'default_field_value' => create_function ('$column_name, $row_name',
+                                              '$pps = soccer_boss_get_derived_pps (' . $player->nid . ', $column_name, $row_name); 
+                                               return $pps [\'value\'];')
+  );
   $stat_years = array ();
-
   foreach ($stats as $stat) {
     $stat_year = $stat->soccer_boss_pps_year ['und'][0]['value'];
-    if (!array_key_exists ($stat_year, $stat_years)) {
-      $stat_years [$stat_year] = array (
+    if (!in_array ($stat_year, $stat_years)) {
+      $data ['fields'][] = array (
         'column_name' => t ('Year'),
         'row_name'    => $stat_year,
         'value'       => $stat_year
@@ -128,8 +139,5 @@ function soccer_boss_table_pps ($player) {
       'value'       => $stat->soccer_boss_pps_value ['und'][0]['value']
     );
   }
-  ksort ($stat_years);
-  $data ['fields'] = array_merge (array_values ($stat_years), $data ['fields']);
-
   return simple_table ($data);
 }

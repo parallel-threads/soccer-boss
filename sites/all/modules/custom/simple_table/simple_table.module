@@ -56,13 +56,17 @@ function theme_simple_table (&$vars) {
       'caption' => <caption>
       'columns' => array (
         'column_name' => <column name>,
-        'weight'      => <weight>
+        'weight'      => <weight>,
       ),
+      'sort_column' => <column name>,
       'fields' => array (
-         array ('column name' => <column name>,
-                'row name'    => <row name>,
+         array ('column_name' => <column name>,
+                'row_name'    => <row name>,
                 'value'       => <field value>),
-           ...))
+           ...
+      ),
+      'default_field_value_function => <callback (column_name, row_name) -> field_value>
+    );
 */
 function simple_table ($data) {
 
@@ -72,17 +76,21 @@ function simple_table ($data) {
     create_function ('$x, $y', 'return $x [\'weight\'] > $y [\'weight\'];'));  
 
   $column_names = array_map (
-    create_function ('$x', 'return $x [\'column_name\'];'),
+    create_function ('$column', 'return $column [\'column_name\'];'),
     $columns);
 
-  $row_names    = array ();
+  $rows = array ();
   foreach ($data ['fields'] as $field) {
     $column_names [] = $field ['column_name'];
-    $row_names []    = $field ['row_name'];
+    $rows [$field ['row_name']][$field ['column_name']] = $field ['value'];
   }
 
   $column_names = array_unique ($column_names);
-  $row_names    = array_unique ($row_names);
+
+  if (isset ($data ['sort_column'])) {
+    usort ($rows,
+      create_function ('$x, $y', 'return $x [\'' . $data ['sort_column'] . '\'] < $y [\'' . $data ['sort_column'] . '\'];'));
+  }
 
   $table = array (
     'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
@@ -90,20 +98,16 @@ function simple_table ($data) {
     'rows'         => array ()
   );
 
-  foreach ($row_names as $row_name) {
-    $row = array ();
+  foreach ($rows as $row_name => $row) {
+    $table_row = array ();
     foreach ($column_names as $column_name) {
-      $value = '';
-      foreach ($data ['fields'] as $field) {
-        if ($field ['column_name'] === $column_name &&
-            $field ['row_name']    === $row_name) {
-          $value = $field ['value'];
-          break;
-        }
-      }
-      $row [] = $value;
+      $table_row [] = isset ($row [$column_name]) ?
+                        $row [$column_name] :
+                        (isset ($data ['default_field_value_function']) ?
+                           call_user_func ($data ['default_field_value_function'], $column_name, $row_name) :
+                           '');
     }
-    $table ['rows'][] = $row;
+    $table ['rows'][] = $table_row;
   }
 
   return array ('#simple_table' => $table);
