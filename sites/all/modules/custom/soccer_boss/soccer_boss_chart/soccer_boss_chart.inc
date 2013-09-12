@@ -176,11 +176,5 @@ function _soccer_boss_chart_pfs ($player) {
 
   // III. return the chart form.
 
-  $_SESSION ['soccer_boss']['chart_data'] = $data_arrays;
-
-  $content = array (
-    'content' => array (
-      'node'  => node_view ($node, 'teaser'),
-      'chart' => drupal_get_form ('soccer_boss_chart_form'),
-  ));
+  return $data_arrays;
 }

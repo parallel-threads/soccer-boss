@@ -22,6 +22,7 @@ function soccer_boss_chart_block_view ($delta = '') {
   switch ($delta) {
     case 'soccer_boss_chart_pfs':
       if ($node && $node->type == soccer_boss_PLAYER_TYPE) {
+        $_SESSION ['soccer_boss']['chart_data'] = _soccer_boss_chart_pfs ($node);
         return array (
           'subject' => t ('Player Fitness Stats'),
           'content' => drupal_get_form ('soccer_boss_chart_form')
@@ -56,9 +57,11 @@ function _soccer_boss_chart_prev () {
 function soccer_boss_chart_form ($form, $form_state) {
   module_load_include ('inc', 'soccer_boss_chart');
 
-  $data = $_SESSION ['soccer_boss']['chart_data'];
+  if (!isset ($_SESSION ['soccer_boss']['chart_data'])) {
+    return array ();
+  }
 
-  if (empty ($data)) { return array (); }
+  $data = $_SESSION ['soccer_boss']['chart_data'];
 
   $chart = soccer_boss_chart ($data [0]);
 
