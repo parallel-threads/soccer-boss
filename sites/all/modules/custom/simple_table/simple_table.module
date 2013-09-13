@@ -119,32 +119,39 @@ function simple_table ($data) {
 function _simple_table_sort () {
   list ($form, $form_state) = ajax_get_form();
 
-  $_SESSION ['simple_table']['data']['sort_column'] = 
-    $form_state ['input']['_triggering_element_value'];
+  // Set the sort column in the table data array.
+  $form_state ['build_info']['args'][0]['sort_column'] = $form_state ['input']['_triggering_element_value'];
 
-  return drupal_get_form ('simple_table_form');
+  // Force Drupal to create a new form rather than use a cached version.
+  unset ($form_state ['input']['form_build_id']);
+
+  // Create and return the new form.
+  return drupal_build_form ('simple_table_form', $form_state);
 }
 
 /**
   @brief Returns a form that embeds a table.
-  @return (array) the table data array.
-  @note The data array must be defined in
-    $_SESSION ['simple_table']['data'].
+  @param $data (array) the table data array.
+  @return (array) the form.
 */
-function simple_table_form ($form, $form_state) {
-  if (!isset ($_SESSION ['simple_table']['data'])) {
+function simple_table_form ($form, $form_state, $data = null) {
+
+  if (is_null ($data)) {
     return array ();
   }
 
-  $data = $_SESSION ['simple_table']['data'];
-  
+  // set a unique id to allow the AJAX wrapper to reference the entire form.
+  $unique_form_id = drupal_html_id ($form_state ['build_info']['form_id']);
+
   $table = simple_table ($data);
   $table = $table ['#simple_table'];
 
   $form = array (
+    '#prefix' => '<div id="' . $unique_form_id . '">',
+    '#suffix' => '</div>',
     'table' => array (
       '#type'   => 'container',
-      '#prefix' => '<div id=\'simple_table\'><table><caption>' . $table ['caption'] . '</caption>',
+      '#prefix' => '<table class="simple_table"><caption>' . $table ['caption'] . '</caption>',
       'header'  => array (
         '#type'   => 'container',
         '#prefix' => '<thead><tr>',
@@ -155,7 +162,7 @@ function simple_table_form ($form, $form_state) {
         '#prefix' => '<tbody>',
         '#suffix' => '</tbody>'
       ),
-      '#suffix' => '</table></div>'
+      '#suffix' => '</table>'
   ));
   $column_offset = 0;
   $sort_column_offset = null;
@@ -167,7 +174,7 @@ function simple_table_form ($form, $form_state) {
     $column_element = array (
       '#type'   => 'button',
       '#prefix' => $is_sort_column ? '<th class="simple_table_sort_column_header">' : '<th>',
-      '#suffix' => ($is_sort_column ? '<img id="simple_table_sort_icon" src="' . url (drupal_get_path ('module', 'simple_table') . '/theme/images/desc_sort_icon.png') . '">' : '') . '</th>',
+      '#suffix' => ($is_sort_column ? '<img class="simple_table_sort_icon" src="' . url (drupal_get_path ('module', 'simple_table') . '/theme/images/desc_sort_icon.png') . '">' : '') . '</th>',
       '#value'  => $column_name,
       'column_name' => array (
         '#type'  => 'hidden',
@@ -175,7 +182,7 @@ function simple_table_form ($form, $form_state) {
       ),
       '#ajax' => array (
         'callback' => '_simple_table_sort',
-        'wrapper'  => 'simple_table'
+        'wrapper'  => $unique_form_id
       )
     );
 

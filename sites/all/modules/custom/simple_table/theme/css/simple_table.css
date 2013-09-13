@@ -1,22 +1,22 @@
 
 /* Render buttons as simple links in the Simple Table header. */
-#simple_table th input {
+.simple_table th input {
     background:none!important;
      border:none; 
      padding:0!important;
 }
 
 /* Highlight sort column headers. */
-#simple_table .simple_table_sort_column_header {
+.simple_table .simple_table_sort_column_header {
   background: white;
 }
 
 /* Highlight sort column fields. */
-#simple_table .simple_table_sort_column_field {
+.simple_table .simple_table_sort_column_field {
   background: white;
 }
 
 /* Add padding arount the sort icon. */
-#simple_table_sort_icon {
+.simple_table_sort_icon {
   padding-left: 1em;
 }
