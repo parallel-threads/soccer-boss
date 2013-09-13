@@ -114,16 +114,14 @@ function simple_table ($data) {
   $column_names = array_unique ($column_names);
 
   if (isset ($data ['sort_column'])) {
-    usort ($rows,
+    uasort ($rows,
       create_function ('$x, $y', 'return $x [\'' . $data ['sort_column'] . '\'] < $y [\'' . $data ['sort_column'] . '\'];'));
   }
-
   $table = array (
     'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
     'column_names' => $column_names,
     'rows'         => array ()
   );
-
   foreach ($rows as $row_name => $row) {
     $table_row = array ();
     foreach ($column_names as $column_name) {
@@ -139,7 +137,6 @@ function simple_table ($data) {
       $table ['rows'][] = $table_row;
     }
   }
-
   return array ('#simple_table' => $table);
 }
 
@@ -249,8 +246,8 @@ function simple_table_form ($form, $form_state, $data = null) {
   if (!empty ($table ['footer'])) {
     $form ['table']['footer'] = array (
       '#type'   => 'container',
-      '#prefix' => '<tfoot>',
-      '#suffix' => '</tfoot>'
+      '#prefix' => '<tfoot><tr>',
+      '#suffix' => '</tr></tfoot>'
     );
     $field_offset = 0;
     foreach ($table ['footer'] as $field) {
