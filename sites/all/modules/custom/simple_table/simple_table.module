@@ -2,6 +2,42 @@
 /**
   @file
   @brief Defines the Simple Table theme function.
+  @note
+    The Following Data structures are used
+    throughout this module.
+
+    1. Simple Table Render Arrays
+       Simple Table Render Arrays must have the following structure:
+
+         array ('#simple_table' =>
+           array ('caption' => <caption>,
+                  'column_names' => array (<column name>, ...),
+                  'rows'         => array (array (<field value>, ...), ...),
+                  'footer'       => array (<field value>, ...)
+         ))
+
+    2. Table Data Arrays.
+       Table Data Arrays are used to describe
+       tables in a slightly more abstract format.
+       Each array must have the following structure.
+
+         array (
+           'caption' => <caption>
+           'columns' => array (
+             'column_name' => <column name>,
+             'weight'      => <weight>,
+           ),
+           'sort_column' => <column name>,
+           'fields' => array (
+              array ('column_name' => <column name>,
+                     'row_name'    => <row name>,
+                     'value'       => <field value>),
+                ...
+           ),
+           'default_field_value_function => <callback (column_name, row_name) -> field_value>
+
+        note that 'footer' is a reserved row name,
+        used to denote the table footer row.
 */
 
 /// Implements hook_theme ().
@@ -18,12 +54,6 @@ function simple_table_theme ($existing, $type, $theme, $path) {
     Accepts a render array that represents a simple
     table and returns an HTML string that
     represents the table.
-  @note The render array must have the following
-    structure:
-    array ('#simple_table' =>
-      array ('caption' => <caption>,
-             'column_names' => array (<column name>, ...),
-             'rows' => array (array (<field value>, ...), ...))
 */
 function theme_simple_table (&$vars) {
   $table = $vars ['#simple_table'];
@@ -40,7 +70,15 @@ function theme_simple_table (&$vars) {
     }
     $html .= '</tr>';
   }
-  return $html . '</tbody></table>';
+  $html .= '</tbody>';
+  if (!empty ($table ['footer'])) {
+    $html .= '<tfoot>';
+    foreach ($table ['footer'] as $field) {
+      $html .= '<td>' . $field . '</td>';
+    }
+    $html .= '</tfoot>';
+  }
+  return $html . '</table>';
 }
 
 /**
@@ -52,20 +90,6 @@ function theme_simple_table (&$vars) {
   @note
     The data array must have the following
     form:
-    array (
-      'caption' => <caption>
-      'columns' => array (
-        'column_name' => <column name>,
-        'weight'      => <weight>,
-      ),
-      'sort_column' => <column name>,
-      'fields' => array (
-         array ('column_name' => <column name>,
-                'row_name'    => <row name>,
-                'value'       => <field value>),
-           ...
-      ),
-      'default_field_value_function => <callback (column_name, row_name) -> field_value>
     );
 */
 function simple_table ($data) {
@@ -109,7 +133,11 @@ function simple_table ($data) {
                            call_user_func ($data ['default_field_value_function'], $column_name, $row_name) :
                            '');
     }
-    $table ['rows'][] = $table_row;
+    if ($row_name == 'footer') {
+      $table ['footer'] = $table_row;
+    } else {
+      $table ['rows'][] = $table_row;
+    }
   }
 
   return array ('#simple_table' => $table);
@@ -140,6 +168,8 @@ function simple_table_form ($form, $form_state, $data = null) {
     return array ();
   }
 
+  // I. Create the table form.
+
   // set a unique id to allow the AJAX wrapper to reference the entire form.
   $unique_form_id = drupal_html_id ($form_state ['build_info']['form_id']);
 
@@ -152,6 +182,7 @@ function simple_table_form ($form, $form_state, $data = null) {
     'table' => array (
       '#type'   => 'container',
       '#prefix' => '<table class="simple_table"><caption>' . $table ['caption'] . '</caption>',
+      '#suffix' => '</table>',
       'header'  => array (
         '#type'   => 'container',
         '#prefix' => '<thead><tr>',
@@ -161,9 +192,11 @@ function simple_table_form ($form, $form_state, $data = null) {
         '#type'   => 'container',
         '#prefix' => '<tbody>',
         '#suffix' => '</tbody>'
-      ),
-      '#suffix' => '</table>'
+      )
   ));
+
+  // II. Render the table header.
+
   $column_offset = 0;
   $sort_column_offset = null;
   foreach ($table ['column_names'] as $column_name) {
@@ -189,6 +222,9 @@ function simple_table_form ($form, $form_state, $data = null) {
     $form ['table']['header'][] = $column_element;
     $column_offset ++;
   }
+
+  // III. Render the table body.
+
   foreach ($table ['rows'] as $row) {
     $row_elem = array (
       '#prefix' => '<tr>',
@@ -206,6 +242,26 @@ function simple_table_form ($form, $form_state, $data = null) {
       $field_offset ++;
     }
     $form ['table']['body'][] = $row_elem;
+  }
+
+  // IV. Render the table footer.
+
+  if (!empty ($table ['footer'])) {
+    $form ['table']['footer'] = array (
+      '#type'   => 'container',
+      '#prefix' => '<tfoot>',
+      '#suffix' => '</tfoot>'
+    );
+    $field_offset = 0;
+    foreach ($table ['footer'] as $field) {
+      $is_sort_field = !is_null ($sort_column_offset) && $field_offset == $sort_column_offset;
+      $form ['table']['footer'][] = array (
+        '#prefix' => $is_sort_field ? '<td class="simple_table_sort_column_field">' : '<td>',
+        '#suffix' => '</td>',
+        '#markup' => $field
+      );
+      $field_offset ++;
+    }
   }
   return $form;
 }

@@ -12,7 +12,7 @@
 }
 
 /* Highlight sort column fields. */
-.simple_table .simple_table_sort_column_field {
+.simple_table tbody .simple_table_sort_column_field {
   background: white;
 }
 
