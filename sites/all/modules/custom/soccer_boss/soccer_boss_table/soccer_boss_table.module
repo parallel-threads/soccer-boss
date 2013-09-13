@@ -36,7 +36,7 @@ function soccer_boss_table_block_view ($delta = '') {
         }
       }
       return array (
-        'subject' => t ('Player Fitness Stats'),
+        'subject' => '',
         'content' => $content
       );
     case 'soccer_boss_pgs_table':
@@ -48,7 +48,7 @@ function soccer_boss_table_block_view ($delta = '') {
         }
       }
       return array (
-        'subject' => t ('Player Game Stats'),
+        'subject' => '',
         'content' => $content
       );
     case 'soccer_boss_pps_table':
@@ -60,7 +60,7 @@ function soccer_boss_table_block_view ($delta = '') {
         }
       }
       return array (
-        'subject' => t ('Player Performance Stats'),
+        'subject' => '',
         'content' => $content
       );
   }
