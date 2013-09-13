@@ -117,22 +117,10 @@ function simple_table ($data) {
 
 /// The AJAX callback for the sort buttons in the Simple Table form.
 function _simple_table_sort () {
-  watchdog (
-    'simple_table',
-    '[_simple_table_sort]'
-  );
-
   list ($form, $form_state) = ajax_get_form();
 
   $_SESSION ['simple_table']['data']['sort_column'] = 
     $form_state ['input']['_triggering_element_value'];
-
-  watchdog (
-    'simple_table',
-    '[_simple_table_sort] form state: <pre>@form_state</pre>',
-    array (
-      '@form_state' => print_r ($form_state, true)
-  ));
 
   return drupal_get_form ('simple_table_form');
 }
@@ -179,7 +167,7 @@ function simple_table_form ($form, $form_state) {
     $column_element = array (
       '#type'   => 'button',
       '#prefix' => $is_sort_column ? '<th class="simple_table_sort_column_header">' : '<th>',
-      '#suffix' => ($is_sort_column ? '<img id="simple_table_sort_icon" src="' . url (drupal_get_path ('module', 'simple_table') . '/desc_sort_icon.png') . '">' : '') . '</th>',
+      '#suffix' => ($is_sort_column ? '<img id="simple_table_sort_icon" src="' . url (drupal_get_path ('module', 'simple_table') . '/theme/images/desc_sort_icon.png') . '">' : '') . '</th>',
       '#value'  => $column_name,
       'column_name' => array (
         '#type'  => 'hidden',
