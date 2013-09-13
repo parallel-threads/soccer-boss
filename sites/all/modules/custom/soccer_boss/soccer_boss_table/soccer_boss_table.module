@@ -31,7 +31,7 @@ function soccer_boss_table_block_view ($delta = '') {
       if ($node) {
         switch ($node->type) {
           case soccer_boss_PLAYER_TYPE:
-            $content = theme ('simple_table', simple_table (soccer_boss_table_pfs ($node)));
+            $content = drupal_get_form ('simple_table_form', soccer_boss_table_pfs ($node));
             break;
         }
       }
@@ -43,7 +43,7 @@ function soccer_boss_table_block_view ($delta = '') {
       if ($node) {
         switch ($node->type) {
           case soccer_boss_PLAYER_TYPE:
-            $content = theme ('simple_table', simple_table (soccer_boss_table_pgs ($node)));
+            $content = drupal_get_form ('simple_table_form', soccer_boss_table_pgs ($node));
             break;
         }
       }
@@ -55,9 +55,7 @@ function soccer_boss_table_block_view ($delta = '') {
       if ($node) {
         switch ($node->type) {
           case soccer_boss_PLAYER_TYPE:
-            // $content = theme ('simple_table', simple_table (soccer_boss_table_pps ($node)));
-            $_SESSION ['simple_table']['data'] = soccer_boss_table_pps ($node);
-            $content = drupal_get_form ('simple_table_form');
+            $content = drupal_get_form ('simple_table_form', soccer_boss_table_pps ($node));
             break;
         }
       }
