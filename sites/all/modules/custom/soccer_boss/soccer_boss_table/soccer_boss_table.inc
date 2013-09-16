@@ -174,11 +174,5 @@ function soccer_boss_table_pps ($player) {
     );
   }
 
-  $data ['fields'][] = array (
-    'column_name' => t ('Year'),
-    'row_name'    => '2014',
-    'value'       => '2014'
-  );
-
   return $data;
 }
