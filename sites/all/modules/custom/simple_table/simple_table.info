@@ -2,6 +2,6 @@ name = Simple Table
 description = "Defines a simple API for creating HTML tables."
 package = SimpleTable
 core = 7.x
-stylesheets[all][] = simple_table.css
+stylesheets[all][] = theme/css/simple_table.css
 files[] = simple_table.inc
 files[] = simple_table.module
