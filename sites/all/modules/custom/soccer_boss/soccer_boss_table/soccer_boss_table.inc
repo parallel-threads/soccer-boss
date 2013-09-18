@@ -152,17 +152,13 @@ function soccer_boss_table_pps ($player) {
   foreach ($stats as $stat) {
     $stat_year = $stat->soccer_boss_pps_year ['und'][0]['value'];
     if (!in_array ($stat_year, $stat_years)) {
-      $data ['fields'][] = array (
-        'column_name' => t ('Year'),
-        'row_name'    => $stat_year,
-        'value'       => $stat_year
-      );
+      $stat_years [] = $stat_year;
     }
     $stat_uri   = node_uri ($stat);
     $stat_value = $stat->soccer_boss_pps_value ['und'][0]['value'];
     $data ['fields'][] = array (
       'column_name'   => $stat->title,
-      'row_name'      => $stat->soccer_boss_pps_year  ['und'][0]['value'],
+      'row_name'      => $stat_year,
       'value'         => $stat_value,
       'display_value' => user_access ('edit any soccer_boss_pps content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
     );
@@ -185,8 +181,18 @@ function soccer_boss_table_pps ($player) {
     }
   }
   for ($year = $min_year; $year <= $current_year; $year ++) {
-    $data ['rows'][] = $year;
+    if (!in_array ($year, $stat_years)) {
+      $stat_years [] = $year;
+    }
   } 
+  foreach ($stat_years as $stat_year) {
+    $data ['rows'][] = $stat_year;
+    $data ['fields'][] = array (
+      'column_name' => t ('Year'),
+      'row_name'    => $stat_year,
+      'value'       => $stat_year
+    );
+  }
 
   $data ['fields'][] = array (
     'column_name' => t ('Year'),
