@@ -147,15 +147,10 @@ function soccer_boss_table_pps ($player) {
                                         '$pps = soccer_boss_get_derived_pps (' . $player->nid . ', $column_name, $row_name); 
                                         return $pps [\'value\'];')
   );
-  $current_year = date ('Y', time ());
   $stat_years = array ();
-  $min_year = $current_year;
   $totals = array ();
   foreach ($stats as $stat) {
     $stat_year = $stat->soccer_boss_pps_year ['und'][0]['value'];
-    if ($stat_year < $min_year) {
-      $min_year = $stat_year;
-    }
     if (!in_array ($stat_year, $stat_years)) {
       $data ['fields'][] = array (
         'column_name' => t ('Year'),
@@ -176,9 +171,23 @@ function soccer_boss_table_pps ($player) {
     }
     $totals [$stat->title] += $stat->soccer_boss_pps_value ['und'][0]['value'];
   }
+
+  $game_stats = soccer_boss_get_pgs_nodes ($player->nid);
+  $current_year = date ('Y', time ());
+  $min_year = $current_year;
+  foreach ($game_stats as $game_stat) {
+    $game = node_load ($game_stat->soccer_boss_pgs_game ['und'][0]['target_id']);
+    $game_date = date_parse ($game->soccer_boss_game_date ['und'][0]['value']);
+    $game_year = $game_date ['year'];
+    if (!$game) { continue; }
+    if ($game_year < $min_year) {
+      $min_year = $game_year;
+    }
+  }
   for ($year = $min_year; $year <= $current_year; $year ++) {
     $data ['rows'][] = $year;
   } 
+
   $data ['fields'][] = array (
     'column_name' => t ('Year'),
     'row_name'    => 'footer',

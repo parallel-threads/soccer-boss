@@ -825,6 +825,3 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
     'year'   => $year
   );
 }
-
-
-
