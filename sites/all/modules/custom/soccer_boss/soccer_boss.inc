@@ -804,7 +804,7 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
   foreach (soccer_boss_get_pgs_nodes ($player_nid) as $game_stat) {
     if ($game_stat->title != $stat_name) { continue; }
 
-    $game = node_load ($game_stat->soccer_boss_pgs_game_field ['und'][0]['target_id']);
+    $game = node_load ($game_stat->soccer_boss_pgs_game ['und'][0]['target_id']);
     if (!$game) { continue; }
 
     $game_year = date ('Y', strtotime ($game->soccer_boss_game_date ['und'][0]['value']));
@@ -821,7 +821,7 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
   return array (
     'player' => $player_nid,
     'name'   => $stat_name,
-    'value'  => derived_value,
+    'value'  => $derived_value,
     'year'   => $year
   );
 }
