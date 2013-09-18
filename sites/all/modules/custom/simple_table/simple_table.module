@@ -22,19 +22,23 @@
        Each array must have the following structure.
 
          array (
-           'caption' => <caption>
-           'columns' => array (
-             'column_name' => <column name>,
-             'weight'      => <weight>,
+           'caption' => <caption>                               // required.
+           'rows' => array (<row name>, ...),                   // optional.
+           'columns' => array (                                 // optional.
+             array (
+               'column_name' => <column name>,                  // required.
+               'weight'      => <weight>),                      // required.
+             ...
            ),
-           'sort_column' => <column name>,
+           'sort_column' => <column name>,                      // optional.
            'fields' => array (
-              array ('column_name' => <column name>,
-                     'row_name'    => <row name>,
-                     'value'       => <field value>),
+              array ('column_name'   => <column name>,          // required.
+                     'row_name'      => <row name>,             // required.
+                     'value'         => <field value>,          // required.
+                     'display_value' => <display field value>), // optional.
                 ...
            ),
-           'default_field_value_function => <callback (column_name, row_name) -> field_value>
+           'default_field_value_function => <callback (column_name, row_name) -> field_value> // optional.
 
         note that 'footer' is a reserved row name,
         used to denote the table footer row.
@@ -93,6 +97,12 @@ function theme_simple_table (&$vars) {
     );
 */
 function simple_table ($data) {
+  watchdog (
+    'simple_table',
+    '[simple_table] data: <pre>@data</pre>',
+    array (
+      '@data' => print_r ($data, true)
+  ));
 
   $columns = isset ($data ['columns']) ? $data ['columns'] : array ();
 
@@ -106,16 +116,25 @@ function simple_table ($data) {
   $fields = isset ($data ['fields']) ? $data ['fields'] : array ();
 
   $rows = array ();
+  if (isset ($data ['rows'])) {
+    foreach ($data ['rows'] as $row_name) {
+      $rows [$row_name] = array ();
+    }
+  }
   foreach ($fields as $field) {
     $column_names [] = $field ['column_name'];
-    $rows [$field ['row_name']][$field ['column_name']] = $field ['value'];
+    $rows [$field ['row_name']][$field ['column_name']]
+      = array (
+          'value'         => $field ['value'],
+          'display_value' => isset ($field ['display_value']) ? $field ['display_value'] : $field ['value']
+        );
   }
 
   $column_names = array_unique ($column_names);
 
   if (isset ($data ['sort_column'])) {
     uasort ($rows,
-      create_function ('$x, $y', 'return $x [\'' . $data ['sort_column'] . '\'] < $y [\'' . $data ['sort_column'] . '\'];'));
+      create_function ('$x, $y', 'return $x [\'' . $data ['sort_column'] . '\'][\'value\'] < $y [\'' . $data ['sort_column'] . '\'][\'value\'];'));
   }
   $table = array (
     'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
@@ -125,11 +144,15 @@ function simple_table ($data) {
   foreach ($rows as $row_name => $row) {
     $table_row = array ();
     foreach ($column_names as $column_name) {
-      $table_row [] = isset ($row [$column_name]) ?
-                        $row [$column_name] :
-                        (isset ($data ['default_field_value_function']) ?
-                           call_user_func ($data ['default_field_value_function'], $column_name, $row_name) :
-                           '');
+      $field_value = '';
+      if (isset ($row [$column_name])) {
+        $field_value = $row [$column_name]['display_value'];
+      } else {
+        if (isset ($data ['default_field_value_function'])) {
+          $field_value = call_user_func ($data ['default_field_value_function'], $column_name, $row_name);
+        }
+      }
+      $table_row [] = $field_value;
     }
     if ($row_name == 'footer') {
       $table ['footer'] = $table_row;

@@ -27,16 +27,19 @@ function soccer_boss_table_pfs ($player) {
     $stat_year = date ('Y', strtotime ($stat->soccer_boss_pfs_date ['und'][0]['value']));
     if (!in_array ($stat_year, $stat_years)) {
       $data ['fields'][] = array (
-        'column_name' => t ('Year'),
-        'row_name'    => $stat_year,
-        'value'       => $stat_year
+        'column_name'   => t ('Year'),
+        'row_name'      => $stat_year,
+        'value'         => $stat_year
       );
       $stat_years [] = $stat_year;
     }
+    $stat_uri   = node_uri ($stat);
+    $stat_value = $stat->soccer_boss_pfs_value ['und'][0]['value'];
     $data ['fields'][] = array (
-      'column_name' => $stat->title,
-      'row_name'    => $stat_year,
-      'value'       => $stat->soccer_boss_pfs_value ['und'][0]['value']
+      'column_name'   => $stat->title,
+      'row_name'      => $stat_year,
+      'value'         => $stat_value,
+      'display_value' => user_access ('edit any soccer_boss_pfs content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
     );
   } 
 
@@ -66,10 +69,13 @@ function soccer_boss_table_pgs ($player) {
       $games [$game_date][$game->nid] = $game;
     }
 
+    $stat_uri   = node_uri ($stat);
+    $stat_value = $stat->soccer_boss_pgs_value ['und'][0]['value'];
     $data ['fields'][] = array (
-      'column_name' => $stat->title,
-      'row_name'    => $game->nid,
-      'value'       => $stat->soccer_boss_pgs_value ['und'][0]['value']
+      'column_name'   => $stat->title,
+      'row_name'      => $game->nid,
+      'value'         => $stat_value,
+      'display_value' => user_access ('edit any soccer_boss_pgs content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
     );
     if (!array_key_exists ($stat->title, $totals)) {
       $totals [$stat->title] = 0;
@@ -121,6 +127,7 @@ function soccer_boss_table_pps ($player) {
   $stats = soccer_boss_get_pps_nodes ($player->nid);
 
   $data = array (
+    'rows' => array (),
     'columns' => array (
       array (
         'column_name' => t ('Year'),
@@ -136,14 +143,19 @@ function soccer_boss_table_pps ($player) {
     )),
     'sort_column' => t ('Year'),
     'fields' => array (),
-    'default_field_value' => create_function ('$column_name, $row_name',
-                                              '$pps = soccer_boss_get_derived_pps (' . $player->nid . ', $column_name, $row_name); 
-                                               return $pps [\'value\'];')
+    'default_field_value_function' => create_function ('$column_name, $row_name',
+                                        '$pps = soccer_boss_get_derived_pps (' . $player->nid . ', $column_name, $row_name); 
+                                        return $pps [\'value\'];')
   );
+  $current_year = date ('Y', time ());
   $stat_years = array ();
+  $min_year = $current_year;
   $totals = array ();
   foreach ($stats as $stat) {
     $stat_year = $stat->soccer_boss_pps_year ['und'][0]['value'];
+    if ($stat_year < $min_year) {
+      $min_year = $stat_year;
+    }
     if (!in_array ($stat_year, $stat_years)) {
       $data ['fields'][] = array (
         'column_name' => t ('Year'),
@@ -151,16 +163,22 @@ function soccer_boss_table_pps ($player) {
         'value'       => $stat_year
       );
     }
+    $stat_uri   = node_uri ($stat);
+    $stat_value = $stat->soccer_boss_pps_value ['und'][0]['value'];
     $data ['fields'][] = array (
-      'column_name' => $stat->title,
-      'row_name'    => $stat->soccer_boss_pps_year  ['und'][0]['value'],
-      'value'       => $stat->soccer_boss_pps_value ['und'][0]['value']
+      'column_name'   => $stat->title,
+      'row_name'      => $stat->soccer_boss_pps_year  ['und'][0]['value'],
+      'value'         => $stat_value,
+      'display_value' => user_access ('edit any soccer_boss_pps content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
     );
     if (!array_key_exists ($stat->title, $totals)) {
       $totals [$stat->title] = 0;
     }
     $totals [$stat->title] += $stat->soccer_boss_pps_value ['und'][0]['value'];
   }
+  for ($year = $min_year; $year <= $current_year; $year ++) {
+    $data ['rows'][] = $year;
+  } 
   $data ['fields'][] = array (
     'column_name' => t ('Year'),
     'row_name'    => 'footer',
