@@ -75,7 +75,12 @@ function soccer_boss_table_pgs ($player) {
       'column_name'   => $stat->title,
       'row_name'      => $game->nid,
       'value'         => $stat_value,
-      'display_value' => user_access ('edit any soccer_boss_pgs content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
+      'display_value' => user_access ('edit any soccer_boss_pgs content') ?
+                           array (
+                             '#type'          => 'textfield',
+                             '#default_value' => $stat_value,
+                             '#size'          => 5
+                           ) : $stat_value
     );
     if (!array_key_exists ($stat->title, $totals)) {
       $totals [$stat->title] = 0;
@@ -116,6 +121,20 @@ function soccer_boss_table_pgs ($player) {
   return $data;
 }
 
+function soccer_boss_table_pps_access ($user) {
+  return user_access ('edit any soccer_boss_pps content', $user);
+}
+
+function soccer_boss_table_pps_default_value ($column_name, $row_name, $player_nid) {
+  module_load_include ('inc', 'soccer_boss');
+  $pps = soccer_boss_get_derived_pps ($player_nid, $column_name, $row_name); 
+  return $pps ['value'];
+}
+
+function soccer_boss_table_pps_update () {
+  drupal_set_message ('stats saved');
+}
+
 /**
   @brief Returns the Player Performance Stat table for the given player.
   @param $player (node) the player.
@@ -127,6 +146,7 @@ function soccer_boss_table_pps ($player) {
   $stats = soccer_boss_get_pps_nodes ($player->nid);
 
   $data = array (
+    'module' => 'soccer_boss_table',
     'rows' => array (),
     'columns' => array (
       array (
@@ -143,9 +163,10 @@ function soccer_boss_table_pps ($player) {
     )),
     'sort_column' => t ('Year'),
     'fields' => array (),
-    'default_field_value_function' => create_function ('$column_name, $row_name',
-                                        '$pps = soccer_boss_get_derived_pps (' . $player->nid . ', $column_name, $row_name); 
-                                        return $pps [\'value\'];')
+    'submit_function'               => 'soccer_boss_table_pps_update',
+    'access_function'               => 'soccer_boss_table_pps_access',
+    'default_field_value_function'  => 'soccer_boss_table_pps_default_value',
+    'default_field_value_arguments' => array ($player->nid)
   );
   $stat_years = array ();
   $totals = array ();
@@ -160,7 +181,7 @@ function soccer_boss_table_pps ($player) {
       'column_name'   => $stat->title,
       'row_name'      => $stat_year,
       'value'         => $stat_value,
-      'display_value' => user_access ('edit any soccer_boss_pps content') ? l ($stat_value, $stat_uri ['path'] . '/edit') : $stat_value
+      'display_value' => $stat_value
     );
     if (!array_key_exists ($stat->title, $totals)) {
       $totals [$stat->title] = 0;
