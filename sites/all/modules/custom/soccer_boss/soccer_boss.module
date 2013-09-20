@@ -32,17 +32,6 @@ function soccer_boss_menu () {
       'type'             => MENU_CALLBACK,
       'file'             => 'soccer_boss.page.inc',
     ),
-    'node/%node/bio' => array (
-      'title'            => t ('Player Bio'),
-      'description'      => t ('The player bio page.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
-      'page callback'    => 'soccer_boss_player_bio_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 5
-    ),
     'node/%node/fitness' => array (
       'title'            => t ('Player Fitness'),
       'description'      => t ('Displays the player fitness stats.'),
