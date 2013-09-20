@@ -509,9 +509,21 @@ function soccer_boss_pfs_form ($form, $form_state, $player_node) {
       '#type'  => 'textfield',
       '#title' => t ('Two Mile Time')
     ),
+    'beep_test' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Beep Test')
+    ),
     'dash_time' => array (
       '#type'  => 'textfield',
       '#title' => t ('60 yard dash time')
+    ),
+    'push_ups' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Push-Ups per Minute')
+    ),
+    'sit_ups' => array (
+      '#type'  => 'textfield',
+      '#title' => t ('Sit-Ups per Minute')
     ),
     'bench_press' => array (
       '#type'  => 'textfield',
@@ -541,7 +553,10 @@ function soccer_boss_pfs_form_submit ($form, &$form_state) {
   foreach (array (
     'mile_time'     => t ('Mile Time'),
     'two_mile_time' => t ('Two Mile Time'),
+    'beep_test'     => t ('Beep Test'),
     'dash_time'     => t ('Dash Time'),
+    'push_ups'      => t ('Push-Ups per Minute'),
+    'sit_ups'       => t ('Sit-Ups per Minute'),
     'bench_press'   => t ('Bench Press'),
     'squat'         => t ('Squat'),
     'juggles'       => t ('Juggles')
