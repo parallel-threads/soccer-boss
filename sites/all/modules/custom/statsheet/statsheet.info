@@ -1,0 +1,6 @@
+name = Statsheet
+description = "Defines the Statsheet API for creating editable statsheets."
+package = Statsheet
+core = 7.x
+dependencies[] = simple_table
+files[] = statsheet.module

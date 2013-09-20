@@ -1,0 +1,8 @@
+Statsheet Readme
+----------------
+
+The Statsheet module extends the API provided by the Simple Table
+module to allow users to edit and view statsheets.
+
+A statsheet is a collection of data displayed in a table format that
+certain users may edit. 

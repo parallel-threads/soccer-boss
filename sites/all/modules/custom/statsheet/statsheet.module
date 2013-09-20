@@ -1,0 +1,117 @@
+<?php
+/**
+  @file
+  @brief Defines the Statsheet API functions.
+  @note
+    The following Data structures are used
+    throughout this module.
+
+    1. Statsheet Data Arrays.
+       Statsheet Data Arrays are used to abstractly
+       describe statsheets. This array structure
+       extends the Table Data Array structure
+       defined by simple_table, by adding several
+       new parameters.
+
+         array (
+           'module'  => '<module name>'                         // Required if you are using any callback functions. This is used to load the module's include file.
+           'caption' => <caption>                               // required.
+           'rows' => array (<row name>, ...),                   // optional.
+           'columns' => array (                                 // optional.
+             array (
+               'column_name' => <column name>,                  // required.
+               'weight'      => <weight>),                      // required.
+             ...
+           ),
+           'sortable'    => <true|false>,                       // optional (default true). Whether or not users may change the sorting.
+           'sort_column' => <column name>,                      // optional.
+           'fields' => array (
+              array ('column_name'   => <column name>,          // required.
+                     'row_name'      => <row name>,             // required.
+                     'value'         => <field value>,          // required.
+                     'display_value' => <display field value>), // optional.
+                ...
+           ),
+           'field_width'     => <field width>,                  // optional (default 5).
+           'submit_function' => <form submit callback>,         // required.
+           'access_function' => <callback (user) -> bool>,      // optional.
+           'default_field_value_function'  => <callback (column_name, row_name) -> field_value> // optional.
+           'default_field_value_arguments' => array (<additional argument>) // optional. Additional arguments to pass to the default value function.
+*/
+
+function statsheet_wrap_value ($value, $field_width = 5) {
+  return array (
+    '#type'          => 'textfield',
+    '#default_value' => $value,
+    '#size'          => $field_width
+  );
+}
+
+function statsheet_wrap_default_value ($column_name, $row_name, $default_value_function, $default_value_arguments, $field_width) {
+  $arguments = array_merge (
+    array ($column_name, $row_name),
+    $default_value_arguments
+  );
+  return statsheet_wrap_value (
+    call_user_func_array ($default_value_function, $arguments),
+    $field_width 
+  );
+}
+
+/**
+  @brief Accepts a Statsheet Data Array and returns
+    a statsheet form array.
+  @param $data (array) the Statsheet Data array.
+  @return (array) the form.
+*/
+function statsheet_form ($form, $form_state, $data = null) {
+  if (is_null ($data)) {
+    return array ();
+  }
+
+  if (isset ($data ['module'])) {
+    module_load_include ('inc', $data ['module']);
+  }
+
+  watchdog (
+    'statsheet',
+    '[statsheet_form] data: <pre>@data</pre>',
+    array (
+      '@data' => print_r ($data, true)
+  ));
+
+  global $user;
+  $editable = isset ($data ['access_function']) && call_user_func ($data ['access_function'], $user);
+
+  if ($editable) {
+    $data ['sortable'] = false;
+
+    $field_width = isset ($data ['field_width']) ? $data ['field_width'] : 5;
+
+    foreach ($data ['fields'] as &$field) {
+      $field ['display_value'] = statsheet_wrap_value (
+        isset ($field ['display_value']) ? $field ['display_value'] : $field ['value'],
+        $field_width
+      );
+    }
+    if (isset ($data ['default_field_value_function'])) {
+      $data ['default_field_value_arguments'] = array (
+        $data ['default_field_value_function'],
+        $data ['default_field_value_arguments'],
+        $field_width
+      );
+      $data ['default_field_value_function']  = 'statsheet_wrap_default_value';
+    }
+  }
+  $form = drupal_get_form ('simple_table_form', $data);
+
+  if ($editable) {
+    $form [] = array (
+      '#type'   => 'submit',
+      '#value'  => t ('Update'),
+      '#submit' => array ($data ['submit_function'])
+    );
+  }
+
+  return $form;
+}
