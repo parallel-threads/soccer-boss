@@ -111,7 +111,8 @@ function soccer_boss_table_pgs ($player) {
 }
 
 function soccer_boss_table_pps_access ($user) {
-  return user_access ('edit any soccer_boss_pps content', $user);
+  // return user_access ('edit any soccer_boss_pps content', $user);
+  return false;
 }
 
 function soccer_boss_table_pps_default_value ($column_name, $row_name, $player_nid) {
