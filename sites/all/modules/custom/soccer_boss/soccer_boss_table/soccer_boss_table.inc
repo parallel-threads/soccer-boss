@@ -56,9 +56,20 @@ function soccer_boss_table_pgs ($player) {
 
   $stats = soccer_boss_get_pgs_nodes ($player->nid);
 
-  $data = array ();
+  $data = array (
+    'columns' => array (
+      array (
+        'column_name' => t ('Date'),
+        'weight'      => 2,
+      ),
+      array (
+        'column_name' => t ('Game'),
+        'weight'      => 1
+    )),
+    'show_totals' => true,
+    'label_column_name' => t ('Date')
+  );
   $games = array ();
-  $totals = array ();
   foreach ($stats as $stat) {
     $game = node_load ($stat->soccer_boss_pgs_game ['und'][0]['target_id']);
     $game_date = $game->soccer_boss_game_date ['und'][0]['value'];
@@ -74,18 +85,8 @@ function soccer_boss_table_pgs ($player) {
     $data ['fields'][] = array (
       'column_name'   => $stat->title,
       'row_name'      => $game->nid,
-      'value'         => $stat_value,
-      'display_value' => user_access ('edit any soccer_boss_pgs content') ?
-                           array (
-                             '#type'          => 'textfield',
-                             '#default_value' => $stat_value,
-                             '#size'          => 5
-                           ) : $stat_value
+      'value'         => $stat_value
     );
-    if (!array_key_exists ($stat->title, $totals)) {
-      $totals [$stat->title] = 0;
-    } 
-    $totals [$stat->title] += $stat->soccer_boss_pgs_value ['und'][0]['value'];
   }
   ksort ($games);
   foreach ($games as $game_date => $_games) {
@@ -105,18 +106,6 @@ function soccer_boss_table_pgs ($player) {
             'value'       => l ($game->title, $game_uri ['path'])
         )), $data ['fields']);
     }
-  }
-  $data ['fields'][] = array (
-    'column_name' => t ('Date'),
-    'row_name'    => 'footer',
-    'value'       => t ('Totals')
-  );
-  foreach ($totals as $stat_name => $stat_total_value) {
-    $data ['fields'][] = array (
-      'column_name' => $stat_name,
-      'row_name'    => 'footer',
-      'value'       => $stat_total_value
-    );
   }
   return $data;
 }
@@ -151,17 +140,19 @@ function soccer_boss_table_pps ($player) {
     'columns' => array (
       array (
         'column_name' => t ('Year'),
-        'weight'      => 0,
+        'weight'      => 3,
       ),
       array (
         'column_name' => 'Goals',
-        'weight'      => 1,
+        'weight'      => 2,
       ),
       array (
         'column_name' => 'Assists',
-        'weight'      => 2
+        'weight'      => 1
     )),
     'sort_column' => t ('Year'),
+    'label_column_name' => t ('Year'),
+    'show_totals'       => true,
     'fields' => array (),
     'submit_function'               => 'soccer_boss_table_pps_update',
     'access_function'               => 'soccer_boss_table_pps_access',
@@ -169,7 +160,6 @@ function soccer_boss_table_pps ($player) {
     'default_field_value_arguments' => array ($player->nid)
   );
   $stat_years = array ();
-  $totals = array ();
   foreach ($stats as $stat) {
     $stat_year = $stat->soccer_boss_pps_year ['und'][0]['value'];
     if (!in_array ($stat_year, $stat_years)) {
@@ -183,10 +173,6 @@ function soccer_boss_table_pps ($player) {
       'value'         => $stat_value,
       'display_value' => $stat_value
     );
-    if (!array_key_exists ($stat->title, $totals)) {
-      $totals [$stat->title] = 0;
-    }
-    $totals [$stat->title] += $stat->soccer_boss_pps_value ['und'][0]['value'];
   }
 
   $game_stats = soccer_boss_get_pgs_nodes ($player->nid);
@@ -214,19 +200,5 @@ function soccer_boss_table_pps ($player) {
       'value'       => $stat_year
     );
   }
-
-  $data ['fields'][] = array (
-    'column_name' => t ('Year'),
-    'row_name'    => 'footer',
-    'value'       => t ('Totals')
-  );
-  foreach ($totals as $stat_name => $stat_total_value) {
-    $data ['fields'][] = array (
-      'column_name' => $stat_name,
-      'row_name'    => 'footer',
-      'value'       => $stat_total_value
-    );
-  }
-
   return $data;
 }

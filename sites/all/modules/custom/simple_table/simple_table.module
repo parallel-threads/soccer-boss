@@ -32,6 +32,8 @@
            ),
            'sortable'    => <true|false>,                       // optional (default true). Whether or not users may change the sorting.
            'sort_column' => <column name>,                      // optional.
+           'label_column_name' => <column name>,                // optional. The name of the column that holds row labels.
+           'show_totals' => <true|false>,                       // optional (default false).
            'fields' => array (
               array ('column_name'   => <column name>,          // required.
                      'row_name'      => <row name>,             // required.
@@ -61,77 +63,202 @@
 */
 
 /**
-  @brief Accepts a Table Data array and returns a
-    render array that represents a table containing
-    them.
-  @param $data (array) the Tabe Data array.
-  @return (array) the Simple Table Data array.
+  @brief Accepts a Data Array and returns all of
+    the row names including those defined
+    implicitly.
+*/
+function _simple_table_get_all_row_names ($data) {
+  $row_names = isset ($data ['rows']) ? $data ['rows'] : array ();
+  foreach ($data ['fields'] as $field) {
+    if (!in_array ($field ['row_name'], $row_names)) {
+      $row_names [] = $field ['row_name'];
+    }
+  }
+  return $row_names;
+}
+
+/**
+  @brief Accepts a Data Array and returns all of
+    the columns including those defined implicitly.
+*/
+function _simple_table_get_all_columns ($data) {
+  $columns = isset ($data ['columns']) ? $data ['columns'] : array ();
+  foreach ($data ['fields'] as $field) {
+    $match = false;
+    foreach ($columns as $column) {
+      if ($column ['column_name'] === $field ['column_name']) {
+        $match = true;
+        break;
+      }
+    }
+    if ($match) { continue; }
+    $columns [] = array (
+      'column_name' => $field ['column_name'],
+      'weight'      => 0
+    );
+  }
+  return $columns;
+}
+
+/**
+  @brief Accepts two columns and returns true iff
+    the first one has a lower weight than the
+    second.
+*/
+function _simple_table_column_lt ($x, $y) {
+  return $x ['weight'] < $y ['weight'];
+}
+
+/*
+  @brief Accepts a Data Array and returns all of
+    the columns sorted by column weight.
+*/
+function _simple_table_get_all_columns_sorted ($data) {
+  $columns = _simple_table_get_all_columns ($data);
+  usort ($columns, '_simple_table_column_lt');
+  return $columns;
+}
+
+/**
+  @brief Accepts a Data Array and returns all of
+    the column names sorted by column weight.
+*/
+function _simple_table_get_all_column_names_sorted ($data) {
+  $column_names = array ();
+  foreach (_simple_table_get_all_columns_sorted ($data) as $column) {
+    $column_names [] = $column ['column_name'];
+  }
+  return $column_names;
+}
+
+/**
+  @brief Accepts a Data Array, a column name, and
+    a row name, and returns the value of the field
+    that is in the given column and row.
+  @note This function will call the default value
+    function if the field value is not given in the
+    fields array.
+*/
+function _simple_table_get_field ($data, $column_name, $row_name) {
+  foreach ($data ['fields'] as $field) {
+    if ($field ['column_name'] === $column_name &&
+        $field ['row_name']    === $row_name) {
+      return $field;
+    }
+  }
+  if (isset ($data ['default_field_value_function'])) {
+    module_load_include ('inc', $data ['module']);
+    $arguments = array ($column_name, $row_name);
+    if (isset ($data ['default_field_value_arguments'])) {
+      $arguments = array_merge ($arguments, $data ['default_field_value_arguments']);
+    }
+    $value = call_user_func_array ($data ['default_field_value_function'], $arguments);
+    return array (
+      'column_name'   => $column_name,
+      'row_name'      => $row_name,
+      'value'         => $value,
+      'display_value' => $value
+    );
+  } // else.
+  return '';
+}
+
+/**
+  @brief Accepts a Data Array and returns the data
+    rows.
+  @note Each row contains all of the field values,
+    including defaults and the columns have been
+    sorted. 
+*/
+function _simple_table_get_rows ($data) {
+  $rows = array ();
+  foreach (_simple_table_get_all_row_names ($data) as $row_name) {
+    $row = array (
+      'row_name' => $row_name,
+      'fields'   => array (),
+    );
+    if (isset ($data ['sort_column'])) {
+      $sort_field = _simple_table_get_field ($data, $data ['sort_column'], $row_name);
+      $row ['sort_value'] = $sort_field ['value'];
+    }
+    foreach (_simple_table_get_all_column_names_sorted ($data) as $column_name) {
+      $row ['fields'][] = _simple_table_get_field ($data, $column_name, $row_name);
+    }
+    $rows [] = $row;
+  }
+  return $rows;
+}
+
+/**
+  @brief Accepts two rows and returns true iff the
+    first one has a lower weight than the second.
+*/
+function _simple_table_row_lt ($x, $y) {
+  return !isset ($x ['sort_value']) ||
+         $x ['sort_value'] === '' ||
+         (isset ($y ['sort_value']) && $x ['sort_value'] < $y ['sort_value']);
+}
+
+/**
+  @brief Accepts a Data array and returns the
+    Totals footer row for the table. 
+*/
+function _simple_table_totals_footer ($data) {
+  $footer = array ();
+  foreach (_simple_table_get_all_column_names_sorted ($data) as $column_name) {
+    if (isset ($data ['label_column_name']) && $column_name === $data ['label_column_name']) {
+      $footer [] = t ('Totals');
+    } else {
+      $column_total = 0;
+      foreach (_simple_table_get_all_row_names ($data) as $row_name) {
+        $field = _simple_table_get_field ($data, $column_name, $row_name);
+        $column_total += $field ['value'];
+      }
+      $footer [] = $column_total;
+    }
+  }
+  return $footer;
+}
+
+/**
+  @brief Accepts a Data Array and returns the data
+    rows sorted using the sorted column field value.
+*/
+function _simple_table_get_rows_sorted ($data) {
+  $rows = _simple_table_get_rows ($data);
+  usort ($rows, '_simple_table_row_lt');
+  return $rows;
+}
+
+/**
+  @brief Accepts a Data Array and returns the data
+    row values sorted using the sorted column field
+    value.
+*/
+function _simple_table_get_row_values_sorted ($data) {
+  $rows = array ();
+  foreach (_simple_table_get_rows_sorted ($data) as $row) {
+    $row_values = array ();
+    foreach ($row ['fields'] as $field) {
+      $row_values [] = isset ($field ['display_value']) ? $field ['display_value'] : $field ['value'];
+    }
+    $rows [] = $row_values;
+  }
+  return $rows;
+}
+
+/**
+  @brief Accepts a Data Array and returns a Simple
+    Table Array for rendering.
 */
 function simple_table ($data) {
-  $columns = isset ($data ['columns']) ? $data ['columns'] : array ();
-
-  usort ($columns,
-    create_function ('$x, $y', 'return $x [\'weight\'] > $y [\'weight\'];'));  
-
-  $column_names = array_map (
-    create_function ('$column', 'return $column [\'column_name\'];'),
-    $columns);
-
-  $fields = isset ($data ['fields']) ? $data ['fields'] : array ();
-
-  $rows = array ();
-  if (isset ($data ['rows'])) {
-    foreach ($data ['rows'] as $row_name) {
-      $rows [$row_name] = array ();
-    }
-  }
-  foreach ($fields as $field) {
-    $column_names [] = $field ['column_name'];
-    $rows [$field ['row_name']][$field ['column_name']]
-      = array (
-          'value'         => $field ['value'],
-          'display_value' => isset ($field ['display_value']) ? $field ['display_value'] : $field ['value']
-        );
-  }
-
-  $column_names = array_unique ($column_names);
-
-  if (isset ($data ['sort_column'])) {
-    uasort ($rows,
-      create_function ('$x, $y', 'return $x [\'' . $data ['sort_column'] . '\'][\'value\'] < $y [\'' . $data ['sort_column'] . '\'][\'value\'];'));
-  }
   $table = array (
     'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
-    'column_names' => $column_names,
-    'rows'         => array ()
+    'column_names' => _simple_table_get_all_column_names_sorted ($data),
+    'rows'         => _simple_table_get_row_values_sorted ($data)
   );
-  foreach ($rows as $row_name => $row) {
-    $table_row = array ();
-    foreach ($column_names as $column_name) {
-      $field_value = '';
-      if (isset ($row [$column_name])) {
-        $field_value = $row [$column_name]['display_value'];
-      } else {
-        if (isset ($data ['default_field_value_function'])) {
-          $function = $data ['default_field_value_function'];
-          $arguments = array (
-            $column_name,
-            $row_name,
-          );
-          if (isset ($data ['default_field_value_arguments'])) {
-            $arguments = array_merge ($arguments, $data ['default_field_value_arguments']);
-          }
-          module_load_include ('inc', $data ['module']);
-          $field_value = is_callable ($function) ? call_user_func_array ($function, $arguments) : 'default';
-        }
-      }
-      $table_row [] = $field_value;
-    }
-    if ($row_name == 'footer') {
-      $table ['footer'] = $table_row;
-    } else {
-      $table ['rows'][] = $table_row;
-    }
+  if (isset ($data ['show_totals']) && $data ['show_totals']) {
+    $table ['footer'] = _simple_table_totals_footer ($data);
   }
   return $table;
 }

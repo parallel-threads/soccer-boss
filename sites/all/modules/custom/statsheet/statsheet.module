@@ -25,6 +25,8 @@
            ),
            'sortable'    => <true|false>,                       // optional (default true). Whether or not users may change the sorting.
            'sort_column' => <column name>,                      // optional.
+           'label_column_name' => <column name>,                // optional. The name of the column that holds row labels.
+           'show_totals' => <true|false>,                       // optional (default false).
            'fields' => array (
               array ('column_name'   => <column name>,          // required.
                      'row_name'      => <row name>,             // required.
@@ -39,6 +41,14 @@
            'default_field_value_arguments' => array (<additional argument>) // optional. Additional arguments to pass to the default value function.
 */
 
+/**
+  @brief Accepts a field value and wraps that
+    value within a textfield form element so that
+    it can be embeded into an editable table.
+  @param $value (string) the field value.
+  @param $field_width (int) the textfield width.
+  @return (array) the form element.
+*/
 function statsheet_wrap_value ($value, $field_width = 5) {
   return array (
     '#type'          => 'textfield',
@@ -47,6 +57,13 @@ function statsheet_wrap_value ($value, $field_width = 5) {
   );
 }
 
+/**
+  @brief Defines the default field value function
+    for editable tables. This function essentially
+    wraps a call to the default field value
+    function given in the data array and wraps the
+    value returned within a textfield form element.
+*/
 function statsheet_wrap_default_value ($column_name, $row_name, $default_value_function, $default_value_arguments, $field_width) {
   $arguments = array_merge (
     array ($column_name, $row_name),
@@ -73,27 +90,21 @@ function statsheet_form ($form, $form_state, $data = null) {
     module_load_include ('inc', $data ['module']);
   }
 
-  watchdog (
-    'statsheet',
-    '[statsheet_form] data: <pre>@data</pre>',
-    array (
-      '@data' => print_r ($data, true)
-  ));
-
+  // I. Wrap the field values within textfields if editable.
   global $user;
   $editable = isset ($data ['access_function']) && call_user_func ($data ['access_function'], $user);
-
   if ($editable) {
     $data ['sortable'] = false;
 
+    // I.A. wrap field values.
     $field_width = isset ($data ['field_width']) ? $data ['field_width'] : 5;
-
     foreach ($data ['fields'] as &$field) {
       $field ['display_value'] = statsheet_wrap_value (
         isset ($field ['display_value']) ? $field ['display_value'] : $field ['value'],
         $field_width
       );
     }
+    // I.B. wrap the default field value function.
     if (isset ($data ['default_field_value_function'])) {
       $data ['default_field_value_arguments'] = array (
         $data ['default_field_value_function'],
@@ -103,8 +114,11 @@ function statsheet_form ($form, $form_state, $data = null) {
       $data ['default_field_value_function']  = 'statsheet_wrap_default_value';
     }
   }
+
+  // II. get the table form.
   $form = drupal_get_form ('simple_table_form', $data);
 
+  // III. add the submit button if editable.
   if ($editable) {
     $form [] = array (
       '#type'   => 'submit',
