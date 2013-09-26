@@ -141,20 +141,45 @@ function soccer_boss_table_pps ($player) {
     'columns' => array (
       array (
         'column_name' => t ('Year'),
-        'weight'      => 3,
+        'weight'      => 9,
       ),
       array (
         'column_name' => 'Goals',
-        'weight'      => 2,
+        'weight'      => 8,
+      ),
+      array (
+        'column_name' => 'Shots',
+        'weight'      => 7,
+      ),
+      array (
+        'column_name' => 'Shots on Goal',
+        'weight'      => 6,
       ),
       array (
         'column_name' => 'Assists',
+        'weight'      => 5,
+      ),
+      array (
+        'column_name' => 'Yellow Cards',
+        'weight'      => 4,
+      ),
+      array (
+        'column_name' => 'Red Cards',
+        'weight'      => 3,
+      ),
+      array (
+        'column_name' => 'Shutouts',
+        'weight'      => 2,
+      ),
+      array (
+        'column_name' => 'Saves',
         'weight'      => 1
     )),
-    'sort_column' => t ('Year'),
+    'sort_column'       => t ('Year'),
     'label_column_name' => t ('Year'),
     'show_totals'       => true,
-    'fields' => array (),
+    'fields'            => array (),
+    'field_width'       => 3,
     'submit_function'               => 'soccer_boss_table_pps_update',
     'access_function'               => 'soccer_boss_table_pps_access',
     'default_field_value_function'  => 'soccer_boss_table_pps_default_value',
