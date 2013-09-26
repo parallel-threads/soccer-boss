@@ -1858,5 +1858,5 @@ img.chart {
 }
 
 #simple-table-form {
-  overflow: scroll;
+  overflow: auto;
 }
