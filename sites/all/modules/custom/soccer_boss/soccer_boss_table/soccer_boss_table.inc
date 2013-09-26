@@ -66,8 +66,9 @@ function soccer_boss_table_pgs ($player) {
         'column_name' => t ('Game'),
         'weight'      => 1
     )),
-    'show_totals' => true,
-    'label_column_name' => t ('Date')
+    'show_totals'       => true,
+    'label_column_name' => t ('Date'),
+    'field_width'       => 3
   );
   $games = array ();
   foreach ($stats as $stat) {

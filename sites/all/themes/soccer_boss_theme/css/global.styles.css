@@ -1856,3 +1856,7 @@ tr.error {}
 img.chart {
   width: 100%;
 }
+
+#simple-table-form {
+  overflow: scroll;
+}
