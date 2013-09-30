@@ -212,6 +212,9 @@ function _simple_table_totals_footer ($data) {
       $column_total = 0;
       foreach (_simple_table_get_all_row_names ($data) as $row_name) {
         $field = _simple_table_get_field ($data, $column_name, $row_name);
+        if (!isset ($field ['value'])) {
+          $field ['value'] = '0';
+        }
         $column_total += $field ['value'];
       }
       $footer [] = $column_total;
@@ -240,6 +243,9 @@ function _simple_table_get_row_values_sorted ($data) {
   foreach (_simple_table_get_rows_sorted ($data) as $row) {
     $row_values = array ();
     foreach ($row ['fields'] as $field) {
+      if (!isset ($field ['value'])) {
+        $field ['value'] = '0';
+      }
       $row_values [] = isset ($field ['display_value']) ? $field ['display_value'] : $field ['value'];
     }
     $rows [] = $row_values;
