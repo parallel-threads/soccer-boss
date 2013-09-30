@@ -60,11 +60,39 @@ function soccer_boss_table_pgs ($player) {
     'columns' => array (
       array (
         'column_name' => t ('Date'),
-        'weight'      => 2,
+        'weight'      => 9,
       ),
       array (
         'column_name' => t ('Game'),
-        'weight'      => 1
+        'weight'      => 8
+      ),
+      array (
+        'column_name' => t ('Goals'),
+        'weight'      => 7,
+      ),
+      array (
+        'column_name' => t ('Assists'),
+        'weight'      => 6,
+      ),
+      array (
+        'column_name' => t ('Shots'),
+        'weight'      => 5,
+      ),
+      array (
+        'column_name' => t ('Shots on Goal'),
+        'weight'      => 4,
+      ),
+      array (
+        'column_name' => t ('Yellow Cards'),
+        'weight'      => 3,
+      ),
+      array (
+        'column_name' => t ('Red Cards'),
+        'weight'      => 2,
+      ),
+      array (
+        'column_name' => t ('Saves'),
+        'weight'      => 1,
     )),
     'show_totals'       => true,
     'label_column_name' => t ('Date'),
