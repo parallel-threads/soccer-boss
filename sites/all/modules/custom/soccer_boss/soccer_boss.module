@@ -348,9 +348,9 @@ function soccer_boss_team_player_stats_form ($form, &$form_state, $team) {
   $info = array (
     'columns' => array (
       'goals'         => 'Goals',
+      'assists'       => 'Assists',
       'shots'         => 'Shots',
       'goal_shots'    => 'Shots on Goal',
-      'assists'       => 'Assists',
       'yellow_cards'  => 'Yellow Cards',
       'red_cards'     => 'Red Cards',
       'shutouts'      => 'Shutouts',
