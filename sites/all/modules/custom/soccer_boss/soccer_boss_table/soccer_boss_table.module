@@ -30,6 +30,11 @@ function soccer_boss_table_block_view ($delta = '') {
   module_load_include ('inc', 'soccer_boss');
   module_load_include ('inc', 'soccer_boss_table');
 
+  global $user;
+  if (!_soccer_boss_has_role ($user)) {
+    return;
+  }
+
   $content = '';
   $node = menu_get_object ();
   switch ($delta) {

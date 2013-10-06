@@ -17,10 +17,6 @@ function _soccer_boss_has_role ($account, $role = 'authenticated user') {
 /// Implements hook_node_access ().
 function soccer_boss_node_access ($node, $op, $account) {
   module_load_include ('inc', 'soccer_boss');
-  switch ($node) { 
-    case 'soccer_boss_team': 
-      return NODE_ACCESS_ALLOW;
-  }
   if (!_soccer_boss_has_role ($account)) {
     return NODE_ACCESS_DENY;
   }
