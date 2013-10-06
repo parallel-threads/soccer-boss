@@ -3,6 +3,30 @@
   @file
 */
 
+/**
+  @brief Accepts a user account and a role and
+    returns true iff the user has the given role.
+  @param $account (user) the user account.
+  @param $role (string) the user role.
+  @return (boolean).
+*/
+function _soccer_boss_has_role ($account, $role = 'authenticated user') {
+  return in_array ($role, $account->roles);
+}
+
+/// Implements hook_node_access ().
+function soccer_boss_node_access ($node, $op, $account) {
+  module_load_include ('inc', 'soccer_boss');
+  switch ($node) { 
+    case 'soccer_boss_team': 
+      return NODE_ACCESS_ALLOW;
+  }
+  if (!_soccer_boss_has_role ($account)) {
+    return NODE_ACCESS_DENY;
+  }
+  return NODE_ACCESS_IGNORE;
+}
+
 /// Implements hook_view_api ().
 function soccer_boss_views_api () {
   return array ('api' => 3.0);
