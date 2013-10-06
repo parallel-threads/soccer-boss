@@ -749,6 +749,17 @@ function soccer_boss_get_references ($id, $type, $field_name) {
 }
 
 /**
+  @brief Accepts a team node id and returns the
+    node ids of the players that are on the team.
+  @param $team_nid (integer) the team node id.
+  @return (array) the player node ids.
+*/
+function soccer_boss_get_team_players ($team_nid) {
+  return node_load_multiple (
+    soccer_boss_get_references ($team_nid, 'node', 'soccer_boss_player_team'));
+}
+
+/**
   @brief Returns the Player Fitness Stats
     associated with the given player.
   @param $nid (integer) the player node id.
@@ -824,4 +835,29 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
     'value'  => $derived_value,
     'year'   => $year
   );
+}
+
+/**
+  @brief Accepts a player node id, performance stat
+    name, and a year, and returns the player
+    performance stat for the given year. If a pps
+    node does not exist, this function will derive
+    the value from the game stats.
+  @param $player_nid (integer) the player node id.
+  @param $stat_name (string) the stat name.
+  @param $year (string) the year.
+*/
+function soccer_boss_get_pps ($player_nid, $stat_name, $year) {
+  $stats = soccer_boss_get_pps_nodes ($player_nid);
+  foreach ($stats as $stat) {
+    if ($stat->soccer_boss_pps_year ['und'][0]['value'] == $year) {
+      return array (
+        'player' => $player_nid,
+        'name'   => $stat_name,
+        'value'  => $stat->soccer_boss_pps_value ['und'][0]['value'],
+        'year'   => $year
+      );
+    }
+  }
+  return soccer_boss_get_derived_pps ($player_nid, $stat_name, $year);
 }

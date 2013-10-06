@@ -177,15 +177,15 @@ function soccer_boss_table_pps ($player) {
         'weight'      => 8,
       ),
       array (
-        'column_name' => 'Shots',
+        'column_name' => 'Assists',
         'weight'      => 7,
       ),
       array (
-        'column_name' => 'Shots on Goal',
+        'column_name' => 'Shots',
         'weight'      => 6,
       ),
       array (
-        'column_name' => 'Assists',
+        'column_name' => 'Shots on Goal',
         'weight'      => 5,
       ),
       array (
@@ -255,5 +255,118 @@ function soccer_boss_table_pps ($player) {
       'value'       => $stat_year
     );
   }
+  return $data;
+}
+
+/**
+  @brief Accepts a team node and returns the Team
+    Roster table for the given team.
+  @param $team (node) the team node.
+  @return (array) the table data array.
+*/
+function soccer_boss_table_team_players ($team) {
+  module_load_include ('inc', 'soccer_boss');
+  $year = date ('Y');
+  $data = array (
+    'columns' => array (
+      array (
+        'column_name' => t ('Name'),
+        'weight'      => 10
+      ),
+      array (
+        'column_name' => t ('Position'),
+        'weight'      => 9
+    )),
+    'sort_column' => t ('Name'),
+    'fields'      => array ()
+  );
+  $stat_names = array ('Goals', 'Assists', 'Shots', 'Shots on Goal', 'Yellow Cards', 'Red Cards', 'Shutouts', 'Saves');
+  $i = 8;
+  foreach ($stat_names as $stat_name) {
+    $data ['columns'][] = array (
+      'column_name' => $stat_name,
+      'weight'      => $i
+    );
+    $i --;
+  }
+  foreach (soccer_boss_get_team_players ($team->nid) as $player) {
+    $player_uri = node_uri ($player);
+    $position_term = taxonomy_term_load ($player->soccer_boss_player_position ['und'][0]['tid']);
+    $data ['fields'][] = array (
+      'column_name'   => t ('Name'),
+      'row_name'      => $player->title,
+      'value'         => $player->title,
+      'display_value' => l ($player->title, $player_uri ['path'])
+    );
+    $data ['fields'][] = array (
+      'column_name' => t ('Position'),
+      'row_name'    => $player->title,
+      'value'       => $position_term->name
+    );
+    foreach ($stat_names as $stat_name) {
+      $stat = soccer_boss_get_pps ($player->nid, $stat_name, $year);
+      $data ['fields'][] = array (
+        'column_name' => $stat_name,
+        'row_name'    => $player->title,
+        'value'       => $stat ['value']
+      );
+    }
+  }
+  return $data;
+}
+
+function soccer_boss_table_player_comparison_default_value ($column_name, $stat_name, $year, $player_x, $player_y) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nid = null;
+  if ($column_name == $player_x->title) {
+    $player_nid = $player_x->nid;
+  } elseif ($column_name == $player_y->title) {
+    $player_nid = $player_y->nid;
+  } else {
+    return $stat_name;
+  }
+
+  $value = null; 
+  foreach (soccer_boss_get_pgs_nodes ($player_nid) as $pgs_node) {
+    if ($pgs_node->title === $stat_name) {
+      if (is_null ($value)) { $value = 0; }
+      $value += $pgs_node->soccer_boss_pgs_value ['und'][0]['value'];
+    }
+  }
+  if (is_null ($value)) {
+    foreach (soccer_boss_get_pfs_nodes ($player_nid) as $pfs_node) {
+      if ($pfs_node->title === $stat_name) {
+        return $pfs_node->soccer_boss_pfs_value ['und'][0]['value'];
+      }
+    }
+  }
+  return $value;
+}
+
+function soccer_boss_table_player_comparison ($player_x, $player_y) {
+  $data = array (
+    'module' => 'soccer_boss_table',
+    'rows' => array ('Goals', 'Assists', 'Shots', 'Shots on Goal', 'Yellow Cards', 'Red Cards', 'Shutouts', 'Saves', 'Mile Time', 'Two Mile Time', 'Beep Test', 'Dash Time', 'Push-Ups per Minute', 'Sit-Ups per Minute', 'Bench Press', 'Squat', 'Juggles'),
+    'columns' => array (
+      array (
+        'column_name'  => t ('Stat'),
+        'weight'       => 2,
+      ),
+      array (
+        'column_name'  => $player_x->title,
+        'weight'       => 2,
+      ),
+      array (
+        'column_name'  => $player_y->title,
+        'weight'       => 1,
+    )),
+    'sortable'          => false,
+    'label_column_name' => t ('Stat'),
+    'fields'            => array (),
+    'field_width'       => 3,
+    'default_field_value_function'  => 'soccer_boss_table_player_comparison_default_value',
+    'default_field_value_arguments' => array ('2013', $player_x, $player_y)
+  );
   return $data;
 }

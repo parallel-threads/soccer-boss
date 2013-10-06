@@ -16,6 +16,12 @@ function soccer_boss_table_block_info () {
     ),
     'soccer_boss_pps_table' => array (
       'info' => t ('Display\'s the current player\'s performance stats.')
+    ),
+    'soccer_boss_tp_table' => array (
+      'info' => t ('Lists the players that belong to a give team.')
+    ),
+    'soccer_boss_pc_table' => array (
+      'info' => t ('Display\'s the player comparison table.')
   ));
 }
 
@@ -61,6 +67,25 @@ function soccer_boss_table_block_view ($delta = '') {
       }
       return array (
         'subject' => '',
+        'content' => $content
+      );
+    case 'soccer_boss_tp_table':
+      $team = node_load (arg (1));
+      if ($team && $team->type == soccer_boss_TEAM_TYPE) {
+        $content = drupal_get_form ('statsheet_form', soccer_boss_table_team_players ($team));
+      }
+      return array (
+        'subject' => 'Team Roster',
+        'content' => $content
+      );
+    case 'soccer_boss_pc_table':
+      $player_x = node_load (arg (1));
+      $player_y = node_load (arg (2));
+      if ($player_x && $player_y && $player_x->type == soccer_boss_PLAYER_TYPE && $player_y->type == soccer_boss_PLAYER_TYPE) {
+        $content = drupal_get_form ('statsheet_form', soccer_boss_table_player_comparison ($player_x, $player_y));
+      }
+      return array (
+        'subject' => '2013',
         'content' => $content
       );
   }

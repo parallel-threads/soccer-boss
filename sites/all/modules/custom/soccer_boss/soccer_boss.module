@@ -23,7 +23,7 @@ function soccer_boss_menu () {
       'file'             => 'soccer_boss.page.inc',
       'weight'           => 1
     ),
-    'player-comparison' => array (
+    'player-comparison/%/%' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Displays two players side-by-side for comparison.'),
       'access callback'  => true,
@@ -421,9 +421,9 @@ function soccer_boss_team_player_game_stats_form ($form, &$form_state, $team) {
   $info = array (
     'columns' => array (
       'goals'         => 'Goals',
+      'assists'       => 'Assists',
       'shots'         => 'Shots',
       'goal_shots'    => 'Shots on Goal',
-      'assists'       => 'Assists',
       'yellow_cards'  => 'Yellow Cards',
       'red_cards'     => 'Red Cards',
       'shutouts'      => 'Shutouts',
@@ -540,15 +540,15 @@ function soccer_boss_pfs_form_submit ($form, &$form_state) {
   module_load_include ('inc', 'soccer_boss', 'soccer_boss.field');
 
   foreach (array (
-    'mile_time'     => t ('Mile Time'),
-    'two_mile_time' => t ('Two Mile Time'),
-    'beep_test'     => t ('Beep Test'),
-    'dash_time'     => t ('Dash Time'),
-    'push_ups'      => t ('Push-Ups per Minute'),
-    'sit_ups'       => t ('Sit-Ups per Minute'),
-    'bench_press'   => t ('Bench Press'),
-    'squat'         => t ('Squat'),
-    'juggles'       => t ('Juggles')
+    'Mile Time'            => t ('Mile Time'),
+    'Two Mile Time'        => t ('Two Mile Time'),
+    'Beep Test'            => t ('Beep Test'),
+    'Dash Time'            => t ('Dash Time'),
+    'Push-Ups per Minute'  => t ('Push-Ups per Minute'),
+    'Sit-Ups per Minute'   => t ('Sit-Ups per Minute'),
+    'Bench Press'          => t ('Bench Press'),
+    'Squat'                => t ('Squat'),
+    'Juggles'              => t ('Juggles')
   ) as $stat_name => $stat_label) {
     $node = new stdClass ();
     $node->type = soccer_boss_PFS_TYPE;
