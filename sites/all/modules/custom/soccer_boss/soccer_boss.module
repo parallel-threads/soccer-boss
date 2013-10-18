@@ -14,7 +14,10 @@ function _soccer_boss_has_role ($account, $role = 'authenticated user') {
   return in_array ($role, $account->roles);
 }
 
-/// Implements hook_node_access ().
+/**
+  @brief Implements hook_node_access ().
+  @details Deny all access to unauthenticated users.
+*/
 function soccer_boss_node_access ($node, $op, $account) {
   module_load_include ('inc', 'soccer_boss');
   if (!_soccer_boss_has_role ($account)) {
@@ -28,15 +31,70 @@ function soccer_boss_views_api () {
   return array ('api' => 3.0);
 }
 
+/**
+  @brief Accepts a conditions array and returns
+    true iff the conditions are satisfied in the
+    current context.
+  @note This function is used to control page
+    access.
+  @note The conditions array must have the
+    following structure:
+    array (
+      'type'        => <node type>,              // optional. Requires that the current node has the given type.
+      'roles'       => array (<role name>),      // optional. Requires that the user have one of the given roles.
+      'permissions' => array (<permission name>) // optional. Requires that the user have all of the given permissions.
+    )
+*/
+function _soccer_boss_access ($conditions) {
+  // I. Check content type.
+  $node = node_load (arg (1));
+  if (isset ($conditions ['type'])) {
+    if (is_null ($node) || $node->type != $conditions ['type']) {
+      return false;
+    }
+  }
+
+  // II. Check user roles.
+  global $user;
+  if (isset ($conditions ['roles'])) {
+    $hasRole = false;
+    foreach ($conditions ['roles'] as $role) {
+      if (_soccer_boss_has_role ($user, $role)) {
+        $hasRole = true;
+        break;
+      }
+    }
+    if (!$hasRole) {
+      return false;
+    }
+  }
+
+  // III. Check user permissions.
+  if (isset ($conditions ['permissions'])) {
+    foreach ($conditions ['permissions'] as $permission) {
+      if (!user_access ($permission, $user)) {
+        return false;
+      }
+    }
+  }
+
+  // IV. Grant access.
+  return true;
+}
+
 /// Implements hook_menu ().
 function soccer_boss_menu () {
+  module_load_include ('inc', 'soccer_boss');
   return array (
     // I. Player pages.
     'node/%node/team' => array (
       'title'            => t ('Team'),
       'description'      => t ('Redirects the user to the player\'s team page.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_PLAYER_TYPE,
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_player_team_page',
       'page arguments'   => array (1),
       'type'             => MENU_LOCAL_TASK,
@@ -46,7 +104,10 @@ function soccer_boss_menu () {
     'player-comparison/%/%' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Displays two players side-by-side for comparison.'),
-      'access callback'  => true,
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_player_comparison',
       'page arguments'   => array (1, 2),
       'type'             => MENU_CALLBACK,
@@ -55,8 +116,11 @@ function soccer_boss_menu () {
     'node/%node/fitness' => array (
       'title'            => t ('Player Fitness'),
       'description'      => t ('Displays the player fitness stats.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_PLAYER_TYPE,
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_player_fitness_page',
       'page arguments'   => array (1),
       'type'             => MENU_LOCAL_TASK,
@@ -66,8 +130,11 @@ function soccer_boss_menu () {
     'node/%node/player-game-stats' => array (
       'title'            => t ('Player Game Stats'),
       'description'      => t ('Displays the player game stats.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_PLAYER_TYPE,
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_player_game_stats_page',
       'page arguments'   => array (1),
       'type'             => MENU_LOCAL_TASK,
@@ -75,21 +142,13 @@ function soccer_boss_menu () {
       'weight'           => 7
     ),
     // II. Team pages.
-    'node/%node/overview' => array (
-      'title'            => t ('Team Overview'),
-      'description'      => t ('The team overview page.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
-      'page callback'    => 'soccer_boss_team_overview_page',
-      'page arguments'   => array (1),
-      'type'             => MENU_LOCAL_TASK,
-      'file'             => 'soccer_boss.page.inc',
-      'weight'           => 6
-    ),
     'team-comparison' => array (
       'title'            => t ('Team Comparison'),
       'description'      => t ('Displays two teams side-by-side for comparison.'),
-      'access callback'  => true,
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_team_comparison',
       'page arguments'   => array (1, 2),
       'type'             => MENU_CALLBACK,
@@ -98,8 +157,11 @@ function soccer_boss_menu () {
     'node/%node/team-player-game-stats' => array (
       'title'            => t ('Player Game Stats'),
       'description'      => t ('Displays the game stats for each player on the team.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_TEAM_TYPE,
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'soccer_boss_team_player_game_stats_page',
       'page arguments'   => array (1),
       'type'             => MENU_LOCAL_TASK,
@@ -108,8 +170,14 @@ function soccer_boss_menu () {
     'node/%node/add-team-player-stats' => array (
       'title'            => t ('Add Player Performance Stats'),
       'description'      => t ('Displays a form in which player performance stats can be added.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_TEAM_TYPE,
+                              'roles' => array (
+                                           soccer_boss_TEAM_STAFF_ROLE,
+                                           soccer_boss_CLUB_STAFF_ROLE,
+                                           soccer_boss_DIRECTOR_ROLE
+                            ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
       'type'             => MENU_LOCAL_TASK,
@@ -118,8 +186,14 @@ function soccer_boss_menu () {
     'node/%node/add-team-player-game-stats' => array (
       'title'            => t ('Add Player Game Stats'),
       'description'      => t ('Displays a form to enter player game stats.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_team', 'create any soccer_boss_pps content'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_TEAM_TYPE,
+                              'roles' => array (
+                                           soccer_boss_TEAM_STAFF_ROLE,
+                                           soccer_boss_CLUB_STAFF_ROLE,
+                                           soccer_boss_DIRECTOR_ROLE
+                            ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_game_stats_form', 1),
       'type'             => MENU_LOCAL_TASK,
@@ -128,7 +202,10 @@ function soccer_boss_menu () {
     'player-comparison-form' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Lets users select players to compare.'),
-      'access callback'  => true,
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_player_comparison_form'),
       'type'             => MENU_NORMAL_ITEM
@@ -136,7 +213,10 @@ function soccer_boss_menu () {
     'team-comparison-form' => array (
       'title'            => t ('Team Comparison'),
       'description'      => t ('Lets users select teams to compare.'),
-      'access callback'  => true,
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_comparison_form'),
       'type'             => MENU_NORMAL_ITEM
@@ -144,7 +224,10 @@ function soccer_boss_menu () {
     'team-player-stats-form/%' => array (
       'title'            => t ('Team Player Stats'),
       'description'      => t ('The Team Player Stats form.'),
-      'access callback'  => true,
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'roles' => array ('authenticated user')
+                            )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
       'type'             => MENU_NORMAL_ITEM
@@ -152,26 +235,19 @@ function soccer_boss_menu () {
     'node/%node/add-player-fitness-stats' => array (
       'title'            => t ('Add Player Fitness Stats'),
       'description'      => t ('Displays a form in which a player can add fitness stats.'),
-      'access callback'  => '_soccer_boss_check_type',
-      'access arguments' => array (1, 'soccer_boss_player', 'create any soccer_boss_pps content'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'type'  => soccer_boss_PLAYER_TYPE,
+                              'roles' => array (
+                                           soccer_boss_TEAM_STAFF_ROLE,
+                                           soccer_boss_CLUB_STAFF_ROLE,
+                                           soccer_boss_DIRECTOR_ROLE
+                            ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_pfs_form', 1),
       'type'             => MENU_LOCAL_TASK
     )
   );
-}
-
-/**
-  @brief Defines a menu access callback that
-    returns true iff the given node has the given
-    type.
-  @param $node (object) the referenced node.
-  @param $type (string) the required node type.
-  @param $privilege (string) an optional privilege to check.
-  @return (boolean).
-*/
-function _soccer_boss_check_type ($node, $type, $privilege = false) {
-  return $node->type == $type && ($privilege ? user_access ($privilege) : true);
 }
 
 // ----- II. Comparison Forms ----- 
