@@ -93,7 +93,7 @@ function soccer_boss_menu () {
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
                               'type'  => soccer_boss_PLAYER_TYPE,
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_player_team_page',
       'page arguments'   => array (1),
@@ -106,7 +106,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays two players side-by-side for comparison.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_player_comparison',
       'page arguments'   => array (1, 2),
@@ -119,7 +119,7 @@ function soccer_boss_menu () {
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
                               'type'  => soccer_boss_PLAYER_TYPE,
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_player_fitness_page',
       'page arguments'   => array (1),
@@ -133,7 +133,7 @@ function soccer_boss_menu () {
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
                               'type'  => soccer_boss_PLAYER_TYPE,
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_player_game_stats_page',
       'page arguments'   => array (1),
@@ -147,7 +147,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays two teams side-by-side for comparison.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_team_comparison',
       'page arguments'   => array (1, 2),
@@ -160,7 +160,7 @@ function soccer_boss_menu () {
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
                               'type'  => soccer_boss_TEAM_TYPE,
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_team_player_game_stats_page',
       'page arguments'   => array (1),
@@ -176,7 +176,8 @@ function soccer_boss_menu () {
                               'roles' => array (
                                            soccer_boss_TEAM_STAFF_ROLE,
                                            soccer_boss_CLUB_STAFF_ROLE,
-                                           soccer_boss_DIRECTOR_ROLE
+                                           soccer_boss_DIRECTOR_ROLE,
+                                           'administrator'
                             ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
@@ -192,7 +193,8 @@ function soccer_boss_menu () {
                               'roles' => array (
                                            soccer_boss_TEAM_STAFF_ROLE,
                                            soccer_boss_CLUB_STAFF_ROLE,
-                                           soccer_boss_DIRECTOR_ROLE
+                                           soccer_boss_DIRECTOR_ROLE,
+                                           'administrator'
                             ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_game_stats_form', 1),
@@ -204,7 +206,7 @@ function soccer_boss_menu () {
       'description'      => t ('Lets users select players to compare.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_player_comparison_form'),
@@ -215,7 +217,7 @@ function soccer_boss_menu () {
       'description'      => t ('Lets users select teams to compare.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_comparison_form'),
@@ -226,7 +228,7 @@ function soccer_boss_menu () {
       'description'      => t ('The Team Player Stats form.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
-                              'roles' => array ('authenticated user')
+                              'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_team_player_stats_form', 1),
@@ -241,7 +243,8 @@ function soccer_boss_menu () {
                               'roles' => array (
                                            soccer_boss_TEAM_STAFF_ROLE,
                                            soccer_boss_CLUB_STAFF_ROLE,
-                                           soccer_boss_DIRECTOR_ROLE
+                                           soccer_boss_DIRECTOR_ROLE,
+                                           'administrator'
                             ))),
       'page callback'    => 'drupal_get_form',
       'page arguments'   => array ('soccer_boss_pfs_form', 1),
