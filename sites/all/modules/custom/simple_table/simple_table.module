@@ -10,7 +10,10 @@
        Simple Table Arrays must have the following structure:
 
          array ('caption' => <caption>,                                    // required.
-                'column_names' => array (<column name>, ...),              // required.
+                'columns'      => array (
+                                    array ('column_name' => <column name>,       // required.
+                                           'label'       => <column label>)      // optional.
+                                    ...)
                 'rows'         => array (array (<field value>, ...), ...), // required.
                 'footer'       => array (<field value>, ...)               // optional.
          )
@@ -27,11 +30,12 @@
            'columns' => array (                                 // optional.
              array (
                'column_name' => <column name>,                  // required.
+               'label'       => <column label>,                 // optional.
                'weight'      => <weight>),                      // required.
              ...
            ),
            'sortable'    => <true|false>,                       // optional (default true). Whether or not users may change the sorting.
-           'sort_column' => <column name>,                      // optional.
+           'sort_column' => <column name>,                      // optional. (may be 'none').
            'label_column_name' => <column name>,                // optional. The name of the column that holds row labels.
            'show_totals' => <true|false>,                       // optional (default false).
            'fields' => array (
@@ -229,7 +233,9 @@ function _simple_table_totals_footer ($data) {
 */
 function _simple_table_get_rows_sorted ($data) {
   $rows = _simple_table_get_rows ($data);
-  usort ($rows, '_simple_table_row_lt');
+  if (isset ($data ['sort_column']) && $data ['sort_column'] !== 'none') {
+    usort ($rows, '_simple_table_row_lt');
+  }
   return $rows;
 }
 
@@ -259,9 +265,9 @@ function _simple_table_get_row_values_sorted ($data) {
 */
 function simple_table ($data) {
   $table = array (
-    'caption'      => isset ($data ['caption']) ? $data ['caption'] : '',
-    'column_names' => _simple_table_get_all_column_names_sorted ($data),
-    'rows'         => _simple_table_get_row_values_sorted ($data)
+    'caption' => isset ($data ['caption']) ? $data ['caption'] : '',
+    'columns' => _simple_table_get_all_columns_sorted ($data),
+    'rows'    => _simple_table_get_row_values_sorted ($data)
   );
   if (isset ($data ['show_totals']) && $data ['show_totals']) {
     $table ['footer'] = _simple_table_totals_footer ($data);
@@ -325,7 +331,8 @@ function simple_table_form ($form, $form_state, $data = null) {
   $column_offset = 0;
   $sortable = !isset ($data ['sortable']) || $data ['sortable'];
   $sort_column_offset = null;
-  foreach ($table ['column_names'] as $column_name) {
+  foreach ($table ['columns'] as $column) {
+    $column_name = isset ($column ['label']) ? $column ['label'] : $column ['column_name'];
     $is_sort_column = isset ($data ['sort_column']) && $column_name == $data ['sort_column'];
     if ($is_sort_column) {
       $sort_column_offset = $column_offset;

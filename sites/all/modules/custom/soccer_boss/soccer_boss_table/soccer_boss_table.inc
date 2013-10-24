@@ -345,6 +345,8 @@ function soccer_boss_table_player_comparison_default_value ($column_name, $stat_
 }
 
 function soccer_boss_table_player_comparison ($player_x, $player_y) {
+  $player_x_uri = node_uri ($player_x);
+  $player_y_uri = node_uri ($player_y);
   $data = array (
     'module' => 'soccer_boss_table',
     'rows' => array ('Goals', 'Assists', 'Shots', 'Shots on Goal', 'Yellow Cards', 'Red Cards', 'Shutouts', 'Saves', 'Mile Time', 'Two Mile Time', 'Beep Test', 'Dash Time', 'Push-Ups per Minute', 'Sit-Ups per Minute', 'Bench Press', 'Squat', 'Juggles'),
@@ -355,10 +357,12 @@ function soccer_boss_table_player_comparison ($player_x, $player_y) {
       ),
       array (
         'column_name'  => $player_x->title,
+        'label'        => l ($player_x->title, $player_x_uri ['path']),
         'weight'       => 2,
       ),
       array (
         'column_name'  => $player_y->title,
+        'label'        => l ($player_y->title, $player_y_uri ['path']),
         'weight'       => 1,
     )),
     'sortable'          => false,
