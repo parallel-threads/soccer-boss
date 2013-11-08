@@ -22,6 +22,9 @@ function soccer_boss_table_block_info () {
     ),
     'soccer_boss_pc_table' => array (
       'info' => t ('Display\'s the player comparison table.')
+    ),
+    'soccer_boss_tc_table' => array (
+      'info' => t ('Display\'s the team comparison table.')
   ));
 }
 
@@ -90,7 +93,17 @@ function soccer_boss_table_block_view ($delta = '') {
         $content = drupal_get_form ('statsheet_form', soccer_boss_table_player_comparison ($player_x, $player_y));
       }
       return array (
-        'subject' => '2013',
+        'subject' => '',
+        'content' => $content
+      );
+    case 'soccer_boss_tc_table':
+      $team_x = node_load (arg (1));
+      $team_y = node_load (arg (2));
+      if ($team_x && $team_y && $team_x->type == soccer_boss_TEAM_TYPE && $team_y->type == soccer_boss_TEAM_TYPE) {
+        $content = drupal_get_form ('statsheet_form', soccer_boss_table_team_comparison ($team_x, $team_y));
+      }
+      return array (
+        'subject' => '',
         'content' => $content
       );
   }

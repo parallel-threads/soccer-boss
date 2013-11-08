@@ -838,6 +838,63 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
 }
 
 /**
+  @brief Accepts a player node id, fitness stat
+    name, and a year, and returns the player
+    fitness stat for the given year.
+  @param $player_nid (integer) the player node id.
+  @param $stat_name (string) the stat name.
+  @param $year (string) the year.
+*/
+function soccer_boss_get_pfs ($player_nid, $stat_name, $year) {
+  $stat_nodes = soccer_boss_get_pfs_nodes ($player_nid);
+  foreach ($stat_nodes as $stat_node) {
+    $stat_year = date ('Y', strtotime ($stat_node->soccer_boss_pfs_date ['und'][0]['value']));
+    if ($stat_node->title == $stat_name && $stat_year == $year) {
+      return array (
+        'player' => $player_nid,
+        'name'   => $stat_name,
+        'value'  => $stat_node->soccer_boss_pfs_value ['und'][0]['value'],
+        'year'   => $year
+      );
+    }
+  }
+  return null;
+}
+
+/**
+  @brief Accepts a player node id, game stat
+    name, and a year, and returns the player
+    game stat for the given year - I.E. the total
+    for all games played in the given year.
+  @param $player_nid (integer) the player node id.
+  @param $stat_name (string) the stat name.
+  @param $year (string) the year.
+*/
+function soccer_boss_get_pgs ($player_nid, $stat_name, $year) {
+  $stat_nodes = soccer_boss_get_pgs_nodes ($player_nid);
+  $value = null;
+  foreach ($stat_nodes as $stat_node) {
+    if ($stat_node->title == $stat_name) {
+      $game_node = node_load ($stat_node->soccer_boss_pgs_game ['und'][0]['target_id']);
+      $stat_year = date ('Y', strtotime ($game_node->soccer_boss_game_date ['und'][0]['value']));
+      if ($stat_year == $year) {
+        if (is_null ($value)) {
+          $value = 0;
+        }
+        $value += $stat_node->soccer_boss_pgs_value ['und'][0]['value'];
+      }
+    }
+  }
+  return is_null ($value) ? null :
+    array (
+      'player' => $player_nid,
+      'name'   => $stat_name,
+      'value'  => $value,
+      'year'   => $year
+    );
+}
+
+/**
   @brief Accepts a player node id, performance stat
     name, and a year, and returns the player
     performance stat for the given year. If a pps
@@ -850,7 +907,10 @@ function soccer_boss_get_derived_pps ($player_nid, $stat_name, $year) {
 function soccer_boss_get_pps ($player_nid, $stat_name, $year) {
   $stats = soccer_boss_get_pps_nodes ($player_nid);
   foreach ($stats as $stat) {
-    if ($stat->soccer_boss_pps_year ['und'][0]['value'] == $year) {
+    if (
+      $stat->soccer_boss_pps_year ['und'][0]['value'] == $year &&
+      $stat->title == $stat_name 
+    ) {
       return array (
         'player' => $player_nid,
         'name'   => $stat_name,
@@ -860,4 +920,59 @@ function soccer_boss_get_pps ($player_nid, $stat_name, $year) {
     }
   }
   return soccer_boss_get_derived_pps ($player_nid, $stat_name, $year);
+}
+
+/**
+  @brief Accepts a team node id, a game stat name,
+    and a year, and returns the team's totals for
+    the game stat during the given year.
+  @param $team_nid (integer) the team node id.
+  @param $stat_name (string) the stat name.
+  @param $year (string) the year.
+  @return (float) the total value or null if the
+    stat does not exist.
+*/
+function soccer_boss_get_tgs ($team_nid, $stat_name, $year) {
+  $value = null;
+  foreach (soccer_boss_get_team_players ($team_nid) as $player) {
+    $pgs = soccer_boss_get_pgs ($player->nid, $stat_name, $year);
+    if (!is_null ($pgs ['value'])) {
+      if (is_null ($value)) {
+        $value = 0;
+      }
+      $value += $pgs ['value'];
+    }
+  }
+  return $value;
+}
+
+/**
+  @brief Accepts a team node id, a player
+    performance stat name, and a year, and returns
+    the average stat value for the players on the
+    given team during the given year.
+  @param $team_nid (integer) the team node id.
+  @param $stat_name (string) the stat name.
+  @param $year (string) the year.
+  @return (float) the average value or null if the
+    stat does not exist.
+  @note TAPS - Team Average Performance Stats
+*/
+function soccer_boss_get_taps ($team_nid, $stat_name, $year) {
+  $value = null;
+  $num_players = 0;
+  foreach (soccer_boss_get_team_players ($team_nid) as $player) {
+    $pfs = soccer_boss_get_pfs ($player->nid, $stat_name, $year);
+    if (!is_null ($pfs ['value'])) {
+      if (is_null ($value)) {
+        $value = 0;
+      }
+      $value += $pfs ['value'];
+      $num_players ++;
+    }
+  }
+  if (!is_null ($value)) {
+    $value = $value / $num_players;
+  }
+  return $value;
 }

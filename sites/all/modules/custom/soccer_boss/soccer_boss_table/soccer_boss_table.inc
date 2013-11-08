@@ -345,6 +345,7 @@ function soccer_boss_table_player_comparison_default_value ($column_name, $stat_
 }
 
 function soccer_boss_table_player_comparison ($player_x, $player_y) {
+  $year = date ('Y');
   $player_x_uri = node_uri ($player_x);
   $player_y_uri = node_uri ($player_y);
   $data = array (
@@ -370,7 +371,58 @@ function soccer_boss_table_player_comparison ($player_x, $player_y) {
     'fields'            => array (),
     'field_width'       => 3,
     'default_field_value_function'  => 'soccer_boss_table_player_comparison_default_value',
-    'default_field_value_arguments' => array ('2013', $player_x, $player_y)
+    'default_field_value_arguments' => array ($year, $player_x, $player_y)
+  );
+  return $data;
+}
+
+function soccer_boss_table_team_comparison_default_value ($column_name, $stat_name, $year, $team_x, $team_y) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $team_nid = null;
+  if ($column_name == $team_x->title) {
+    $team_nid = $team_x->nid;
+  } elseif ($column_name == $team_y->title) {
+    $team_nid = $team_y->nid;
+  } else {
+    return $stat_name;
+  }
+
+  $value = soccer_boss_get_tgs ($team_nid, $stat_name, $year);
+  if (is_null ($value)) {
+    $value = soccer_boss_get_taps ($team_nid, $stat_name, $year);
+  }
+  return is_null ($value) ? '' : $value;
+}
+
+function soccer_boss_table_team_comparison ($team_x, $team_y) {
+  $year = date ('Y');
+  $team_x_uri = node_uri ($team_x);
+  $team_y_uri = node_uri ($team_y);
+  $data = array (
+    'module' => 'soccer_boss_table',
+    'rows' => array ('Goals', 'Assists', 'Shots', 'Shots on Goal', 'Yellow Cards', 'Red Cards', 'Shutouts', 'Saves', 'Mile Time', 'Two Mile Time', 'Beep Test', 'Dash Time', 'Push-Ups per Minute', 'Sit-Ups per Minute', 'Bench Press', 'Squat', 'Juggles'),
+    'columns' => array (
+      array (
+        'column_name'  => t ('Stat'),
+        'weight'       => 2,
+      ),
+      array (
+        'column_name'  => $team_x->title,
+        'label'        => l ($team_x->title, $team_x_uri ['path']),
+        'weight'       => 2,
+      ),
+      array (
+        'column_name'  => $team_y->title,
+        'label'        => l ($team_y->title, $team_y_uri ['path']),
+        'weight'       => 1,
+    )),
+    'sortable'          => false,
+    'label_column_name' => t ('Stat'),
+    'fields'            => array (),
+    'field_width'       => 3,
+    'default_field_value_function'  => 'soccer_boss_table_team_comparison_default_value',
+    'default_field_value_arguments' => array ($year, $team_x, $team_y)
   );
   return $data;
 }
