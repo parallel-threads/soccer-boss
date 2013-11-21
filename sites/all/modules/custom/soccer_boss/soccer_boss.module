@@ -19,6 +19,13 @@ function _soccer_boss_has_role ($account, $role = 'authenticated user') {
   @details Deny all access to unauthenticated users.
 */
 function soccer_boss_node_access ($node, $op, $account) {
+  watchdog (
+    'soccer_boss',
+    '[soccer_boss_node_access] op: @op node: <pre>@node</pre>',
+    array (
+      '@op' => $op,
+      '@node' => print_r ($node, true)
+  ));
   module_load_include ('inc', 'soccer_boss');
   if (!_soccer_boss_has_role ($account)) {
     return NODE_ACCESS_DENY;
@@ -40,16 +47,32 @@ function soccer_boss_views_api () {
   @note The conditions array must have the
     following structure:
     array (
+      'path'        => <path>,                   // optional. The path being validated. Used for debugging.
       'type'        => <node type>,              // optional. Requires that the current node has the given type.
       'roles'       => array (<role name>),      // optional. Requires that the user have one of the given roles.
       'permissions' => array (<permission name>) // optional. Requires that the user have all of the given permissions.
     )
 */
 function _soccer_boss_access ($conditions) {
+/*
+  watchdog (
+    'soccer_boss',
+    '[_soccer_boss_access] path: @path conditions: <pre>@conditions</pre>',
+    array (
+      '@path'       => isset ($conditions ['path']) ? $conditions ['path'] : '',
+      '@conditions' => print_r ($conditions, true)
+  ));
+*/
   // I. Check content type.
   $node = node_load (arg (1));
   if (isset ($conditions ['type'])) {
     if (is_null ($node) || $node->type != $conditions ['type']) {
+/*
+      watchdog (
+        'soccer_boss',
+        '[_soccer_boss_access] incorrect content type.'
+      );
+*/
       return false;
     }
   }
@@ -65,6 +88,12 @@ function _soccer_boss_access ($conditions) {
       }
     }
     if (!$hasRole) {
+/*
+      watchdog (
+        'soccer_boss',
+        '[_soccer_boss_access] user does not have the necessary roles.'
+      );
+*/
       return false;
     }
   }
@@ -73,12 +102,24 @@ function _soccer_boss_access ($conditions) {
   if (isset ($conditions ['permissions'])) {
     foreach ($conditions ['permissions'] as $permission) {
       if (!user_access ($permission, $user)) {
+/*
+        watchdog (
+          'soccer_boss',
+          '[_soccer_boss_access] user does not have the necessary permissions.'
+        );
+*/
         return false;
       }
     }
   }
 
   // IV. Grant access.
+/*
+  watchdog (
+    'soccer_boss',
+    '[_soccer_boss_access] access granted.'
+  );
+*/
   return true;
 }
 
@@ -92,6 +133,7 @@ function soccer_boss_menu () {
       'description'      => t ('Redirects the user to the player\'s team page.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/team',
                               'type'  => soccer_boss_PLAYER_TYPE,
                               'roles' => array ('authenticated user', 'administrator')
                             )),
@@ -106,6 +148,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays two players side-by-side for comparison.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'player-comparison/%/%',
                               'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_player_comparison',
@@ -118,6 +161,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays the player fitness stats.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/fitness',
                               'type'  => soccer_boss_PLAYER_TYPE,
                               'roles' => array ('authenticated user', 'administrator')
                             )),
@@ -132,6 +176,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays the player game stats.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/player-game-stats',
                               'type'  => soccer_boss_PLAYER_TYPE,
                               'roles' => array ('authenticated user', 'administrator')
                             )),
@@ -147,6 +192,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays two teams side-by-side for comparison.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'team-comparison',
                               'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'soccer_boss_team_comparison',
@@ -159,6 +205,7 @@ function soccer_boss_menu () {
       'description'      => t ('Displays the game stats for each player on the team.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/team-player-game-stats',
                               'type'  => soccer_boss_TEAM_TYPE,
                               'roles' => array ('authenticated user', 'administrator')
                             )),
@@ -168,10 +215,11 @@ function soccer_boss_menu () {
       'file'             => 'soccer_boss.page.inc'
     ),
     'node/%node/add-team-player-stats' => array (
-      'title'            => t ('Add Player Performance Stats'),
+      'title'            => t ('Add Team Player Performance Stats'),
       'description'      => t ('Displays a form in which player performance stats can be added.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/add-team-player-stats',
                               'type'  => soccer_boss_TEAM_TYPE,
                               'roles' => array (
                                            soccer_boss_TEAM_STAFF_ROLE,
@@ -184,11 +232,31 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc',
     ),
+    'node/%node/add-team-player-fitness-stats' => array (
+      'title'            => t ('Add Team Player Fitness Stats'),
+      'description'      => t ('Displays a form in which player performance stats can be added.'),
+      'access callback'  => '_soccer_boss_access',
+      'access arguments' => array (array (
+                              'path'  => 'node/%node/add-team-player-fitness-stats',
+                              'type'  => soccer_boss_TEAM_TYPE,
+                              'roles' => array (
+                                           soccer_boss_TEAM_STAFF_ROLE,
+                                           soccer_boss_CLUB_STAFF_ROLE,
+                                           soccer_boss_DIRECTOR_ROLE,
+                                           'administrator'
+                            ))),
+      'page callback'    => 'drupal_get_form',
+      'page arguments'   => array ('soccer_boss_team_player_fitness_stats_form', 1),
+      'type'             => MENU_LOCAL_TASK,
+      'file'             => 'soccer_boss.page.inc',
+    ),
+/*
     'node/%node/add-team-player-game-stats' => array (
-      'title'            => t ('Add Player Game Stats'),
+      'title'            => t ('Add Team Player Game Stats'),
       'description'      => t ('Displays a form to enter player game stats.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/add-team-player-game-stats',
                               'type'  => soccer_boss_TEAM_TYPE,
                               'roles' => array (
                                            soccer_boss_TEAM_STAFF_ROLE,
@@ -201,11 +269,13 @@ function soccer_boss_menu () {
       'type'             => MENU_LOCAL_TASK,
       'file'             => 'soccer_boss.page.inc'
     ),
+*/
     'player-comparison-form' => array (
       'title'            => t ('Player Comparison'),
       'description'      => t ('Lets users select players to compare.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'player-comparison-form',
                               'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
@@ -217,6 +287,7 @@ function soccer_boss_menu () {
       'description'      => t ('Lets users select teams to compare.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'team-comparison-form',
                               'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
@@ -228,6 +299,7 @@ function soccer_boss_menu () {
       'description'      => t ('The Team Player Stats form.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'team-player-stats-form/%',
                               'roles' => array ('authenticated user', 'administrator')
                             )),
       'page callback'    => 'drupal_get_form',
@@ -239,8 +311,10 @@ function soccer_boss_menu () {
       'description'      => t ('Displays a form in which a player can add fitness stats.'),
       'access callback'  => '_soccer_boss_access',
       'access arguments' => array (array (
+                              'path'  => 'node/%node/add-player-fitness-stats',
                               'type'  => soccer_boss_PLAYER_TYPE,
                               'roles' => array (
+                                           soccer_boss_PLAYER_ROLE,
                                            soccer_boss_TEAM_STAFF_ROLE,
                                            soccer_boss_CLUB_STAFF_ROLE,
                                            soccer_boss_DIRECTOR_ROLE,
@@ -495,6 +569,84 @@ function soccer_boss_team_player_stats_form_submit ($form, $form_state) {
         'value'  => $stat_value ['value'],
         'format' => 'plain_text'
       );
+
+      node_save ($node);
+    }
+  }
+}
+
+/**
+  @brief Creates the Team Player Fitness Stats form.
+  @param $form (array) the initial form.
+  @param $form_state (array) the initial form state.
+  @param $team (node) the team node.
+  @return (array) the form array.
+*/
+function soccer_boss_team_player_fitness_stats_form ($form, &$form_state, $team) {
+  module_load_include ('inc', 'soccer_boss');
+
+  $player_nids = soccer_boss_get_references (
+    $team->nid,
+    'node',
+    'soccer_boss_player_team'
+  );
+
+  $info = array (
+    'columns' => array (
+      'mile_time'     => t ('Mile Time'),
+      'two_mile_time' => t ('Two Mile Time'),
+      'beep_test'     => t ('Beep Test'),
+      'dash_time'     => t ('60 yard dash time'),
+      'push_ups'      => t ('Push-Ups per Minute'),
+      'sit_ups'       => t ('Sit-Ups per Minute'),
+      'bench_press'   => t ('Bench press'),
+      'squat'         => t ('Squat'),
+      'juggles'       => t ('Juggles')
+    ),
+    'entities' => node_load_multiple ($player_nids)
+  );
+
+  $form_state ['soccer_boss_info'] = $info;
+
+  $form = array (
+    'date' => array (
+      '#type'          => 'textfield',
+      '#title'         => t ('Date'),
+      '#description'   => t ('The Date on which these stats were measured or applied.'),
+      '#default_value' => date ('D, d M Y H:i:s'),
+      '#required'      => true
+  ));
+  $form += soccer_boss_create_stat_sheet ($info);
+  return $form;
+}
+
+/**
+  @brief Process the Team Player Fitness Stats form.
+*/
+function soccer_boss_team_player_fitness_stats_form_submit ($form, &$form_state) {
+  module_load_include ('inc', 'soccer_boss');
+  module_load_include ('inc', 'soccer_boss', 'soccer_boss.field');
+
+  $values = soccer_boss_process_stat_sheet (
+    $form_state ['soccer_boss_info'],
+    $form_state ['values']
+  );
+
+  foreach ($values as $entity_id => $stat_values) {
+    foreach ($stat_values as $stat_name => $stat_value) {
+      $node = new stdClass ();
+      $node->type = soccer_boss_PFS_TYPE;
+      node_object_prepare ($node);
+
+      $node->title = $stat_value ['label'];
+      $node->soccer_boss_pfs_player ['und'][0]['target_id'] = $entity_id;
+      $node->soccer_boss_pfs_value  ['und'][0] = array (
+        'value'  => $stat_value ['value'],
+        'format' => 'plain_text'
+      );
+      $date = date_parse ($form_state ['values']['date']);
+      $node->soccer_boss_pfs_date   ['und'][0] =
+        soccer_boss_create_date_field_value  ($date ['year'], $date ['month'], $date ['day']);
 
       node_save ($node);
     }
