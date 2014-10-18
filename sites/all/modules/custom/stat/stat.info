@@ -1,0 +1,9 @@
+name = Stat
+description = "Defines the Stat API."
+core = 7.x
+dependencies[] = date
+dependencies[] = entityreference
+dependencies[] = simple_field
+files[] = stat.inc
+files[] = stat.install
+files[] = stat.module

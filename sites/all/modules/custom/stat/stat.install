@@ -1,0 +1,62 @@
+<?php
+/**
+  @file
+  @brief Creates the Stat Type table and delete the
+    stat types when uninstalled.
+*/
+
+/**
+  @brief Implements hook_schema ().
+  @details
+    Defines the database tables used to store stat
+    types.
+*/
+function stat_schema () {
+  return array (
+    'stat_stat_type' => array (
+      'description' => 'Stores stat type definitions.',
+      'fields'      => array (
+        'name' => array (
+          'description' => 'The stat type name.',
+          'type'        => 'text',
+          'not null'    => true
+        ),
+        'description' => array (
+          'description' => 'A description of the stat type.',
+          'type'        => 'text'
+        ),
+        'node_type' => array (
+          'description' => 'The machine name of the node type used to represent instances.',
+          'type'        => 'varchar',
+          'length'      => 32,
+          'not null'    => true
+        ),
+        'subject_node_type' => array (
+          'description' => 'The machine name of the node type referenced by the subject field.',
+          'type'        => 'text',
+          'not null'    => true
+      )),
+      'primary key' => array ('node_type')
+  ));
+}
+
+/**
+  @brief Implements hook_install ().
+  @details
+    Creates the Unit vocabulary.
+*/
+function stat_install () {
+  module_load_include ('inc', 'stat');
+}
+
+/**
+  @brief Implements hook_uninstall ().
+  @details
+    Deletes the all of the Stat Types and Stat Nodes.
+*/
+function stat_uninstall () {
+  module_load_include ('inc', 'stat');
+  stat_type_delete_all ();
+  drupal_set_message ('Deleted all of the stat types and stat nodes.');
+}
+

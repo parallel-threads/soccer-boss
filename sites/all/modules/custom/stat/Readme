@@ -1,0 +1,7 @@
+Stat Module Readme
+==================
+
+The Stat module defines/creates the Stat content type and the Unit
+vocabulary. The Stat content type can be used to represent statistics
+about entities on the site. The Unit vocabulary is used to represent
+units of measurements for statistics.
