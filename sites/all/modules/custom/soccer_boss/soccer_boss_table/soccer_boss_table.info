@@ -1,8 +1,0 @@
-name = Soccer Boss Table
-description = "Creates the simple tables displayed on the Soccer Boss website."
-package = SoccerBoss
-core = 7.x
-dependencies[] = simple_table
-dependencies[] = soccer_boss
-files[] = soccer_boss_table.inc
-files[] = soccer_boss_table.module

@@ -1,8 +1,0 @@
-name = Soccer Boss Chart
-description = "Creates the Charts and Graphs displayed on the Soccer Boss site."
-package = SoccerBoss
-core = 7.x
-dependencies[] = soccer_boss
-dependencies[] = chart
-files[] = soccer_boss_chart.inc
-files[] = soccer_boss_chart.module
