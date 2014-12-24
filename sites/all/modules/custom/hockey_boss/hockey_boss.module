@@ -1,0 +1,152 @@
+<?php
+/**
+  @file
+  @brief The Hockey Boss module defines the core
+    content types and user roles used on the Hockey
+    Boss site.
+*/
+
+/// Implements hook_view_api ().
+function hockey_boss_views_api () {
+  return array ('api' => 3.0);
+}
+
+/// Implements hook_permission ().
+function hockey_boss_permission () {
+  return array (
+    'hockey_boss_view_own_player_profile' => array (
+      'title'       => t ('View Own Player Profile'),
+      'description' => t ('Enables users to view their own player profiles.')
+    ),
+    'hockey_boss_view_all_player_profiles' => array (
+      'title'       => t ('View All Player Profiles'),
+      'description' => t ('Enables users to view all player profiles.')
+    )
+  );
+}
+
+/**
+  @brief Returns true iff the given user can view the player profile node.
+  @param $player_node (object) the player profile node.
+  @param $account (object) the user.
+  @return (boolean).
+*/
+function hockey_boss_user_can_view_player_profile ($player_node, $account) {
+  return user_access ('hockey_boss_view_all_player_profiles', $account) ||
+           ($account->uid == hockey_boss_get_player_user_uid ($player_node) &&
+             user_access ('hockey_boss_view_own_player_profile', $account));
+}
+
+/// Implements hook_node_access ().
+function hockey_boss_node_access ($node, $op, $account) {
+  module_load_include ('inc', 'hockey_boss');
+  switch ($op) {
+    case 'view':
+      if ($node->type == hockey_boss_PLAYER_PROFILE_TYPE) {
+        return hockey_boss_user_can_view_player_profile ($node, $account) ? NODE_ACCESS_ALLOW : NODE_ACCESS_DENY;
+      }
+      break;
+  }
+  return NODE_ACCESS_IGNORE;
+}
+
+/// Implements hook_menu ().
+function hockey_boss_menu () {
+  return array (
+    'player-comparison/%/%' => array (
+      'title'            => t ('Player Comparison'),
+      'description'      => t ('Displays two players side-by-side for comparison.'),
+      'access callback'  => 'user_access',
+      'access arguments' => array ('hockey_boss_view_all_player_profiles'),
+      'page callback'    => 'hockey_boss_player_comparison_page',
+      'page arguments'   => array (1, 2),
+      'type'             => MENU_NORMAL_ITEM
+    ),
+    // I. Team profile page links
+    // II. Player profile page links.
+    'node/%/team' => array (
+      'title'            => t ('Team'),
+      'description'      => t ('The team profile page.'),
+      'page callback'    => 'hockey_boss_player_team_page',
+      'page arguments'   => array (1),
+      'type'             => MENU_LOCAL_TASK
+  ));
+}
+
+/// Returns the Player Comparison form.
+function hockey_boss_player_comparison_form ($form, &$form_state) {
+  module_load_include ('inc', 'hockey_boss');
+  return array (
+    'player_x' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('First Player'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (hockey_boss_PLAYER_PROFILE_TYPE),
+      '#era_cardinality' => 1
+    ),
+    'player_y' => array (
+      '#type'            => 'entityreference',
+      '#title'           => t ('Second Player'),
+      '#era_entity_type' => 'node',
+      '#era_bundles'     => array (hockey_boss_PLAYER_PROFILE_TYPE),
+      '#era_cardinality' => 1
+    ),
+    'submit' => array (
+      '#type'  => 'submit',
+      '#value' => 'Compare!'
+    )
+  );
+}
+
+/// Processes a Player Comparison form.
+function hockey_boss_player_comparison_form_submit ($form, &$form_state) {
+  drupal_goto ('player-comparison/' .
+    $form_state ['values']['player_x']['entity_id'] . '/' .
+    $form_state ['values']['player_y']['entity_id']
+  );
+}
+
+/**
+  @brief Re-lables the 'Add to cart' button.
+  @detail Boss Sports does not provide a cart
+    feature. Users select a membership and proceed
+    directly to checkout.
+*/
+function hockey_boss_form_uc_catalog_buy_it_now_form_alter (&$form, $form_state, $form_id) {
+  $form ['actions']['submit']['#value'] = 'Purchase';
+}
+
+/**
+  @brief Re-lables the 'Add to cart' button.
+  @detail Boss Sports does not provide a cart
+    feature. Users select a membership and proceed
+    directly to checkout.
+*/
+function hockey_boss_form_uc_product_add_to_cart_form_alter (&$form, $form_state, $form_id) {
+  $form ['actions']['submit']['#value'] = 'Purchase';
+}
+
+/**
+  @brief Returns the Player Comparison page.
+  @param $player_x_nid (int) the first player profile node id.
+  @param $player_y_nid (int) the second player profile node id.
+  @return (array) a render array.
+*/
+function hockey_boss_player_comparison_page ($player_x_nid, $player_y_nid) {
+  $form = drupal_get_form ('hockey_boss_player_comparison_form');
+  return array (
+    'player_comparison_form' => $form
+  );
+}
+
+/**
+  @brief Redirects the user to the profile page of
+    the team associated with the given player.
+  @player_nid (int) the player node id.
+*/
+function hockey_boss_player_team_page ($player_nid) {
+  module_load_include ('inc', 'hockey_boss');
+  $team_node = hockey_boss_get_player_team_nid (node_load ($player_nid));
+  $team_uri = node_uri ($team_node);
+  drupal_goto ($team_uri ['path']);
+}

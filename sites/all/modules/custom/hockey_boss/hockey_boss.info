@@ -1,0 +1,14 @@
+name = Hockey Boss
+description = "Defines the base content types and user roles used on the Hockey Boss site."
+core = 7.x
+package = HockeyBoss
+dependencies[] = entityreference
+dependencies[] = entityreference_autocomplete
+dependencies[] = relation
+dependencies[] = relation_add
+dependencies[] = simple_field
+dependencies[] = views
+files[] = hockey_boss.inc
+files[] = hockey_boss.install
+files[] = hockey_boss.module
+files[] = hockey_boss.views_default.inc

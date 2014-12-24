@@ -1,0 +1,6 @@
+Hockey Boss Stat Module Readme
+==============================
+
+The Hockey Boss Stat module defines the content types that are used to
+represent player and team statistics on the Hockey Boss site. This
+module instantiates types using the API provided by the Stat module.

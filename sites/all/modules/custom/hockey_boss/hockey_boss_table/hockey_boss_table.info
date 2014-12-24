@@ -1,0 +1,10 @@
+name = Hockey Boss Table
+description = "Defines the tables used to displays stats and other information on the Hockey Boss site."
+core = 7.x
+package = HockeyBoss
+dependencies[] = hockey_boss
+dependencies[] = hockey_boss_stat
+dependencies[] = simple_table
+dependencies[] = stat
+files[] = hockey_boss_table.inc
+files[] = hockey_boss_table.module

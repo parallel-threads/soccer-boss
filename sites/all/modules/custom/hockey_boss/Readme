@@ -1,0 +1,7 @@
+Hockey Boss Module Readme
+=========================
+
+The Hockey Boss Module is responsible for defining common functions
+shared by the modules that comprise the Hockey Boss package. These
+modules, in turn, are responsible for defining site-specific content
+types, roles, permissions, etc.

@@ -1,0 +1,28 @@
+<?php
+/**
+  @file
+  @brief This file creates the Stat content types
+    used on the Hockey Boss site.
+*/
+
+/**
+  @brief Implements hook_install ().
+  @detail Creates the Stat content types.
+*/
+function hockey_boss_stat_install () {
+  // I. Create the stat content types.
+  module_load_include ('inc', 'hockey_boss_stat');
+  hockey_boss_stat_create_stat_types ();
+  drupal_set_message ('The Hockey Boss stat types have been created.');
+}
+
+/**
+  @brief Implements hook_uninstall ().
+  @detail Deletes the Stat content types.
+*/
+function hockey_boss_stat_uninstall () {
+  // I. Delete the stat content types.
+  module_load_include ('inc', 'hockey_boss_stat');
+  hockey_boss_stat_delete_stat_types ();
+  drupal_set_message ('The Hockey Boss stat types have been deleted.');
+}

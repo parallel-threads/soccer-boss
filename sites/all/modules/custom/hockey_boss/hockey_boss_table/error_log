@@ -1,0 +1,5 @@
+[17-Apr-2014 14:27:46] PHP Parse error:  syntax error, unexpected '[' in /home5/paralle7/public_html/hockey-boss/hockey-boss-staging/sites/all/modules/custom/hockey_boss/hockey_boss_table/hockey_boss_table.inc on line 300
+[17-Apr-2014 14:28:35] PHP Parse error:  syntax error, unexpected '{' in /home5/paralle7/public_html/hockey-boss/hockey-boss-staging/sites/all/modules/custom/hockey_boss/hockey_boss_table/hockey_boss_table.inc on line 300
+[17-Apr-2014 14:29:10] PHP Parse error:  syntax error, unexpected '[' in /home5/paralle7/public_html/hockey-boss/hockey-boss-staging/sites/all/modules/custom/hockey_boss/hockey_boss_table/hockey_boss_table.inc on line 373
+[17-Apr-2014 14:30:40] PHP Parse error:  syntax error, unexpected ';', expecting ')' in /home5/paralle7/public_html/hockey-boss/hockey-boss-staging/sites/all/modules/custom/hockey_boss/hockey_boss_table/hockey_boss_table.inc on line 300
+[17-Apr-2014 14:31:02] PHP Parse error:  syntax error, unexpected ';', expecting ')' in /home5/paralle7/public_html/hockey-boss/hockey-boss-staging/sites/all/modules/custom/hockey_boss/hockey_boss_table/hockey_boss_table.module on line 72

@@ -1,0 +1,80 @@
+<?php
+/**
+  @file
+  @brief This file creates the core content types,
+    relations, and vocabularies used on the Hockey
+    Boss site.
+*/
+
+/**
+  @brief Implements hook_install ().
+  @detail
+    Creates the core content types, relations, and
+    vocabularies used on the Hockey Boss site.
+*/
+function hockey_boss_install () {
+  watchdog (
+    'hockey_boss',
+    '[hockey_boss_install]'
+  );
+  module_load_include ('inc', 'hockey_boss');
+
+  // I. Create the core vocabularies.
+  hockey_boss_create_vocabularies ();
+  drupal_set_message ('Created the core Hockey Boss vocabularies.');
+
+  // II. Create the core content types.
+  hockey_boss_create_types ();
+  drupal_set_message ('Created the core Hockey Boss types.');
+
+  // III. Create the core user roles.
+  hockey_boss_create_roles ();
+  drupal_set_message ('Created the core Hockey Boss user roles.');
+
+  // IV. Create the core relations.
+  hockey_boss_create_relations ();
+  drupal_set_message ('Created the core Hockey Boss relations.');
+
+  // V. Create the core fields.
+  hockey_boss_create_fields ();
+
+  // VI. Create the core permissions.
+  hockey_boss_grant_permissions ();
+  drupal_set_message ('Set the core Hockey Boss user permissions.');
+  
+}
+
+/**
+  @brief Implements hook_uninstall ().
+  @detail
+    Deletes the core content types.
+*/
+function hockey_boss_uninstall () {
+  watchdog (
+    'hockey_boss',
+    '[hockey_boss_install]'
+  );
+
+  module_load_include ('inc', 'hockey_boss');
+  module_load_include ('inc', 'hockey_boss', 'hockey_boss.views_default');
+
+  // I. Delete the core views.
+  hockey_boss_delete_views ();
+  drupal_set_message ('Deleted the core Hockey Boss views.');
+
+  // II. Delete the core relations.
+  hockey_boss_delete_relations ();
+  drupal_set_message ('Deleted the core Hockey Boss relations.');
+
+  // III. Delete the core user roles.
+  hockey_boss_delete_roles ();
+  drupal_set_message ('Deleted the core Hockey Boss user roles.');
+
+  // IV. Delete the core content tpes.
+  hockey_boss_delete_types ();
+  drupal_set_message ('Deleted the core Hockey Boss types.');
+
+  // V. Delete the core vocabularies.
+  hockey_boss_delete_vocabularies ();
+  drupal_set_message ('Deleted the core Hockey Boss vocabularies.');
+}

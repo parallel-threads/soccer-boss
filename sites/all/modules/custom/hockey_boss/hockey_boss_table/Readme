@@ -1,0 +1,6 @@
+Hockey Boss Table Module Readme
+====================================
+
+The Hockey Boss Table module defines the tables used by the Hockey Boss
+site. These tables are built using the Simple Table API and display
+various statistics for players, teams, etc.

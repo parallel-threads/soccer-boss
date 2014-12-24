@@ -1,0 +1,189 @@
+<?php
+/**
+  @file
+  @brief Defines the table blocks.
+*/
+
+/**
+  @brief Implements hook_block_info ().
+  @details
+    Declares the stat table blocks.
+*/ 
+function hockey_boss_table_block_info () {
+  return array (
+    'hockey_boss_table_pps' => array (
+      'info' => t ('Displays the current player\'s performance stats.')
+    ),
+    'hockey_boss_table_pfs' => array (
+      'info' => t ('Displays the current player\'s fitness stats.')
+    ),
+    'hockey_boss_table_pgs' => array (
+      'info' => t ('Displays the current player\'s game stats.')
+    ),
+    'hockey_boss_table_tr' => array (
+      'info' => t ('Displays the current team\'s roster.')
+    ),
+    'hockey_boss_table_tgs' => array (
+      'info' => t ('Displays the current team\'s game stats.')
+    ),
+    'hockey_boss_table_lt' => array (
+      'info' => t ('Displays the current league\'s teams.')
+    ),
+    'hockey_boss_table_pc' => array (
+      'info' => t ('Displays the player comparison table.')
+    ),
+    'hockey_boss_table_vgs' => array (
+      'info' => t ('Displays the current game\'s vital stats.')
+    ),
+    'hockey_boss_table_vts' => array (
+      'info' => t ('Displays the current team\'s vital stats.')
+    ),
+    'hockey_boss_table_vps' => array (
+      'info' => t ('Displays the current player\'s vital stats.')
+  ));
+}
+
+/**
+  @brief Implements hook_block_view ().
+  @details
+    Defines the table blocks.
+*/
+function hockey_boss_table_block_view ($delta = '') {
+  module_load_include ('inc', 'hockey_boss');
+  module_load_include ('inc', 'hockey_boss_table');
+
+  global $user;
+  $user_can_view_any_player_profiles = 
+    user_access ('hockey_boss_view_own_player_profile', $user) ||
+    user_access ('hockey_boss_view_all_player_profiles', $user);
+
+  switch ($delta) {
+    case 'hockey_boss_table_pps':
+      $player_node = node_load (arg (1));
+      if ($player_node &&
+          $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
+          $user_can_view_any_player_profiles &&
+          hockey_boss_user_can_view_player_profile ($player_node, $user)
+      ) {
+        $table = new PPSTable ($player_node->nid, date ('Y'));
+        return array (
+          'subject' => 'Performance Stats',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table) 
+        );
+      }
+      break;
+    case 'hockey_boss_table_pfs':
+      $player_node = node_load (arg (1));
+      if ($player_node &&
+          $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
+          $user_can_view_any_player_profiles &&
+          hockey_boss_user_can_view_player_profile ($player_node, $user)
+      ) {
+        $table = new PFSTable ($player_node);
+        return array (
+          'subject' => 'Fitness Stats',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_pgs':
+      $player_node = node_load (arg (1));
+      if ($player_node &&
+          $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
+          $user_can_view_any_player_profiles &&
+          hockey_boss_user_can_view_player_profile ($player_node, $user)
+      ) {
+        $table = new PGSTable ($player_node, date ('Y'));
+        return array (
+          'subject' => 'Game Stats',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_tr':
+      $team_node = node_load (arg (1));
+      if ($team_node &&
+          $user_can_view_any_player_profiles &&
+          $team_node->type == hockey_boss_TEAM_PROFILE_TYPE
+      ) {
+        $table = new TRTable ($team_node, date ('Y'));
+        return array (
+          'subject' => 'Roster',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_tgs':
+      $team_node = node_load (arg (1));
+      if ($team_node &&
+          $team_node->type == hockey_boss_TEAM_PROFILE_TYPE
+      ) {
+        $table = new TGSTable ($team_node->nid, date ('Y'));
+        return array (
+          'subject' => 'Game Stats',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_lt':
+      $league_node = node_load (arg (1));
+      if ($league_node &&
+          $league_node->type == hockey_boss_LEAGUE_PROFILE_TYPE
+      ) {
+        $table = new LTTable ($league_node);
+        return array (
+          'subject' => 'Teams',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_pc':
+      $player_x = node_load (arg (1));
+      $player_y = node_load (arg (2));
+      if ($player_x &&
+          $player_y &&
+          $player_x->type == hockey_boss_PLAYER_PROFILE_TYPE &&
+          $player_y->type == hockey_boss_PLAYER_PROFILE_TYPE &&
+          $user_can_view_any_player_profiles &&
+          hockey_boss_user_can_view_player_profile ($player_x, $user) &&
+          hockey_boss_user_can_view_player_profile ($player_y, $user)
+      ) {
+        $table = new PCTable (array ($player_x->nid, $player_y->nid));
+        return array (
+          'subject' => '',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_vgs':
+      $game_node = node_load (arg (1));
+      if ($game_node && $game_node->type == hockey_boss_GAME_TYPE) {
+        $table = new VGSTable ($game_node->nid);
+        return array (
+          'subject' => '',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_vts':
+      $team_node = node_load (arg (1));
+      if ($team_node && $team_node->type == hockey_boss_TEAM_PROFILE_TYPE) {
+        $table = new VTSTable ($team_node);
+        return array (
+          'subject' => '',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+    case 'hockey_boss_table_vps':
+      $player_node = node_load (arg (1));
+      if ($player_node && $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE) {
+        $table = new VPSTable ($player_node);
+        return array (
+          'subject' => '',
+          'content' => empty ($table->row_names) ? "" : drupal_get_form ('simple_table_get_form', $table)
+        );
+      }
+      break;
+  }
+}
