@@ -15,10 +15,7 @@
 */
 function stat_node_type_delete ($info) {
   module_load_include ('inc', 'stat');
-  $stat_types = array_merge (
-    stat_type_get_by_node_type ($info->type),
-    stat_type_get_by_subject_node_type ($info->type)
-  );
+  $stat_types = stat_type_get_by_subject_node_type ($info->type);
   stat_type_delete_multiple ($stat_types);
 }
 

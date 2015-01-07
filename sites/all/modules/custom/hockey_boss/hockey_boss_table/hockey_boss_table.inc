@@ -4,6 +4,92 @@
   @brief Defines the stat tables.
 */
 
+/// Represents the club teams tables.
+class CTTable extends SimpleTable {
+
+  /// The club profile node id.
+  public $club_nid = null;
+
+  /// Returns a club team table.
+  public function __construct ($club_node) {
+    parent::__construct ();
+
+    $this->columns = $this->create_columns (
+      array ('+/-', 'Face-Offs', 'Penalties', 'SAOG', 'Shots Against', 'SOG', 'Shots', 'Assists', 'Goals', 'Name'));
+
+    $this->row_names = hockey_boss_get_club_team_nids ($club_node);
+    $this->sortable = true;
+    $this->sort_column_name = 'Name';
+  }
+
+  /// Returns the default field values.
+  public function get_default_field_value ($column_name, $row_name) {
+    module_load_include ('inc', 'stat');
+    module_load_include ('inc', 'hockey_boss_stat');
+
+    $team_nid = $row_name;
+    $team_node = node_load ($team_nid);
+    if (!$team_node) {
+      return array (
+        'id'            => null,
+        'value'         => '',
+        'display_value' => ''
+      );
+    }
+
+    if ($column_name == 'Name') {
+      $team_node_uri = node_uri ($team_node);
+      return array (
+        'id'            => null,
+        'value'         => $team_node->title,
+        'display_value' => l ($team_node->title, $team_node_uri ['path'])
+      );
+    }
+    $stat_name = $column_name;
+    $current_year = date ('Y');
+    $stat = hockey_boss_stat_get_tps ($team_node, $stat_name, $current_year);
+    return array (
+      'id'            => null,
+      'value'         => $stat ['value'],
+      'display_value' => $stat ['value']
+    );
+  }
+}
+
+/// Represents the league clubs tables.
+class LCTable extends SimpleTable {
+
+  /// Returns a league team table.
+  public function __construct ($league_node) {
+    parent::__construct ();
+
+    $this->columns = $this->create_columns (array ('Name'));
+    $this->row_names = hockey_boss_get_league_club_nids ($league_node);
+    $this->sort_column_name = 'Name';
+  }
+
+  /// Returns the default field values.
+  public function get_default_field_value ($column_name, $row_name) {
+    $club_nid = $row_name;
+    $club_node = node_load ($club_nid);
+    if (!$club_node) {
+      return array (
+        'id'            => null,
+        'value'         => '',
+        'display_value' => ''
+      );
+    }
+    if ($column_name == 'Name') {
+      $club_node_uri = node_uri ($club_node);
+      return array (
+        'id'            => null,
+        'value'         => $club_node->title,
+        'display_value' => l ($club_node->title, $club_node_uri ['path'])
+      );
+    }
+  }
+}
+
 /// Represents player performance stat tables. 
 class PPSTable extends SimpleTable {
   /**
@@ -13,14 +99,14 @@ class PPSTable extends SimpleTable {
   public $player_nid = null;
 
   /// Returns a player performance stat table.
-  public function __construct ($player_nid, $current_year) {
+  public function __construct ($player_nid, $start_year) {
     parent::__construct ();
     
     $this->player_nid = $player_nid;
 
     // set row names.
-    $start_year = $current_year - 1;
-    for ($year = $start_year; $year <= $current_year; $year ++) {
+    $current_year = date ('Y');
+    for ($year = $current_year; $year >= $start_year; $year --) {
       $this->row_names [] = $year;
     }
 
@@ -31,6 +117,7 @@ class PPSTable extends SimpleTable {
     $editable = $this->editable ();
     $this->submittable       = $editable;
     $this->sortable          = !$editable;
+    $this->sort_direction    = 'desc';
     $this->sort_column_name  = 'Year';
     $this->label_column_name = 'Year';
   }
@@ -159,6 +246,7 @@ class PFSTable extends SimpleTable {
     $editable = $this->editable ();
     $this->submittable       = $editable;
     $this->sortable          = !$editable;
+    $this->sort_direction    = 'desc';
     $this->sort_column_name  = 'Year';
     $this->label_column_name = 'Year';
   }
@@ -211,12 +299,6 @@ class PFSTable extends SimpleTable {
 
   /// The submit callback.
   public static function process_table_form ($form, $form_state) {
-    watchdog (
-      'hockey_boss_table',
-      '[PFSTable::process_table_form] form state: <pre>@form_state</pre>',
-      array ('@form_state' => print_r ($form_state, true))
-    );
-
     module_load_include ('inc', 'stat');
     foreach ($form_state ['input'] as $key => $value) {
       if (strpos ($key, 'stat_value_') === 0) {
@@ -256,7 +338,8 @@ class PGSTable extends SimpleTable {
     $game_nodes = hockey_boss_get_team_games ($player_team_nid);
     foreach ($game_nodes as $game_node) {
       $game_year = hockey_boss_get_game_year ($game_node);
-      if ($game_year == $year) {
+      // Add every game played in and after the given year.
+      if ($game_year >= $year) {
         $this->row_names [] = $game_node->nid;
       }
     }
@@ -268,6 +351,7 @@ class PGSTable extends SimpleTable {
     $editable = $this->editable ();
     $this->submittable      = $editable;
     $this->sortable         = !$editable;
+    $this->sort_direction   = 'desc';
     $this->sort_column_name = 'Date';
   }
 
@@ -411,13 +495,13 @@ class TRTable extends SimpleTable {
 
     // set columns.
     $this->columns = $this->create_columns (array ('+/-', 'Face-Offs', 'Penalties', 'SAOG', 'Shots Against', 'SOG', 'Shots', 'Assists', 'Goals', 'Position', 'Name'));
-
     $this->sortable = true;
     $this->sort_column_name = 'Name';
   }
 
   /// Returns the default field values.
   public function get_default_field_value ($column_name, $row_name) {
+    module_load_include ('inc', 'hockey_boss');
     module_load_include ('inc', 'hockey_boss_stat');
     module_load_include ('inc', 'stat');
 
@@ -472,7 +556,8 @@ class TGSTable extends SimpleTable {
     $game_nodes = hockey_boss_get_team_games ($team_nid);
     foreach ($game_nodes as $game_node) {
       $game_year = hockey_boss_get_game_year ($game_node);
-      if ($game_year == $year) {
+      // Add every game played in and after the given year.
+      if ($game_year >= $year) {
         $this->row_names [] = $game_node->nid;
       }
     }
@@ -481,7 +566,8 @@ class TGSTable extends SimpleTable {
     $this->columns = $this->create_columns (
       array_reverse (array ('Date', 'Match', 'Home Team', 'Home Team Score', 'Away Team', 'Away Team Score')));
 
-    $this->sortable = true;
+    $this->sortable         = true;
+    $this->sort_direction   = 'desc';
     $this->sort_column_name = 'Date';
   }
 
@@ -494,8 +580,8 @@ class TGSTable extends SimpleTable {
 
     if ($column_name == 'Date') {
       $game_date_string = hockey_boss_get_game_date ($game_node);
-      $game_date = new DateTime ($game_date_string);
-      $game_date_string = date_format ($game_date, 'Y-m-d');
+      $game_date = date_create ($game_date_string);
+      $game_date_string = date_format ($game_date, 'M d, Y');
       return array (
         'id'            => null,
         'value'         => $game_date_string,
@@ -559,59 +645,6 @@ class TGSTable extends SimpleTable {
         }
       }
     }
-  }
-}
-
-/// Represents the league teams tables.
-class LTTable extends SimpleTable {
-
-  /// The league profile node id.
-  public $league_nid = null;
-
-  /// Returns a league team table.
-  public function __construct ($league_node) {
-    parent::__construct ();
-
-    $this->columns = $this->create_columns (
-      array ('+/-', 'Face-Offs', 'Penalties', 'SAOG', 'Shots Against', 'SOG', 'Shots', 'Assists', 'Goals', 'Name'));
-
-    $this->row_names = simple_field_get_relation_source_entity_ids ($league_node, hockey_boss_LEAGUE_PROFILE_TYPE . '_teams');
-
-    $this->sortable = true;
-    $this->sort_column_name = 'Name';
-  }
-
-  /// Returns the default field values.
-  public function get_default_field_value ($column_name, $row_name) {
-    module_load_include ('inc', 'stat');
-    module_load_include ('inc', 'hockey_boss_stat');
-
-    $team_nid = $row_name;
-    $team_node = node_load ($team_nid);
-    if (!$team_node) {
-      return array (
-        'id'            => null,
-        'value'         => '',
-        'display_value' => ''
-      );
-    }
-
-    if ($column_name == 'Name') {
-      $team_node_uri = node_uri ($team_node);
-      return array (
-        'id'            => null,
-        'value'         => $team_node->title,
-        'display_value' => l ($team_node->title, $team_node_uri ['path'])
-      );
-    }
-    $stat_name = $column_name;
-    $current_year = date ('Y');
-    $stat = hockey_boss_stat_get_tps ($team_node, $stat_name, $current_year);
-    return array (
-      'id'            => null,
-      'value'         => $stat ['value'],
-      'display_value' => $stat ['value']
-    );
   }
 }
 
@@ -778,26 +811,25 @@ class VTSTable extends SimpleTable {
   public function __construct ($team_node) {
     parent::__construct ();
 
-    $age_term = hockey_boss_get_team_age_term ($team_node);
-    if ($age_term) {
+    $gender_term = hockey_boss_get_team_gender_term ($team_node);
+    if ($gender_term) {
       $this->fields [] = array (
         'id'            => null,
-        'column_name'   => 'Age Group',
+        'column_name'   => 'Gender',
         'row_name'      => $team_node->nid,
-        'value'         => $age_term->name,
-        'display_value' => $age_term->name
+        'value'         => $gender_term->name,
+        'display_value' => $gender_term->name
       );
     }
 
-    $league_node = hockey_boss_get_team_league_node ($team_node);
-    if ($league_node) {
-      $league_node_uri = node_uri ($league_node);
+    $division_term = hockey_boss_get_team_division_term ($team_node);
+    if ($division_term) {
       $this->fields [] = array (
         'id'            => null,
-        'column_name'   => 'League',
+        'column_name'   => 'Division',
         'row_name'      => $team_node->nid,
-        'value'         => $league_node->title,
-        'display_value' => l ($league_node->title, $league_node_uri ['path'])
+        'value'         => $division_term->name,
+        'display_value' => $division_term->name
       );
     }
 
@@ -812,6 +844,29 @@ class VTSTable extends SimpleTable {
         'display_value' => l ($coach_node->title, $coach_node_uri ['path'])
       );
     }
+
+    $club_node = hockey_boss_get_team_club_node ($team_node);
+    if ($club_node) {
+      $club_node_uri = node_uri ($club_node);
+      $this->fields [] = array (
+        'id'            => null,
+        'column_name'   => 'Club',
+        'row_name'      => $team_node->nid,
+        'value'         => $club_node->title,
+        'display_value' => l ($club_node->title, $club_node_uri ['path'])
+      );
+    }
+
+    $age_term = hockey_boss_get_team_age_term ($team_node);
+    if ($age_term) {
+      $this->fields [] = array (
+        'id'            => null,
+        'column_name'   => 'Age Group',
+        'row_name'      => $team_node->nid,
+        'value'         => $age_term->name,
+        'display_value' => $age_term->name
+      );
+    }
   }
 }
 
@@ -820,6 +875,33 @@ class VPSTable extends SimpleTable {
   /// Returns a vital player stat table.
   public function __construct ($player_node) {
     parent::__construct ();
+
+    $this->fields [] = array (
+       'id'            => null,
+       'column_name'   => 'Weight',
+       'row_name'      => $player_node->nid,
+       'value'         => $player_node-> hockey_boss_player_type_weight ['und'][0]['value'],
+       'display_value' => $player_node-> hockey_boss_player_type_weight ['und'][0]['safe_value']
+    );
+
+    $this->fields [] = array (
+       'id'            => null,
+       'column_name'   => 'Height',
+       'row_name'      => $player_node->nid,
+       'value'         => $player_node-> hockey_boss_player_type_height ['und'][0]['value'],
+       'display_value' => $player_node-> hockey_boss_player_type_height ['und'][0]['safe_value']
+    );
+
+    $birth_date = $player_node->hockey_boss_player_type_birth ['und'][0]['value'];
+    if ($birth_date) {
+      $this->fields [] = array (
+        'id'            => null,
+        'column_name'   => 'Birth Date',
+        'row_name'      => $player_node->nid,
+        'value'         => $player_node-> hockey_boss_player_type_birth ['und'][0]['value'],
+        'display_value' => date_format (date_create ($birth_date), 'M d, Y')
+      );
+    }
 
     $position_term = hockey_boss_get_player_position_term ($player_node);
     if ($position_term) {

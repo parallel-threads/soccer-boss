@@ -44,6 +44,14 @@ class SimpleTable {
 
   /**
     If the table is sortable, this parameter
+    specifies the default sort direction. Should
+    equal either 'asc' for ascending or 'desc' for
+    descending.
+  */
+  public $sort_direction = 'asc'; 
+
+  /**
+    If the table is sortable, this parameter
     specifies the name of the default sort column.
   */
   public $sort_column_name = null;
@@ -240,7 +248,7 @@ class SimpleTable {
       );
       if (!is_null ($this->sort_column_name)) {
         $sort_field = $this->get_field ($this->sort_column_name, $row_name);
-        $row ['sort_value'] = $sort_field ['value'];
+        $row ['sort_value'] = trim ($sort_field ['value']);
       }
       foreach ((array) $column_names as $column_name) {
         $row ['fields'][] = $this->get_field ($column_name, $row_name);
@@ -252,19 +260,31 @@ class SimpleTable {
 
   /**
     @brief Accepts two rows and returns true iff the
-      first one has a lower sort value than the
+      first one has a greater sort value than the
       second.
   */
   public function row_sort_value_lt ($x, $y) {
-    return is_null ($x ['sort_value']) || $x ['sort_value'] === '' || 
-           (!is_null ($y ['sort_value']) && $x ['sort_value'] < $y ['sort_value']);
+    return strcmp ($x ['sort_value'], $y ['sort_value']);
+  }
+
+  /**
+    @brief Accepts two rows and returns true iff the
+      first one has a greater sort value than the
+      second.
+  */
+  public function row_sort_value_gt ($x, $y) {
+    return strcmp ($y ['sort_value'], $x ['sort_value']);
   }
 
   /// Returns the rows sorted, including those declared implicitly.
   public function get_all_rows_sorted () {
     $rows = $this->get_all_rows ();
     if (!is_null ($this->sort_column_name)) {
-      usort ($rows, array ($this, 'row_sort_value_lt'));
+      if ($this->sort_direction == 'asc') {
+        usort ($rows, array ($this, 'row_sort_value_lt'));
+      } else {
+        usort ($rows, array ($this, 'row_sort_value_gt'));
+      }
     }
     return $rows;
   }
@@ -295,7 +315,6 @@ class SimpleTable {
         $body_rows [] = $row;
       }
     }
-
     // set a unique id to allow the AJAX wrapper to reference the entire form.
     $unique_form_id = drupal_html_id ($form_state ['build_info']['form_id']);
 
@@ -440,6 +459,15 @@ class SimpleTable {
     }
 
     return $form;
+  }
+
+  /**
+    @brief Accepts a table and returns true iff the table is empty.
+    @param $table (SimpleTable) the table.
+    @return (boolean) true iff the table is empty.
+  */
+  public function is_empty () {
+    return empty ($this->row_names) && empty ($this->fields);
   }
 }
 
