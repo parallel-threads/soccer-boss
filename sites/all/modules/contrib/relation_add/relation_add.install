@@ -21,6 +21,13 @@ function relation_add_install() {
 }
 
 /**
+ * Implements hook_uninstall().
+ */
+function relation_add_uninstall() {
+  variable_del('relation_add_iso_language_codes');
+}
+
+/**
  * Add endpoint autocomplete menu callback access to the anonymous and authenticated user roles.
  */
 function relation_add_update_7001() {
@@ -34,4 +41,11 @@ function relation_add_update_7001() {
     user_role_grant_permissions($rid, array('relation add endpoint autocomplete access'));
   }
   return t('Added endpoint autocomplete menu callback access to the anonymous and authenticated user roles.');
+}
+
+/**
+ * Drupal menu rebuild.
+ */
+function relation_add_update_7002() {
+  menu_rebuild();
 }
