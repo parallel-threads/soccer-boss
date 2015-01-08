@@ -461,6 +461,7 @@ textarea {
  * 1. Remove most spacing between table cells
  */
 table {
+  background-color: white;
   border: 1px solid;
   border-spacing: 0;
   border-collapse: collapse;
