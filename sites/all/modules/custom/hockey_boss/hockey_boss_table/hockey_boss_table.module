@@ -56,10 +56,6 @@ function hockey_boss_table_block_view ($delta = '') {
   module_load_include ('inc', 'hockey_boss_table');
 
   global $user;
-  $user_can_view_any_player_profiles = 
-    user_access ('hockey_boss_view_own_player_profile', $user) ||
-    user_access ('hockey_boss_view_all_player_profiles', $user);
-
   switch ($delta) {
     case 'hockey_boss_table_ct':
       $club_node = node_load (arg (1));
@@ -89,7 +85,6 @@ function hockey_boss_table_block_view ($delta = '') {
       $player_node = node_load (arg (1));
       if ($player_node &&
           $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
-          $user_can_view_any_player_profiles &&
           hockey_boss_user_can_view_player_profile ($player_node, $user)
       ) {
         $nyears = 2; // the number of years of historical data to include.
@@ -104,7 +99,6 @@ function hockey_boss_table_block_view ($delta = '') {
       $player_node = node_load (arg (1));
       if ($player_node &&
           $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
-          $user_can_view_any_player_profiles &&
           hockey_boss_user_can_view_player_profile ($player_node, $user)
       ) {
         $table = new PFSTable ($player_node);
@@ -118,7 +112,6 @@ function hockey_boss_table_block_view ($delta = '') {
       $player_node = node_load (arg (1));
       if ($player_node &&
           $player_node->type == hockey_boss_PLAYER_PROFILE_TYPE &&
-          $user_can_view_any_player_profiles &&
           hockey_boss_user_can_view_player_profile ($player_node, $user)
       ) {
         $nyears = 2; // the number of years of historical games to include.
@@ -132,7 +125,6 @@ function hockey_boss_table_block_view ($delta = '') {
     case 'hockey_boss_table_tr':
       $team_node = node_load (arg (1));
       if ($team_node &&
-          $user_can_view_any_player_profiles &&
           $team_node->type == hockey_boss_TEAM_PROFILE_TYPE
       ) {
         $table = new TRTable ($team_node, date ('Y'));
@@ -162,7 +154,6 @@ function hockey_boss_table_block_view ($delta = '') {
           $player_y &&
           $player_x->type == hockey_boss_PLAYER_PROFILE_TYPE &&
           $player_y->type == hockey_boss_PLAYER_PROFILE_TYPE &&
-          $user_can_view_any_player_profiles &&
           hockey_boss_user_can_view_player_profile ($player_x, $user) &&
           hockey_boss_user_can_view_player_profile ($player_y, $user)
       ) {
