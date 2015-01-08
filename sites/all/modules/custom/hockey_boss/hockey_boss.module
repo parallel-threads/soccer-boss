@@ -32,9 +32,31 @@ function hockey_boss_permission () {
   @return (boolean).
 */
 function hockey_boss_user_can_view_player_profile ($player_node, $account) {
-  return user_access ('hockey_boss_view_all_player_profiles', $account) ||
-           ($account->uid == hockey_boss_get_player_user_uid ($player_node) &&
-             user_access ('hockey_boss_view_own_player_profile', $account));
+  if (is_null ($account)) {
+    return false;
+  }
+  module_load_include ('inc', 'hockey_boss');
+
+  $player_uid = hockey_boss_get_player_user_uid ($player_node);
+  $team_node  = hockey_boss_get_player_team_node ($player_node);
+  $coach_node = hockey_boss_get_team_coach_node ($team_node);
+  $coach_uid  = hockey_boss_get_coach_user_uid ($coach_node); 
+
+  watchdog (
+    'hockey_boss',
+    '[hockey_boss_user_can_view_player_profile] player node: @player_nid account: @account_uid player uid: @player_uid coach uid: @coach_uid coach node: <pre>@coach_node</pre>',
+    array (
+      '@player_nid'  => $player_node->nid,
+      '@account_uid' => $account->uid,
+      '@player_uid'  => $player_uid,
+      '@coach_uid'   => $coach_uid,
+      '@coach_node'  => print_r ($coach_node, true)
+  ));
+
+  return
+    user_access ('hockey_boss_view_all_player_profiles', $account) ||
+    ($account->uid == $player_uid && user_access ('hockey_boss_view_own_player_profile', $account)) ||
+    ($account->uid == $coach_uid);
 }
 
 /// Implements hook_node_access ().
